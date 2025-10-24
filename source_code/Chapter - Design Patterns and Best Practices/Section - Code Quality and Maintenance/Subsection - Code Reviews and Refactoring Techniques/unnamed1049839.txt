@@ -1,0 +1,54 @@
+#include <memory>
+#include <string>
+#include <vector>
+#include <stdexcept>
+
+class DataStorage {
+public:
+    explicit DataStorage(std::string path) : path_(std::move(path)) {}
+
+    void storeData(const std::string& data) {
+        if (data.empty()) throw std::invalid_argument("empty data");
+        buffer_.push_back(data);
+    }
+
+    void flush() {
+        // Persist buffer_ to path_
+        buffer_.clear();
+    }
+
+private:
+    std::string path_;
+    std::vector<std::string> buffer_;
+};
+
+class DataProcessor {
+public:
+    std::string processData(const std::string& data) {
+        if (data.empty()) throw std::invalid_argument("empty data");
+        return transform(data);
+    }
+
+private:
+    std::string transform(const std::string& in) {
+        // Minimal transformation placeholder
+        return in;
+    }
+};
+
+class DataHandler {
+public:
+    DataHandler(std::string storagePath, std::unique_ptr<DataProcessor> processor)
+        : storage_(std::move(storagePath)), processor_(std::move(processor)) {}
+
+    void handle(const std::string& data) {
+        storage_.storeData(data);
+        auto processed = processor_->processData(data);
+        storage_.storeData(processed);
+        storage_.flush();
+    }
+
+private:
+    DataStorage storage_;
+    std::unique_ptr<DataProcessor> processor_;
+};

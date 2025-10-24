@@ -1,0 +1,7 @@
+#include <print>
+#include <string_view>
+
+int main() {
+    constexpr std::string_view greeting = "Hello, Modern C++23!";
+    std::println("{}", greeting);
+}

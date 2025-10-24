@@ -1,0 +1,12 @@
+#include <cmath>
+
+struct Point {
+    double x{};
+    double y{};
+};
+
+double calculate_distance(const Point& p1, const Point& p2) noexcept {
+    const double dx = p2.x - p1.x;
+    const double dy = p2.y - p1.y;
+    return std::hypot(dx, dy);          // numerically stable Euclidean distance
+}

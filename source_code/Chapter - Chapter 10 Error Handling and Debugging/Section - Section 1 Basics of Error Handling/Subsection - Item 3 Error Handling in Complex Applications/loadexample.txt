@@ -1,0 +1,57 @@
+#include <filesystem>
+#include <fstream>
+#include <iostream>
+#include <iterator>
+#include <string>
+#include <system_error>
+
+std::string load_file_throw(const std::filesystem::path& p)
+{
+    std::ifstream ifs(p, std::ios::binary);
+    if (!ifs)
+        throw std::system_error(errno, std::generic_category(), "load_file_throw: failed to open file");
+
+    std::string content(std::istreambuf_iterator<char>(ifs), {});
+    if (ifs.bad())
+        throw std::system_error(std::make_error_code(std::errc::io_error), "load_file_throw: read failed");
+
+    return content;
+}
+
+std::string load_file_nothrow(const std::filesystem::path& p,
+                              std::error_code& ec) noexcept
+{
+    ec.clear();
+    std::ifstream ifs(p, std::ios::binary);
+    if (!ifs) {
+        ec.assign(errno, std::generic_category());
+        return {};
+    }
+
+    std::string content(std::istreambuf_iterator<char>(ifs), {});
+    if (ifs.bad()) {
+        ec = std::make_error_code(std::errc::io_error);
+        return {};
+    }
+    return content;
+}
+
+int main()
+{
+    const std::filesystem::path path = "example.data";
+
+    try {
+        auto s = load_file_throw(path);
+        std::cout << "Loaded (throw): " << s.size() << " bytes\n";
+    } catch (const std::system_error& se) {
+        std::cerr << "Error (throw): " << se.code() << " - " << se.what() << '\n';
+    }
+
+    std::error_code ec;
+    auto s2 = load_file_nothrow(path, ec);
+    if (ec) {
+        std::cerr << "Error (nothrow): " << ec.value() << " - " << ec.message() << '\n';
+    } else {
+        std::cout << "Loaded (nothrow): " << s2.size() << " bytes\n";
+    }
+}

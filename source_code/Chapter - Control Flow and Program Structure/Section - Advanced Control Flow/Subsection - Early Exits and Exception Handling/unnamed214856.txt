@@ -1,0 +1,6 @@
+#include <vector>
+#include <algorithm>
+
+bool find_element(const std::vector<int>& vec, int target) {
+    return std::find(vec.begin(), vec.end(), target) != vec.end();
+}

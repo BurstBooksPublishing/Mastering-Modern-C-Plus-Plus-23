@@ -1,0 +1,6 @@
+#include <vector>
+#include <algorithm>
+
+void doubleElements(std::vector<int>& vec) {
+    std::for_each(vec.begin(), vec.end(), [](int& v) { v *= 2; });
+}

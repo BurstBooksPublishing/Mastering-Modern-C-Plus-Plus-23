@@ -1,0 +1,7 @@
+#include <iostream>
+#include <print>
+
+int main() {
+    static constexpr std::string_view message = "Hello, Modern C++23!\n";
+    std::print("{}", message);
+}

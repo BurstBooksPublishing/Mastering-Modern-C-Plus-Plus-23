@@ -1,0 +1,35 @@
+#include <cstdio>
+#include <memory>
+#include <string>
+#include <vector>
+#include <iostream>
+
+struct FileCloser {
+    void operator()(FILE* f) const noexcept { if (f) std::fclose(f); }
+};
+
+struct Node : std::enable_shared_from_this<Node> {
+    std::string name;
+    std::vector<std::shared_ptr<Node>> children;
+    std::vector<std::weak_ptr<Node>> parents;   // non-owning back-references
+
+    explicit Node(std::string n) : name(std::move(n)) {}
+
+    void add_child(std::shared_ptr<Node> c) {
+        children.emplace_back(std::move(c));
+        children.back()->parents.emplace_back(weak_from_this());
+    }
+};
+
+int main() {
+    std::unique_ptr<FILE, FileCloser> fp(std::fopen("example.txt", "w"));
+    if (fp) std::fputs("hello\n", fp.get());
+
+    auto a = std::make_shared<Node>("A");
+    auto b = std::make_shared<Node>("B");
+
+    a->add_child(b);
+
+    std::cout << "A use_count: " << a.use_count()
+              << ", B use_count: " << b.use_count() << '\n';
+}

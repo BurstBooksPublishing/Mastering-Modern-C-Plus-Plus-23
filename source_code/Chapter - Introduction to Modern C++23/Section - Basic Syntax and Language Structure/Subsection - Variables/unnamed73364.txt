@@ -1,0 +1,4 @@
+#include <cstdint>
+
+std::uint32_t count{10};          // integral count, non-negative
+float         temperature{36.5f}; // body temperature in °C

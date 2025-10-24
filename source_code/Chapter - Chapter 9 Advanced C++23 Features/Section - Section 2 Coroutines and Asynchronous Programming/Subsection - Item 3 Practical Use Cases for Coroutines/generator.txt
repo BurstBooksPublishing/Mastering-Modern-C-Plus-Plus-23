@@ -1,0 +1,84 @@
+#include <coroutine>
+#include <iostream>
+#include <iterator>
+#include <memory>
+#include <optional>
+#include <string>
+#include <utility>
+
+template <typename T>
+class generator {
+public:
+    struct promise_type {
+        std::optional<T> current;
+
+        generator get_return_object() noexcept {
+            return generator{std::coroutine_handle<promise_type>::from_promise(*this)};
+        }
+        std::suspend_always initial_suspend() noexcept { return {}; }
+        std::suspend_always final_suspend() noexcept { return {}; }
+        std::suspend_always yield_value(T value) noexcept {
+            current.emplace(std::move(value));
+            return {};
+        }
+        void return_void() noexcept {}
+        void unhandled_exception() { throw; }
+    };
+
+    using handle_type = std::coroutine_handle<promise_type>;
+
+    explicit generator(handle_type h) noexcept : h_(h) {}
+    generator(generator&& other) noexcept : h_(std::exchange(other.h_, {})) {}
+    generator& operator=(generator&& other) noexcept {
+        if (this != &other) {
+            if (h_) h_.destroy();
+            h_ = std::exchange(other.h_, {});
+        }
+        return *this;
+    }
+    ~generator() { if (h_) h_.destroy(); }
+
+    struct iterator {
+        handle_type h_;
+        bool done_;
+
+        iterator(handle_type h, bool done) noexcept : h_(h), done_(done) {}
+
+        iterator& operator++() {
+            h_.resume();
+            done_ = h_.done();
+            return *this;
+        }
+        const T& operator*() const { return *h_.promise().current; }
+        bool operator==(const iterator& other) const noexcept { return done_ == other.done_; }
+    };
+
+    iterator begin() {
+        if (h_) {
+            h_.resume();
+            if (h_.done()) return {h_, true};
+        }
+        return {h_, false};
+    }
+    iterator end() const noexcept { return {h_, true}; }
+
+private:
+    handle_type h_;
+};
+
+generator<std::string> read_lines(std::istream& in) {
+    std::string line;
+    while (std::getline(in, line)) {
+        co_yield line;
+    }
+}
+
+int main() {
+    auto lines = read_lines(std::cin);
+    std::string needle = "ERROR";
+    std::size_t count = 0;
+    for (const auto& ln : lines) {
+        if (ln.find(needle) != std::string::npos) ++count;
+    }
+    std::cout << "Lines containing '" << needle << "': " << count << '\n';
+}

@@ -1,0 +1,31 @@
+#include <iostream>
+#include <stdexcept>
+#include <limits>
+
+// Returns x²; undefined on overflow.
+inline int square(int x) noexcept {
+    return x * x;
+}
+
+// Returns n!; throws std::invalid_argument on overflow or negative input.
+int factorial(int n) {
+    if (n < 0)
+        throw std::invalid_argument("factorial is undefined for negative numbers");
+
+    int result = 1;
+    for (int i = 2; i <= n; ++i) {
+        if (result > std::numeric_limits<int>::max() / i)
+            throw std::overflow_error("factorial overflow");
+        result *= i;
+    }
+    return result;
+}
+
+int main() {
+    const int num = 5;
+
+    std::cout << "Square of " << num << " is: " << square(num) << '\n';
+    std::cout << "Factorial of " << num << " is: " << factorial(num) << '\n';
+
+    return 0;
+}

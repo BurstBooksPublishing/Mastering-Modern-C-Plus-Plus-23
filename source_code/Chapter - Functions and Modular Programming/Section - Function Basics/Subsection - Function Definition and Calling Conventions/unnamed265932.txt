@@ -1,0 +1,14 @@
+#include <iostream>
+#include <type_traits>
+
+template<typename T>
+void print(const T& value) {
+    if constexpr (std::is_integral_v<T>) {
+        std::cout << "Integer: " << value << '\n';
+    } else if constexpr (std::is_floating_point_v<T>) {
+        std::cout << "Double: " << value << '\n';
+    } else {
+        static_assert(std::is_integral_v<T> || std::is_floating_point_v<T>,
+                      "Unsupported type for print()");
+    }
+}

@@ -1,0 +1,32 @@
+#include <cmath>
+#include <iostream>
+#include <type_traits>
+
+struct Vec2 {
+    double x{};
+    double y{};
+
+    constexpr Vec2() noexcept = default;
+    constexpr Vec2(double x_, double y_) noexcept : x(x_), y(y_) {}
+
+    constexpr Vec2 operator+(const Vec2& o) const noexcept { return {x + o.x, y + o.y}; }
+    constexpr Vec2& operator+=(const Vec2& o) noexcept { x += o.x; y += o.y; return *this; }
+    constexpr Vec2 operator*(double s) const noexcept { return {x * s, y * s}; }
+    constexpr bool operator==(const Vec2& o) const noexcept = default;
+
+    [[nodiscard]] double norm() const noexcept { return std::hypot(x, y); }
+};
+
+constexpr Vec2 operator*(double s, const Vec2& v) noexcept { return v * s; }
+
+int main() {
+    Vec2 a{1.0, 2.0};
+    Vec2 b{3.0, 4.0};
+
+    Vec2 c = a + b * 0.5;
+    a += c;
+
+    if (a.x > 0.0 && a.norm() < 10.0) std::cout << "Within range\n";
+    std::cout << "c: " << c.x << ',' << c.y << '\n';
+    return static_cast<int>(a == Vec2{4.5, 6.0});
+}

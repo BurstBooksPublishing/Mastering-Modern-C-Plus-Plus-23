@@ -1,0 +1,5 @@
+#include <vector>
+#include <algorithm>
+
+const std::vector<int>& data = get_data();          // avoid copy if get_data returns reference
+auto it = std::find(data.begin(), data.end(), 42);  // locate target value

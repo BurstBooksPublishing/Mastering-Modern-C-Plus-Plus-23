@@ -1,0 +1,13 @@
+#include <type_traits>
+#include <iostream>
+
+template<typename T,
+         typename std::enable_if_t<std::is_integral_v<T>, int> = 0>
+void process_integral(T value) {
+    std::cout << "Processing integral: " << value << '\n';
+}
+
+int main() {
+    process_integral(42);      // OK
+    // process_integral(3.14); // Compile-time error
+}

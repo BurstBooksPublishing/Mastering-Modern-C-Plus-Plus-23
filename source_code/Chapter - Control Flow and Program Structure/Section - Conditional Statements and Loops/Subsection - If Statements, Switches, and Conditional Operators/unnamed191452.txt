@@ -1,0 +1,13 @@
+#include <algorithm>
+#include <iostream>
+
+int main() {
+    const int c = 15;
+    const int d = 20;
+
+    // Clamp the minimum to 10 if either value is ≥ 10
+    const int min = std::min({c, d, 10});
+
+    std::cout << "The minimum value is " << min << '\n';
+    return 0;
+}

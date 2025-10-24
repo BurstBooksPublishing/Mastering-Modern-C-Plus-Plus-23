@@ -1,0 +1,5 @@
+#include <atomic>
+#include <cstdint>
+
+constexpr std::uint32_t max_iterations = 1000;   // compile-time upper bound for loops
+inline std::atomic<std::uint32_t> counter{0};    // shared, thread-safe counter

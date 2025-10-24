@@ -1,0 +1,8 @@
+#include <vector>
+#include <optional>
+#include <algorithm>
+
+std::optional<int> findValue(const std::vector<int>& vec, int target) {
+    auto it = std::find(vec.begin(), vec.end(), target);
+    return it != vec.end() ? std::optional<int>(*it) : std::nullopt;
+}

@@ -1,0 +1,22 @@
+#include <expected>
+#include <string>
+
+enum class Error { InvalidUserId };
+
+struct User {
+    int id;
+    std::string name;
+};
+
+std::expected<User, Error> fetchUser(int userId) {
+    if (userId < 0) return std::unexpected(Error::InvalidUserId);
+    return User{userId, "John Doe"};
+}
+
+int main() {
+    if (auto result = fetchUser(42); result) {
+        // use *result
+    } else {
+        // handle result.error()
+    }
+}

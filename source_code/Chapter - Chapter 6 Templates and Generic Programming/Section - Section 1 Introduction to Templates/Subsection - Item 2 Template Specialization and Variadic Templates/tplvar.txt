@@ -1,0 +1,49 @@
+#include <cstddef>
+#include <iostream>
+#include <type_traits>
+
+// Empty type list
+template<>
+struct type_list<> {};
+
+// Non-empty type list
+template<typename Head, typename... Tail>
+struct type_list<Head, Tail...> {
+    using head = Head;
+    using tail = type_list<Tail...>;
+    static constexpr std::size_t size = 1 + sizeof...(Tail);
+};
+
+// Get the I-th type in a type_list
+template<std::size_t I, typename List>
+struct get_nth_type;
+
+template<typename List>
+struct get_nth_type<0, List> {
+    using type = typename List::head;
+};
+
+template<std::size_t I, typename List>
+requires (I > 0)
+struct get_nth_type<I, List> {
+    using type = typename get_nth_type<I - 1, typename List::tail>::type;
+};
+
+// Fold-sum for numeric arguments
+template<typename T, typename... Ts>
+constexpr T sum_fold(T first, Ts... rest) {
+    return (first + ... + rest);
+}
+
+int main() {
+    using my_types = type_list<int, double, long, char>;
+    static_assert(my_types::size == 4);
+
+    using second = get_nth_type<2, my_types>::type;
+    static_assert(std::is_same_v<second, long>);
+    std::cout << "sizeof(second) = " << sizeof(second) << '\n';
+
+    constexpr auto s = sum_fold(1.0, 2.5, 3.5);
+    static_assert(s == 7.0);
+    std::cout << s << '\n';
+}

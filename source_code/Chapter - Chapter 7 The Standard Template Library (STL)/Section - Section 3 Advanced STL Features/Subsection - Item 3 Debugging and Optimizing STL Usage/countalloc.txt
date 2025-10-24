@@ -1,0 +1,49 @@
+#include <atomic>
+#include <cstddef>
+#include <iostream>
+#include <memory>
+#include <vector>
+
+// Minimal C++20 allocator that counts allocation calls.
+template <typename T>
+struct CountingAllocator {
+    using value_type = T;
+
+    CountingAllocator() noexcept = default;
+    template <typename U>
+    constexpr CountingAllocator(const CountingAllocator<U>&) noexcept {}
+
+    [[nodiscard]] T* allocate(std::size_t n) {
+        ++alloc_count;
+        return static_cast<T*>(::operator new(n * sizeof(T)));
+    }
+
+    void deallocate(T* p, std::size_t) noexcept {
+        ::operator delete(p);
+    }
+
+    static std::atomic<std::size_t> alloc_count;
+};
+
+template <typename T>
+std::atomic<std::size_t> CountingAllocator<T>::alloc_count{0};
+
+int main() {
+    constexpr std::size_t N = 1'000'000;
+    using Vec = std::vector<int, CountingAllocator<int>>;
+
+    CountingAllocator<int>::alloc_count = 0;
+    {
+        Vec v; // growth reallocations occur
+        for (std::size_t i = 0; i < N; ++i) v.push_back(static_cast<int>(i));
+        std::cout << "allocs without reserve: " << CountingAllocator<int>::alloc_count << '\n';
+    }
+
+    CountingAllocator<int>::alloc_count = 0;
+    {
+        Vec v;
+        v.reserve(N); // single allocation
+        for (std::size_t i = 0; i < N; ++i) v.push_back(static_cast<int>(i));
+        std::cout << "allocs with reserve:    " << CountingAllocator<int>::alloc_count << '\n';
+    }
+}

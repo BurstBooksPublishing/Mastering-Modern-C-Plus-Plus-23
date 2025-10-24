@@ -1,0 +1,43 @@
+python
+from typing import List, Tuple
+
+def read_matrix(lines: List[str]) -> List[List[int]]:
+    """Parse a list of strings into a 2-D integer matrix."""
+    return [[int(token) for token in line.split()] for line in lines if line.strip()]
+
+
+def is_toeplitz(matrix: List[List[int]]) -> bool:
+    """Return True if the matrix is a Toeplitz matrix (every descending diagonal is constant)."""
+    if not matrix or not matrix[0]:
+        return True
+
+    rows, cols = len(matrix), len(matrix[0])
+
+    # Check diagonals starting from the first row
+    for col in range(cols):
+        val = matrix[0][col]
+        r, c = 1, col + 1
+        while r < rows and c < cols:
+            if matrix[r][c] != val:
+                return False
+            r += 1
+            c += 1
+
+    # Check diagonals starting from the first column (skip (0,0) already covered)
+    for row in range(1, rows):
+        val = matrix[row][0]
+        r, c = row + 1, 1
+        while r < rows and c < cols:
+            if matrix[r][c] != val:
+                return False
+            r += 1
+            c += 1
+
+    return True
+
+
+if __name__ == "__main__":
+    import sys
+    data = [line.rstrip("\n") for line in sys.stdin]
+    matrix = read_matrix(data)
+    print("true" if is_toeplitz(matrix) else "false")

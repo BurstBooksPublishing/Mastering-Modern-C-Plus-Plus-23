@@ -1,0 +1,33 @@
+#include <barrier>
+#include <chrono>
+#include <iostream>
+#include <mutex>
+#include <thread>
+#include <vector>
+#include <atomic>
+
+namespace {
+std::mutex cout_mtx;                       // protects std::cout
+std::atomic<int> counter{0};               // shared counter
+std::barrier bar{4};                       // synchronizes exactly 4 threads
+} // namespace
+
+void worker(int id) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(100 * id));
+    counter.fetch_add(1, std::memory_order_relaxed);
+
+    bar.arrive_and_wait();                // wait for all workers
+
+    std::lock_guard lg{cout_mtx};
+    std::cout << "Thread " << id << " done. Counter: " << counter << '\n';
+}
+
+int main() {
+    std::vector<std::thread> threads;
+    threads.reserve(4);
+
+    for (int i = 0; i < 4; ++i)
+        threads.emplace_back(worker, i);
+
+    for (auto& t : threads) t.join();
+}

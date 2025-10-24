@@ -1,0 +1,26 @@
+#include <mutex>
+#include <thread>
+#include <chrono>
+
+std::mutex mutex1;
+std::mutex mutex2;
+
+void task1() {
+    std::scoped_lock lock(mutex1, mutex2);   // Acquire both locks atomically to avoid deadlock
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    // Critical section
+}
+
+void task2() {
+    std::scoped_lock lock(mutex1, mutex2);   // Same lock order as task1
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    // Critical section
+}
+
+int main() {
+    std::thread t1(task1);
+    std::thread t2(task2);
+    t1.join();
+    t2.join();
+    return 0;
+}

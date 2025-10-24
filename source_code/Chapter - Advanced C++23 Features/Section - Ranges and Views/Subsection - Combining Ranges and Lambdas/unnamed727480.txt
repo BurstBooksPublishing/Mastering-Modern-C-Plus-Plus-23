@@ -1,0 +1,20 @@
+#include <algorithm>
+#include <cstdint>
+#include <iostream>
+#include <iterator>
+#include <numeric>
+#include <vector>
+
+int main() {
+    const std::vector<int> numbers{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+
+    // Compute sum of squares of even numbers in a single pass
+    const std::int64_t sum = std::accumulate(
+        numbers.begin(), numbers.end(), std::int64_t{0},
+        [](std::int64_t acc, int n) {
+            return (n % 2 == 0) ? acc + static_cast<std::int64_t>(n) * n : acc;
+        });
+
+    std::cout << "Sum of squares of even numbers: " << sum << '\n';
+    return 0;
+}

@@ -1,0 +1,19 @@
+#include <cmath>
+#include <iostream>
+#include <type_traits>
+
+template <typename... Args>
+auto euclidean_distance(Args... args)
+    -> std::common_type_t<Args...> {
+    using T = std::common_type_t<Args...>;
+    T sum = 0;
+    for (T val : {static_cast<T>(args)...}) {
+        sum += val * val;
+    }
+    return std::sqrt(sum);
+}
+
+int main() {
+    std::cout << "Euclidean distance: "
+              << euclidean_distance(3.0, 4.0) << '\n';
+}

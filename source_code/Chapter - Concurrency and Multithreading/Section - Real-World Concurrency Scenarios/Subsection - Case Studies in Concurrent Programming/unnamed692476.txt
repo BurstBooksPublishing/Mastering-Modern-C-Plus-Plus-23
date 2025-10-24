@@ -1,0 +1,35 @@
+#include <atomic>
+#include <iostream>
+#include <mutex>
+#include <thread>
+#include <vector>
+
+std::mutex cout_mtx;               // protects std::cout
+std::atomic<int> counter{0};       // shared counter
+
+void worker(int id, int iterations) {
+    for (int i = 0; i < iterations; ++i) {
+        ++counter;                 // atomic increment
+
+        {   // scoped lock for printing
+            std::lock_guard<std::mutex> lk(cout_mtx);
+            std::cout << "Thread " << id << " -> " << counter << '\n';
+        }
+    }
+}
+
+int main() {
+    constexpr int kThreads = 10;
+    constexpr int kIterations = 1000;
+
+    std::vector<std::thread> threads;
+    threads.reserve(kThreads);
+
+    for (int i = 0; i < kThreads; ++i)
+        threads.emplace_back(worker, i, kIterations);
+
+    for (auto& t : threads) t.join();
+
+    std::cout << "Final counter value: " << counter << '\n';
+    return 0;
+}

@@ -1,0 +1,33 @@
+#include <algorithm>
+#include <iostream>
+#include <memory>
+#include <thread>
+#include <type_traits>
+#include <vector>
+
+int main() {
+    std::vector<int> v{5, 1, 4, 2, 3};
+
+    bool ascending = true;
+    std::sort(v.begin(), v.end(),
+              [ascending](int a, int b) { return ascending ? a < b : a > b; });
+
+    for (int x : v) std::cout << x << ' ';
+    std::cout << '\n';
+
+    int counter = 0;
+    auto inc = [counter]() mutable { return ++counter; };
+    std::cout << "first call: " << inc() << ", second call: " << inc() << '\n';
+
+    auto up = std::make_unique<int>(42);
+    std::thread t([p = std::move(up)] { std::cout << "moved value: " << *p << '\n'; });
+    t.join();
+
+    auto square = [](auto x) { return x * x; };
+    static_assert(std::is_same_v<decltype(square(4)), int>);
+    std::cout << "square(4.5) = " << square(4.5) << '\n';
+
+    int lifetime = 10;
+    auto ref_lambda = [&lifetime] { return lifetime; };
+    std::cout << "ref: " << ref_lambda() << '\n';
+}

@@ -1,0 +1,16 @@
+#include <functional>
+#include <iostream>
+
+// Generic function composition: compose(f, g) returns f ∘ g
+auto compose = [](auto&& f, auto&& g) {
+    return [f = std::forward<decltype(f)>(f),
+            g = std::forward<decltype(g)>(g)](auto&& x) mutable -> decltype(auto) {
+        return f(g(std::forward<decltype(x)>(x)));
+    };
+};
+
+int main() {
+    auto square = [](int x) { return x * x; };
+    auto square_then_double = compose([](int x) { return 2 * x; }, square);
+    std::cout << square_then_double(5) << '\n'; // 50
+}

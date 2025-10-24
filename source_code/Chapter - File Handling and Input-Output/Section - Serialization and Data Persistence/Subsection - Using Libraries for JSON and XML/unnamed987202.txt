@@ -1,0 +1,34 @@
+#include <iostream>
+#include <string>
+#include <pugixml.hpp>
+
+int main() {
+    pugi::xml_document doc;
+
+    // Build minimal XML tree
+    pugi::xml_node root = doc.append_child("root");
+    pugi::xml_node person = root.append_child("person");
+    person.append_attribute("name").set_value("John Doe");
+    person.append_attribute("age").set_value("30");
+
+    // Persist to disk
+    if (!doc.save_file("output.xml")) {
+        std::cerr << "Failed to save XML file.\n";
+        return EXIT_FAILURE;
+    }
+
+    // Reload and validate
+    pugi::xml_document loaded;
+    pugi::xml_parse_result result = loaded.load_file("output.xml");
+    if (!result) {
+        std::cerr << "Parse error: " << result.description() << '\n';
+        return EXIT_FAILURE;
+    }
+
+    // Read back data
+    pugi::xml_node p = loaded.child("root").child("person");
+    std::cout << "Name: " << p.attribute("name").value() << '\n';
+    std::cout << "Age: " << p.attribute("age").value() << '\n';
+
+    return EXIT_SUCCESS;
+}

@@ -1,0 +1,28 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <vector>
+#include <algorithm>
+#include <ranges>
+#include <print>
+
+int main() {
+    std::ios::sync_with_stdio(false);
+    std::cin.tie(nullptr);
+
+    std::string line;
+    std::vector<std::string> lines;
+
+    // Read all lines from stdin
+    while (std::getline(std::cin, line)) {
+        lines.emplace_back(std::move(line));
+    }
+
+    // Sort lines lexicographically
+    std::ranges::sort(lines);
+
+    // Output sorted lines
+    for (const auto& l : lines) {
+        std::println("{}", l);
+    }
+}

@@ -1,0 +1,29 @@
+#include <fstream>
+#include <stdexcept>
+#include <string>
+
+struct Data {
+    int id{};
+    double value{};
+};
+
+void serialize(const Data& data, const std::string& filename) {
+    std::ofstream ofs(filename, std::ios::binary);
+    if (!ofs) throw std::runtime_error("Cannot open file for writing");
+    ofs << data.id << ',' << data.value;
+    if (!ofs) throw std::runtime_error("Write failed");
+}
+
+void deserialize(Data& data, const std::string& filename) {
+    std::ifstream ifs(filename, std::ios::binary);
+    if (!ifs) throw std::runtime_error("Cannot open file for reading");
+
+    std::string line;
+    if (!std::getline(ifs, line)) throw std::runtime_error("Empty or unreadable file");
+
+    const size_t comma = line.find(',');
+    if (comma == std::string::npos) throw std::runtime_error("Malformed data");
+
+    data.id = std::stoi(line.substr(0, comma));
+    data.value = std::stod(line.substr(comma + 1));
+}

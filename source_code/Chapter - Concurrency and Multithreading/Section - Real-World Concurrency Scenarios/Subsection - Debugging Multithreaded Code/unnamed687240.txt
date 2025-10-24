@@ -1,0 +1,14 @@
+#include <mutex>
+
+std::mutex mutex1;
+std::mutex mutex2;
+
+void task1() {
+    std::scoped_lock lock(mutex1, mutex2);
+    // Critical section
+}
+
+void task2() {
+    std::scoped_lock lock(mutex1, mutex2);
+    // Critical section
+}

@@ -1,0 +1,7 @@
+#include <type_traits>
+
+template <typename T>
+constexpr auto square(T x) noexcept -> std::enable_if_t<std::is_arithmetic_v<T>, T>
+{
+    return x * x;
+}

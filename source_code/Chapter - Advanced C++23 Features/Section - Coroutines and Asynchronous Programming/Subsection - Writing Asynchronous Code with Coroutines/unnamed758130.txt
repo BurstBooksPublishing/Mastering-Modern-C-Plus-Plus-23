@@ -1,0 +1,66 @@
+#include <coroutine>
+#include <iostream>
+#include <memory>
+
+struct Generator {
+    struct promise_type {
+        int current_value{};
+        Generator get_return_object() noexcept {
+            return Generator{std::coroutine_handle<promise_type>::from_promise(*this)};
+        }
+        std::suspend_always initial_suspend() noexcept { return {}; }
+        std::suspend_always final_suspend() noexcept { return {}; }
+        std::suspend_always yield_value(int value) noexcept {
+            current_value = value;
+            return {};
+        }
+        void return_void() noexcept {}
+        void unhandled_exception() { std::terminate(); }
+    };
+
+    using handle_type = std::coroutine_handle<promise_type>;
+    handle_type h;
+
+    explicit Generator(handle_type handle) noexcept : h(handle) {}
+    ~Generator() { if (h) h.destroy(); }
+
+    Generator(const Generator&) = delete;
+    Generator& operator=(const Generator&) = delete;
+    Generator(Generator&& other) noexcept : h(std::exchange(other.h, {})) {}
+    Generator& operator=(Generator&& other) noexcept {
+        if (this != &other) {
+            if (h) h.destroy();
+            h = std::exchange(other.h, {});
+        }
+        return *this;
+    }
+
+    struct Sentinel {};
+    struct Iterator {
+        handle_type h;
+        bool operator!=(Sentinel) const { return !h.done(); }
+        Iterator& operator++() { h.resume(); return *this; }
+        int operator*() const { return h.promise().current_value; }
+    };
+
+    Iterator begin() {
+        h.resume();
+        return Iterator{h};
+    }
+    Sentinel end() const noexcept { return {}; }
+};
+
+Generator fibonacci() {
+    int a = 0, b = 1;
+    while (true) {
+        co_yield a;
+        int next = a + b;
+        a = b;
+        b = next;
+    }
+}
+
+int main() {
+    for (int v : fibonacci() | std::views::take(10))
+        std::cout << v << '\n';
+}

@@ -1,0 +1,51 @@
+#include <iostream>
+#include <coroutine>
+#include <chrono>
+#include <thread>
+#include <atomic>
+#include <exception>
+
+struct AsyncTask {
+    struct promise_type {
+        std::atomic_bool ready{false};
+        std::exception_ptr e;
+
+        AsyncTask get_return_object() { return AsyncTask{std::coroutine_handle<promise_type>::from_promise(*this)}; }
+        std::suspend_never initial_suspend() noexcept { return {}; }
+        std::suspend_always final_suspend() noexcept { return {}; }
+        void return_void() noexcept {}
+        void unhandled_exception() { e = std::current_exception(); }
+    };
+
+    using handle_t = std::coroutine_handle<promise_type>;
+    handle_t h;
+
+    explicit AsyncTask(handle_t h) : h(h) {}
+    ~AsyncTask() { if (h) h.destroy(); }
+    AsyncTask(const AsyncTask&) = delete;
+    AsyncTask& operator=(const AsyncTask&) = delete;
+    AsyncTask(AsyncTask&& o) noexcept : h(std::exchange(o.h, {})) {}
+    AsyncTask& operator=(AsyncTask&& o) noexcept { if (this != &o) { if (h) h.destroy(); h = std::exchange(o.h, {}); } return *this; }
+
+    void resume() {
+        if (!h.done()) {
+            h.resume();
+            if (h.promise().e) std::rethrow_exception(h.promise().e);
+        }
+    }
+};
+
+AsyncTask delayed_print() {
+    std::cout << "Starting async task...\n";
+    co_await std::suspend_always{};
+    std::this_thread::sleep_for(std::chrono::seconds(2));
+    std::cout << "Resumed after await!\n";
+}
+
+int main() {
+    auto task = delayed_print();
+    std::cout << "Main function continues...\n";
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    task.resume();
+    std::this_thread::sleep_for(std::chrono::seconds(3));
+}

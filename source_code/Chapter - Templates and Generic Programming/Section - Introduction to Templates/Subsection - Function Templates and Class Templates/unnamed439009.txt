@@ -1,0 +1,27 @@
+#include <utility>   // std::move, std::forward
+#include <type_traits>
+
+template <typename T1, typename T2>
+class Pair {
+    T1 first_;
+    T2 second_;
+
+public:
+    // Perfect-forwarding constructors
+    Pair(const T1& f, const T2& s) : first_(f), second_(s) {}
+    Pair(T1&& f, T2&& s) : first_(std::move(f)), second_(std::move(s)) {}
+
+    // Accessors return const references to avoid copies
+    const T1& first()  const noexcept { return first_; }
+    const T2& second() const noexcept { return second_; }
+
+    // Mutators return non-const references
+    T1& first()  noexcept { return first_; }
+    T2& second() noexcept { return second_; }
+
+    // Comparison operators
+    bool operator==(const Pair& rhs) const {
+        return first_ == rhs.first_ && second_ == rhs.second_;
+    }
+    bool operator!=(const Pair& rhs) const { return !(*this == rhs); }
+};

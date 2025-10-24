@@ -1,0 +1,14 @@
+#include <type_traits>
+
+template <std::size_t N>
+struct Factorial {
+    static_assert(N <= 20, "Factorial overflow for 64-bit result");
+    static constexpr unsigned long long value = N * Factorial<N - 1>::value;
+};
+
+template <>
+struct Factorial<0> {
+    static constexpr unsigned long long value = 1;
+};
+
+static_assert(Factorial<5>::value == 120, "Sanity check");

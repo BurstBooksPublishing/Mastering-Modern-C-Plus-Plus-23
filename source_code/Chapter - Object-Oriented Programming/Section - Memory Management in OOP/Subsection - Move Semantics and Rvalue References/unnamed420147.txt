@@ -1,0 +1,6 @@
+#include <utility>
+
+template <typename T, typename U>
+void wrapper(T&& t, U&& u) {
+    process(std::forward<T>(t), std::forward<U>(u));
+}

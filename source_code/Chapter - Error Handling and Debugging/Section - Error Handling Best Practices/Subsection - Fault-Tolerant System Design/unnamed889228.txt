@@ -1,0 +1,27 @@
+#include <memory>
+#include <stdexcept>
+#include <utility>
+
+class Service {
+public:
+    virtual void performOperation() = 0;
+    virtual ~Service() = default;
+};
+
+class ServiceException : public std::runtime_error {
+public:
+    explicit ServiceException(const std::string& msg) : std::runtime_error(msg) {}
+};
+
+std::unique_ptr<Service> connectToPrimary();
+std::unique_ptr<Service> connectToBackup();
+
+void executeWithFailover() {
+    auto primary = connectToPrimary();
+    try {
+        primary->performOperation();
+    } catch (const ServiceException&) {
+        auto backup = connectToBackup();
+        backup->performOperation(); // failover
+    }
+}

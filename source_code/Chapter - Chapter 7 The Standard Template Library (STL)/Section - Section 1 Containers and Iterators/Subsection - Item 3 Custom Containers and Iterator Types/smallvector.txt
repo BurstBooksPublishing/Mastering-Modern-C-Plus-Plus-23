@@ -1,0 +1,252 @@
+#include <algorithm>
+#include <cstddef>
+#include <initializer_list>
+#include <iostream>
+#include <iterator>
+#include <memory>
+#include <new>
+#include <stdexcept>
+#include <type_traits>
+#include <utility>
+
+template <typename T, std::size_t N, typename Alloc = std::allocator<T>>
+class small_vector {
+    static_assert(N > 0, "small_vector requires N > 0");
+
+public:
+    using value_type      = T;
+    using allocator_type  = Alloc;
+    using size_type       = std::size_t;
+    using difference_type = std::ptrdiff_t;
+    using reference       = T&;
+    using const_reference = const T&;
+    using pointer         = typename std::allocator_traits<Alloc>::pointer;
+    using const_pointer   = typename std::allocator_traits<Alloc>::const_pointer;
+
+    class iterator {
+    public:
+        using iterator_category = std::random_access_iterator_tag;
+        using value_type        = T;
+        using difference_type   = std::ptrdiff_t;
+        using pointer           = T*;
+        using reference         = T&;
+
+        iterator() noexcept = default;
+        explicit iterator(pointer p) noexcept : ptr_(p) {}
+
+        reference operator*()  const noexcept { return *ptr_; }
+        pointer   operator->() const noexcept { return ptr_; }
+
+        iterator& operator++()    noexcept { ++ptr_; return *this; }
+        iterator  operator++(int) noexcept { iterator tmp(*this); ++ptr_; return tmp; }
+        iterator& operator--()    noexcept { --ptr_; return *this; }
+        iterator  operator--(int) noexcept { iterator tmp(*this); --ptr_; return tmp; }
+
+        iterator& operator+=(difference_type n) noexcept { ptr_ += n; return *this; }
+        iterator& operator-=(difference_type n) noexcept { ptr_ -= n; return *this; }
+
+        friend iterator operator+(iterator it, difference_type n) noexcept { return iterator(it.ptr_ + n); }
+        friend iterator operator+(difference_type n, iterator it) noexcept { return iterator(it.ptr_ + n); }
+        friend iterator operator-(iterator it, difference_type n) noexcept { return iterator(it.ptr_ - n); }
+        friend difference_type operator-(iterator a, iterator b) noexcept { return a.ptr_ - b.ptr_; }
+
+        reference operator[](difference_type n) const noexcept { return ptr_[n]; }
+
+        friend bool operator==(const iterator& a, const iterator& b) noexcept { return a.ptr_ == b.ptr_; }
+        friend bool operator!=(const iterator& a, const iterator& b) noexcept { return a.ptr_ != b.ptr_; }
+        friend bool operator<(const iterator& a, const iterator& b)  noexcept { return a.ptr_ <  b.ptr_; }
+        friend bool operator<=(const iterator& a, const iterator& b) noexcept { return a.ptr_ <= b.ptr_; }
+        friend bool operator>(const iterator& a, const iterator& b)  noexcept { return a.ptr_ >  b.ptr_; }
+        friend bool operator>=(const iterator& a, const iterator& b) noexcept { return a.ptr_ >= b.ptr_; }
+
+    private:
+        pointer ptr_ = nullptr;
+    };
+
+    class const_iterator {
+    public:
+        using iterator_category = std::random_access_iterator_tag;
+        using value_type        = const T;
+        using difference_type   = std::ptrdiff_t;
+        using pointer           = const T*;
+        using reference         = const T&;
+
+        const_iterator() noexcept = default;
+        explicit const_iterator(const T* p) noexcept : ptr_(p) {}
+        const_iterator(iterator it) noexcept : ptr_(it.operator->()) {}
+
+        reference operator*()  const noexcept { return *ptr_; }
+        pointer   operator->() const noexcept { return ptr_; }
+
+        const_iterator& operator++()    noexcept { ++ptr_; return *this; }
+        const_iterator  operator++(int) noexcept { const_iterator tmp(*this); ++ptr_; return tmp; }
+        const_iterator& operator--()    noexcept { --ptr_; return *this; }
+        const_iterator  operator--(int) noexcept { const_iterator tmp(*this); --ptr_; return tmp; }
+
+        const_iterator& operator+=(difference_type n) noexcept { ptr_ += n; return *this; }
+        const_iterator& operator-=(difference_type n) noexcept { ptr_ -= n; return *this; }
+
+        friend const_iterator operator+(const_iterator it, difference_type n) noexcept { return const_iterator(it.ptr_ + n); }
+        friend const_iterator operator+(difference_type n, const_iterator it) noexcept { return const_iterator(it.ptr_ + n); }
+        friend const_iterator operator-(const_iterator it, difference_type n) noexcept { return const_iterator(it.ptr_ - n); }
+        friend difference_type operator-(const_iterator a, const_iterator b) noexcept { return a.ptr_ - b.ptr_; }
+
+        reference operator[](difference_type n) const noexcept { return ptr_[n]; }
+
+        friend bool operator==(const const_iterator& a, const const_iterator& b) noexcept { return a.ptr_ == b.ptr_; }
+        friend bool operator!=(const const_iterator& a, const const_iterator& b) noexcept { return a.ptr_ != b.ptr_; }
+        friend bool operator<(const const_iterator& a, const const_iterator& b)  noexcept { return a.ptr_ <  b.ptr_; }
+        friend bool operator<=(const const_iterator& a, const const_iterator& b) noexcept { return a.ptr_ <= b.ptr_; }
+        friend bool operator>(const const_iterator& a, const const_iterator& b)  noexcept { return a.ptr_ >  b.ptr_; }
+        friend bool operator>=(const const_iterator& a, const const_iterator& b) noexcept { return a.ptr_ >= b.ptr_; }
+
+    private:
+        const T* ptr_ = nullptr;
+    };
+
+    small_vector() noexcept(std::is_nothrow_default_constructible_v<allocator_type>) = default;
+
+    explicit small_vector(const allocator_type& a) noexcept : alloc_(a) {}
+
+    small_vector(size_type count, const T& value, const allocator_type& a = allocator_type())
+        : alloc_(a) {
+        assign(count, value);
+    }
+
+    explicit small_vector(size_type count, const allocator_type& a = allocator_type())
+        : alloc_(a) {
+        resize(count);
+    }
+
+    small_vector(std::initializer_list<T> init, const allocator_type& a = allocator_type())
+        : alloc_(a) {
+        assign(init.begin(), init.end());
+    }
+
+    template <typename InputIt>
+    small_vector(InputIt first, InputIt last, const allocator_type& a = allocator_type())
+        : alloc_(a) {
+        assign(first, last);
+    }
+
+    small_vector(const small_vector& other)
+        : alloc_(std::allocator_traits<Alloc>::select_on_container_copy_construction(other.alloc_)) {
+        assign(other.begin(), other.end());
+    }
+
+    small_vector(const small_vector& other, const allocator_type& a)
+        : alloc_(a) {
+        assign(other.begin(), other.end());
+    }
+
+    small_vector(small_vector&& other) noexcept
+        : alloc_(std::move(other.alloc_)) {
+        move_from(std::move(other));
+    }
+
+    small_vector(small_vector&& other, const allocator_type& a)
+        : alloc_(a) {
+        if (alloc_ == other.alloc_) {
+            move_from(std::move(other));
+        } else {
+            assign(std::make_move_iterator(other.begin()),
+                   std::make_move_iterator(other.end()));
+        }
+    }
+
+    small_vector& operator=(const small_vector& other
+\section{Section 2: STL Algorithms}
+\subsection{Item 1: Common STL Algorithms and Their Applications}
+This subsection builds on the prior discussion of container choice and iterator categories by showing how algorithms operate directly on those iterators to implement common data-processing patterns in systems code. The following exposition connects typical problems—filter, transform, sort, deduplicate, aggregate—to concrete STL algorithm choices and their performance characteristics.
+
+Common algorithmic tasks arise in many domains: filtering telemetry in embedded firmware, sorting renderable objects in a graphics engine, aggregating loss values in an AI training loop, or deduplicating log entries in an HPC pipeline. The STL provides composable, well-tested primitives that express these tasks with minimal boilerplate and predictable complexity. Choosing the right algorithm and iterator category is an architectural decision: it influences memory usage, stability of ordering, and worst-case runtime.
+
+Problem statement: given a large sequence of items (for example, tasks with priorities and an urgency flag), we often need to:
+\begin{enumerate}
+\item partition urgent items from non-urgent ones,
+\item sort urgent items by priority while keeping relative order for equal priorities when required,
+\item remove duplicates (by some key) without extra allocations, and
+\item compute aggregates (sum, average) over a selected subset.
+\end{enumerate}
+
+Analysis: map these needs to STL algorithms.
+\begin{itemize}
+\item Partitioning: use std::partition (linear, in-place) when you only need to separate elements, or std::stable_partition when you need to preserve relative order. Complexity: O(n).
+\item Sorting: use std::sort for best practical performance or std::stable_sort when stability is important. Complexity: O(n log n) average; worst-case is also O(n log n) for std::sort since C++11 uses introsort, but stable_sort guarantees stability and uses mergesort-like behavior.
+\item Deduplication: use std::unique after sorting by the dedupe key, then erase the removed suffix (the erase–remove idiom).
+\item Transformation and aggregation: use std::transform for mapping and std::accumulate or std::reduce (parallel-friendly) for summing.
+\end{itemize}
+
+Complexity summary (where n is number of elements):
+\begin{equation}\label{eq:complexity}
+\text{partition: } O(n),\quad \text{sort: } O(n\log n),\quad \text{unique+erase: } O(n)
+\end{equation}
+
+Implementation: a complete, idiomatic C++23 example that demonstrates these algorithms end-to-end. It is suitable for a systems engineer processing task queues.
+
+\begin{lstlisting}[language={C++},caption={Partition, stable sort, deduplicate, transform, and aggregate on a task list.},label={lst:stl_algorithms}]
+
+#include <algorithm>
+#include <cstddef>
+#include <iomanip>
+#include <iostream>
+#include <numeric>
+#include <random>
+#include <vector>
+
+struct Task {
+    int id{};
+    double priority{};
+    bool urgent{};
+};
+
+int main() {
+    constexpr std::size_t kTaskCount = 2000;
+    constexpr std::size_t kTopN = 10;
+
+    std::vector<Task> tasks;
+    tasks.reserve(kTaskCount);
+
+    std::mt19937_64 rng{12345};
+    std::uniform_real_distribution<double> prio{0.0, 100.0};
+    std::bernoulli_distribution urg{0.2};
+
+    for (std::size_t i = 0; i < kTaskCount; ++i) {
+        tasks.emplace_back(static_cast<int>(i % 1800), prio(rng), urg(rng));
+    }
+
+    // Move urgent tasks to the front.
+    const auto urgent_end = std::partition(tasks.begin(), tasks.end(),
+                                           [](const Task& t) { return t.urgent; });
+
+    // Sort urgent tasks by descending priority.
+    std::stable_sort(tasks.begin(), urgent_end,
+                     [](const Task& a, const Task& b) { return a.priority > b.priority; });
+
+    // Remove duplicates by id within urgent range.
+    std::stable_sort(tasks.begin(), urgent_end,
+                     [](const Task& a, const Task& b) { return a.id < b.id; });
+    const auto new_end = std::unique(tasks.begin(), urgent_end,
+                                     [](const Task& a, const Task& b) { return a.id == b.id; });
+    tasks.erase(new_end, urgent_end);
+
+    // Recompute end after erase.
+    const auto final_urgent_end = std::find_if_not(tasks.begin(), tasks.end(),
+                                                   [](const Task& t) { return t.urgent; });
+
+    // Collect top N ids.
+    std::vector<int> top_ids;
+    top_ids.reserve(kTopN);
+    const auto top_end = std::min(tasks.begin() + kTopN, final_urgent_end);
+    std::transform(tasks.begin(), top_end, std::back_inserter(top_ids),
+                   [](const Task& t) { return t.id; });
+
+    // Sum priorities of urgent tasks.
+    const double total_priority = std::accumulate(tasks.begin(), final_urgent_end, 0.0,
+                                                  [](double acc, const Task& t) { return acc + t.priority; });
+
+    std::cout << "Urgent count: " << std::distance(tasks.begin(), final_urgent_end) << '\n';
+    std::cout << "Top ids: ";
+    for (int id : top_ids) std::cout << id << ' ';
+    std::cout << "\nTotal urgent priority: " << std::fixed << std::setprecision(2) << total_priority << '\n';
+}

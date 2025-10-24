@@ -1,0 +1,22 @@
+#include <iostream>
+#include <numbers>
+#include <stdexcept>
+#include <limits>
+
+double circle_area(double radius) {
+    if (radius < 0.0) {
+        throw std::invalid_argument("Radius must be non-negative");
+    }
+    return std::numbers::pi * radius * radius;   // πr²
+}
+
+int main() {
+    try {
+        double radius = 5.0;
+        std::cout << "Area: " << circle_area(radius) << '\n';
+    } catch (const std::exception& ex) {
+        std::cerr << "Error: " << ex.what() << '\n';
+        return EXIT_FAILURE;
+    }
+    return EXIT_SUCCESS;
+}

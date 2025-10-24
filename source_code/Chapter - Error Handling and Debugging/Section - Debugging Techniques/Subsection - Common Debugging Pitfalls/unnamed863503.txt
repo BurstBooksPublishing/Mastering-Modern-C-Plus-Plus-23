@@ -1,0 +1,20 @@
+#include <atomic>
+#include <iostream>
+#include <thread>
+
+std::atomic<int> sharedData{0};          // lock-free atomic counter
+
+void incrementData() {
+    for (int i = 0; i < 1000; ++i) {
+        ++sharedData;                    // atomic fetch-add
+    }
+}
+
+int main() {
+    std::thread t1(incrementData);
+    std::thread t2(incrementData);
+    t1.join();
+    t2.join();
+    std::cout << "Shared Data: " << sharedData << '\n';
+    return 0;
+}

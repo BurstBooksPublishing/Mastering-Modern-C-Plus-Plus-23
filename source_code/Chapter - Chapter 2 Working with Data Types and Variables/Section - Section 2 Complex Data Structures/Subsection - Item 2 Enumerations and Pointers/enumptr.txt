@@ -1,0 +1,23 @@
+#include <array>
+#include <cstdint>
+#include <iostream>
+#include <string_view>
+
+enum class State : std::uint8_t { Idle = 0, Running, Paused, Error };
+
+int main() {
+    constexpr std::array<State, 8> buffer{
+        State::Idle, State::Running, State::Running, State::Paused,
+        State::Idle, State::Error, State::Running, State::Idle
+    };
+
+    constexpr std::array<std::string_view, 4> names{"Idle", "Running", "Paused", "Error"};
+
+    for (std::size_t i = 0; i < buffer.size(); ++i) {
+        const auto idx = static_cast<std::uint8_t>(buffer[i]);
+        std::cout << "State[" << i << "] = " << names[idx] << '\n';
+    }
+
+    static_assert(sizeof(State) == sizeof(std::uint8_t));
+    return 0;
+}

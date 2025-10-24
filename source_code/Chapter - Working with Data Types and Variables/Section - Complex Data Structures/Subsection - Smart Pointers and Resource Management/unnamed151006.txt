@@ -1,0 +1,31 @@
+#include <iostream>
+#include <memory>
+
+class Resource {
+public:
+    Resource() { std::cout << "Resource acquired\n"; }
+    ~Resource() { std::cout << "Resource released\n"; }
+    void use() const { std::cout << "Resource in use\n"; }
+};
+
+int main() {
+    auto uniquePtr = std::make_unique<Resource>();
+    uniquePtr->use();
+
+    auto sharedPtr1 = std::make_shared<Resource>();
+    {
+        auto sharedPtr2 = sharedPtr1;
+        sharedPtr2->use();
+    }
+
+    sharedPtr1->use();
+
+    std::weak_ptr<Resource> weakPtr = sharedPtr1;
+    if (auto tempPtr = weakPtr.lock()) {
+        tempPtr->use();
+    } else {
+        std::cout << "Resource no longer available\n";
+    }
+
+    return 0;
+}

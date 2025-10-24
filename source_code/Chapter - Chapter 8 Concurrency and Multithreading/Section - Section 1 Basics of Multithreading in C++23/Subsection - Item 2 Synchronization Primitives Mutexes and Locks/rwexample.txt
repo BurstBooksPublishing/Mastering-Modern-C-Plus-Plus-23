@@ -1,0 +1,64 @@
+#include <chrono>
+#include <iostream>
+#include <mutex>
+#include <shared_mutex>
+#include <thread>
+#include <vector>
+
+struct SharedState {
+    int value{0};
+    mutable std::shared_mutex mtx;
+
+    int read() const {
+        std::shared_lock lock(mtx);
+        return value;
+    }
+
+    bool try_increment_nonblocking() {
+        std::unique_lock lock(mtx, std::try_to_lock);
+        if (!lock) return false;
+        ++value;
+        return true;
+    }
+
+    void increment_blocking() {
+        std::unique_lock lock(mtx);
+        ++value;
+    }
+};
+
+int main() {
+    SharedState state;
+    constexpr int readers = 8;
+    constexpr int writers = 2;
+    constexpr int iterations = 1000;
+
+    std::vector<std::jthread> threads;
+
+    for (int i = 0; i < readers; ++i) {
+        threads.emplace_back([&state, iterations] {
+            for (int k = 0; k < iterations; ++k) {
+                [[maybe_unused]] int v = state.read();
+                std::this_thread::sleep_for(std::chrono::microseconds(50));
+            }
+        });
+    }
+
+    for (int i = 0; i < writers; ++i) {
+        threads.emplace_back([&state, iterations] {
+            for (int k = 0; k < iterations; ++k) {
+                if (!state.try_increment_nonblocking()) {
+                    state.increment_blocking();
+                }
+                std::this_thread::sleep_for(std::chrono::microseconds(100));
+            }
+        });
+    }
+
+    std::mutex a, b;
+    {
+        std::scoped_lock lock(a, b);
+    }
+
+    std::cout << "Final value: " << state.read() << '\n';
+}

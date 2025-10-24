@@ -1,0 +1,30 @@
+#include <cstdio>
+#include <cctype>
+#include <iostream>
+#include <memory>
+
+class UpperCaseBuffer : public std::streambuf {
+protected:
+    int_type overflow(int_type c) override {
+        if (c != traits_type::eof()) {
+            char ch = traits_type::to_char_type(std::toupper(static_cast<unsigned char>(c)));
+            if (std::putchar(ch) == EOF)
+                return traits_type::eof();
+        }
+        return c;
+    }
+};
+
+class UpperCaseStream : public std::ostream {
+public:
+    UpperCaseStream() : std::ios(&buf_), std::ostream(&buf_) {}
+private:
+    UpperCaseBuffer buf_;
+};
+
+int main() {
+    UpperCaseStream upper;
+    auto* const prev = std::cout.rdbuf(upper.rdbuf());
+    std::cout << "Hello, World!\n";
+    std::cout.rdbuf(prev);
+}

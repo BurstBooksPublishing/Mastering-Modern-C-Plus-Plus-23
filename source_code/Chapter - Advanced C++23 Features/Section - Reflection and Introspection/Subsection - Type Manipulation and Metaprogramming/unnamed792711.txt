@@ -1,0 +1,44 @@
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <tuple>
+
+// Minimal reflection for aggregate types
+template <typename T>
+auto tie_members(T& obj) {
+    if constexpr (std::is_same_v<T, struct MyStruct>)
+        return std::tie(obj.x, obj.y, obj.z);
+    else
+        static_assert(std::is_same_v<T, void>, "Unsupported type");
+}
+
+// Convert any supported value to string
+template <typename T>
+std::string value_to_string(const T& v) {
+    std::ostringstream os;
+    os << v;
+    return os.str();
+}
+
+// Serialize reflected members into "name: value\n" lines
+template <typename T>
+std::string serialize(const T& obj) {
+    constexpr std::array<const char*, 3> names{"x", "y", "z"};
+    auto members = tie_members(const_cast<T&>(obj));
+    std::ostringstream out;
+    [&]<std::size_t... I>(std::index_sequence<I...>) {
+        ((out << names[I] << ": " << value_to_string(std::get<I>(members)) << '\n'), ...);
+    }(std::make_index_sequence<std::tuple_size_v<decltype(members)>>{});
+    return out.str();
+}
+
+struct MyStruct {
+    int x{};
+    double y{};
+    std::string z;
+};
+
+int main() {
+    MyStruct obj{10, 3.14, "hello"};
+    std::cout << serialize(obj);
+}

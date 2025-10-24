@@ -1,0 +1,33 @@
+#include <iostream>
+#include <string>
+#include <vector>
+#include <algorithm>
+#include <ranges>
+#include <format>
+
+int main() {
+    std::vector<std::string> words;
+    std::string line;
+
+    // Read all lines from stdin
+    while (std::getline(std::cin, line)) {
+        // Split each line into words and append
+        auto view = line
+                  | std::views::split(' ')
+                  | std::views::transform([](auto&& w) {
+                        return std::string(w.begin(), w.end());
+                    });
+        words.insert(words.end(), view.begin(), view.end());
+    }
+
+    // Remove empty tokens
+    std::erase_if(words, [](const std::string& w) { return w.empty(); });
+
+    // Sort and unique
+    std::ranges::sort(words);
+    words.erase(std::unique(words.begin(), words.end()), words.end());
+
+    // Output results
+    for (const auto& w : words)
+        std::cout << std::format("{}\n", w);
+}

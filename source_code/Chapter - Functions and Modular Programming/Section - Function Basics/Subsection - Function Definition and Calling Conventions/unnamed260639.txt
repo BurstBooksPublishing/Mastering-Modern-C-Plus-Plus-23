@@ -1,0 +1,19 @@
+#include <format>
+#include <iostream>
+#include <string>
+
+auto add(int a, int b) -> int {
+    return a + b;
+}
+
+void print_sum(int x, int y, const std::string& message = "Sum: {}") {
+    std::cout << std::format(message, add(x, y)) << '\n';
+}
+
+int main() {
+    const int num1 = 10;
+    const int num2 = 20;
+
+    print_sum(num1, num2);
+    print_sum(num1, num2, "The result is: {}");
+}

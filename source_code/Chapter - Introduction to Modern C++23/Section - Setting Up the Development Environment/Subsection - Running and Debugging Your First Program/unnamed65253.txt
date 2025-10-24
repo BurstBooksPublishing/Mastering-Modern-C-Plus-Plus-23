@@ -1,0 +1,38 @@
+python
+import subprocess
+import sys
+from typing import List, Optional
+
+def next_gdb_line(pid: int, repeat: int = 1) -> Optional[List[str]]:
+    """
+    Advance the program running under GDB by one or more source lines.
+    Returns the captured GDB output as a list of lines, or None on failure.
+    """
+    try:
+        cmd = ["gdb", "-p", str(pid), "-batch", "-ex", f"next {repeat}"]
+        result = subprocess.run(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            timeout=10
+        )
+        return result.stdout.splitlines()
+    except subprocess.TimeoutExpired:
+        return None
+    except Exception:
+        return None
+
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print("Usage: python next.py <pid> [repeat]")
+        sys.exit(1)
+
+    pid = int(sys.argv[1])
+    repeat = int(sys.argv[2]) if len(sys.argv) > 2 else 1
+    output = next_gdb_line(pid, repeat)
+    if output is None:
+        print("Failed to execute 'next' in GDB.")
+    else:
+        for line in output:
+            print(line)

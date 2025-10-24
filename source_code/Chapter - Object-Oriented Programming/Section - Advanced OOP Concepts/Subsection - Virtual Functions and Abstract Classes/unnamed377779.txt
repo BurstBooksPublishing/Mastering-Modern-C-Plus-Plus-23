@@ -1,0 +1,31 @@
+#include <iostream>
+#include <memory>
+#include <vector>
+
+class Shape {
+public:
+    virtual ~Shape() = default;
+    virtual double area() const noexcept = 0;
+    virtual void draw() const {
+        std::cout << "Drawing a shape\n";
+    }
+};
+
+class Circle final : public Shape {
+public:
+    explicit Circle(double r) : radius_{r} {}
+    double area() const noexcept override {
+        return 3.141592653589793 * radius_ * radius_;
+    }
+    void draw() const override {
+        std::cout << "Drawing a circle\n";
+    }
+private:
+    double radius_;
+};
+
+int main() {
+    std::unique_ptr<Shape> s = std::make_unique<Circle>(5.0);
+    std::cout << "Area: " << s->area() << '\n';
+    s->draw();
+}

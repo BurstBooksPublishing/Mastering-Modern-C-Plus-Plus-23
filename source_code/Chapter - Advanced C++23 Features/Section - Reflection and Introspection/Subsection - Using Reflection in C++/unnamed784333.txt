@@ -1,0 +1,37 @@
+#include <string>
+#include <sstream>
+#include <type_traits>
+#include <concepts>
+#include <vector>
+#include <charconv>
+
+template<typename T>
+concept Reflectable = requires {
+    typename std::meta::info;
+    { std::meta::reflect<T>() } -> std::convertible_to<std::meta::info>;
+};
+
+template<typename T>
+    requires Reflectable<T>
+std::string serialize(const T& obj) {
+    std::ostringstream out;
+    constexpr auto info = std::meta::reflect<T>();
+
+    std::meta::for_each_member(info, [&]<auto Member>(std::meta::constant<Member>) {
+        constexpr std::string_view name = std::meta::identifier_of(Member);
+        const auto& value = obj.*Member;
+
+        out << name << ": ";
+
+        if constexpr (std::is_arithmetic_v<std::remove_cvref_t<decltype(value)>>) {
+            out << value;
+        } else if constexpr (std::is_convertible_v<decltype(value), std::string_view>) {
+            out << value;
+        } else {
+            out << "<unsupported>";
+        }
+        out << '\n';
+    });
+
+    return std::move(out).str();
+}

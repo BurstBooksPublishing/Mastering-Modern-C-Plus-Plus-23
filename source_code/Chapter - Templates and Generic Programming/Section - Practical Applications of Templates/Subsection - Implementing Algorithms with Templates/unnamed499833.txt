@@ -1,0 +1,14 @@
+#include <iterator>
+
+template <class Container, class T>
+auto find(const Container& container, const T& value)
+{
+    using std::begin;
+    using std::end;
+
+    for (auto it = begin(container); it != end(container); ++it)
+        if (*it == value)
+            return it;
+
+    return end(container);
+}

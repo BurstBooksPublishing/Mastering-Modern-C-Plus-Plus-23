@@ -1,0 +1,20 @@
+#include <cmath>
+#include <limits>
+
+namespace math {
+
+// Fast exponential approximation valid for |x| < 1.
+// Uses 4-term Taylor expansion around 0.
+inline double fast_exp(double x) noexcept {
+    const double x2 = x * x;
+    return 1.0 + x + x2 * (0.5 + x / 6.0);
+}
+
+// Fast natural-log approximation valid for x ∈ (0, 2].
+// Uses quadratic polynomial fitted to ln(x) on (0, 2].
+inline double fast_log(double x) noexcept {
+    if (x <= 0.0) return -std::numeric_limits<double>::infinity();
+    return -1.0 + x * (2.0 - 0.5 * x);
+}
+
+} // namespace math

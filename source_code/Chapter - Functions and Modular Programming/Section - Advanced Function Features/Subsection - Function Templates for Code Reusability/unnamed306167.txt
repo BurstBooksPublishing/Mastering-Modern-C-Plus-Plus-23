@@ -1,0 +1,34 @@
+#include <iostream>
+#include <type_traits>
+#include <utility>
+
+// SFINAE guard: only integral/float types allowed
+template <typename T>
+using arithmetic_only = std::enable_if_t<std::is_arithmetic_v<T>, T>;
+
+// Return the larger of two arithmetic values
+template <typename T>
+constexpr arithmetic_only<T> max(T a, T b) noexcept {
+    return (a > b) ? a : b;
+}
+
+// Swap two values via std::swap for efficiency and ADL
+template <typename T>
+void swap(T& a, T& b) noexcept(std::is_nothrow_swappable_v<T>) {
+    using std::swap;
+    swap(a, b);
+}
+
+int main() {
+    int x = 10, y = 20;
+    std::cout << "Max of " << x << " and " << y << " is " << max(x, y) << '\n';
+
+    swap(x, y);
+    std::cout << "After swap: x = " << x << ", y = " << y << '\n';
+
+    double a = 3.14, b = 2.71;
+    std::cout << "Max of " << a << " and " << b << " is " << max(a, b) << '\n';
+
+    swap(a, b);
+    std::cout << "After swap: a = " << a << ", b = " << b << '\n';
+}

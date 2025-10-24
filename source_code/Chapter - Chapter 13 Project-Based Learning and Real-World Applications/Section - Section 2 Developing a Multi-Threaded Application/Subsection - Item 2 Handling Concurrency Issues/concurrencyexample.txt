@@ -1,0 +1,99 @@
+#include <condition_variable>
+#include <iostream>
+#include <mutex>
+#include <queue>
+#include <random>
+#include <thread>
+#include <vector>
+#include <atomic>
+
+template <typename T>
+class BoundedQueue {
+public:
+    explicit BoundedQueue(size_t capacity) : capacity_(capacity) {}
+
+    void push(T item) {
+        std::unique_lock lock(mu_);
+        not_full_.wait(lock, [this] { return queue_.size() < capacity_; });
+        queue_.push(std::move(item));
+        not_empty_.notify_one();
+    }
+
+    T pop() {
+        std::unique_lock lock(mu_);
+        not_empty_.wait(lock, [this] { return !queue_.empty(); });
+        T item = std::move(queue_.front());
+        queue_.pop();
+        not_full_.notify_one();
+        return item;
+    }
+
+    bool empty() const {
+        std::lock_guard lock(mu_);
+        return queue_.empty();
+    }
+
+private:
+    mutable std::mutex mu_;
+    std::condition_variable not_empty_;
+    std::condition_variable not_full_;
+    std::queue<T> queue_;
+    const size_t capacity_;
+};
+
+struct Resource {
+    std::mutex mu;
+    int value = 0;
+};
+
+void safe_transfer(Resource& from, Resource& to, int delta) {
+    std::scoped_lock lock(from.mu, to.mu);
+    from.value -= delta;
+    to.value += delta;
+}
+
+int main() {
+    constexpr size_t kCapacity = 8;
+    constexpr int kItemsPerProducer = 200;
+    constexpr int kProducerCount = 4;
+    constexpr int kConsumerCount = 4;
+
+    BoundedQueue<int> queue(kCapacity);
+    std::atomic<int> produced{0};
+    std::atomic<int> consumed{0};
+    Resource r1, r2;
+
+    auto producer = [&](int id) {
+        std::mt19937 rng(id);
+        std::uniform_int_distribution<int> dist(1, 10);
+        for (int i = 0; i < kItemsPerProducer; ++i) {
+            queue.push(dist(rng));
+            produced.fetch_add(1, std::memory_order_relaxed);
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        }
+    };
+
+    auto consumer = [&] {
+        while (true) {
+            int item = queue.pop();
+            if (item % 13 == 0) {
+                safe_transfer(r1, r2, item);
+            }
+            if (consumed.fetch_add(1, std::memory_order_relaxed) + 1 ==
+                kItemsPerProducer * kProducerCount) {
+                break;
+            }
+        }
+    };
+
+    std::vector<std::thread> producers;
+    std::vector<std::thread> consumers;
+
+    for (int i = 0; i < kProducerCount; ++i) producers.emplace_back(producer, i);
+    for (int i = 0; i < kConsumerCount; ++i) consumers.emplace_back(consumer);
+
+    for (auto& t : producers) t.join();
+    for (auto& t : consumers) t.join();
+
+    std::cout << "r1=" << r1.value << " r2=" << r2.value << '\n';
+}

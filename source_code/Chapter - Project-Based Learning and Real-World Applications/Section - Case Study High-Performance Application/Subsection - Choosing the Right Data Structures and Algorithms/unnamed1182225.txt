@@ -1,0 +1,21 @@
+#include <algorithm>
+#include <iostream>
+#include <iterator>
+#include <vector>
+#include <ranges>
+
+void highPerformanceExample() {
+    std::vector<int> data{5, 3, 8, 1, 9, 4, 7, 2, 6};
+
+    std::ranges::sort(data);                                   // in-place sort
+
+    auto evens = data | std::views::filter([](int n) { return n % 2 == 0; });
+
+    std::cout << "Sorted and filtered even numbers: ";
+    std::ranges::copy(evens, std::ostream_iterator<int>(std::cout, " "));
+    std::cout << '\n';
+}
+
+int main() {
+    highPerformanceExample();
+}

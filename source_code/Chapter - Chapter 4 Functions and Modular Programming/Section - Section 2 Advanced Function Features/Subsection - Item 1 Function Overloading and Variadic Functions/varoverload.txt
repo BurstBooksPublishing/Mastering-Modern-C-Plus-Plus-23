@@ -1,0 +1,46 @@
+#include <iostream>
+#include <string>
+#include <type_traits>
+#include <utility>
+#include <cstdarg>
+
+void log(const std::string& s) { std::cout << "[str] " << s << '\n'; }
+void log(int v)               { std::cout << "[int] " << v << '\n'; }
+
+template<typename T>
+void log(T&& t) { std::cout << "[generic] " << std::forward<T>(t) << '\n'; }
+
+template<typename... Args>
+void log_all(Args&&... args) {
+    (log(std::forward<Args>(args)), ...);
+}
+
+template<typename... Ints>
+auto sum_integrals(Ints... v)
+    -> std::enable_if_t<(std::is_integral_v<Ints> && ...),
+                        std::common_type_t<Ints...>> {
+    return (static_cast<std::common_type_t<Ints...>>(0) + ... + v);
+}
+
+int c_style_sum(std::size_t n, ...) {
+    va_list ap;
+    va_start(ap, n);
+    int s = 0;
+    for (std::size_t i = 0; i < n; ++i) s += va_arg(ap, int);
+    va_end(ap);
+    return s;
+}
+
+int main() {
+    log("hello world");
+    log(42);
+    log(3.14);
+
+    log_all("a", 1, 2.5);
+
+    auto s = sum_integrals(1, 2, 3);
+    std::cout << "sum = " << s << '\n';
+
+    int cs = c_style_sum(3, 1, 2, 3);
+    std::cout << "c_sum = " << cs << '\n';
+}

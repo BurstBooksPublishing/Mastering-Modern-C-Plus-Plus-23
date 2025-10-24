@@ -1,0 +1,19 @@
+#include <iostream>
+#include <stdexcept>
+
+int main() {
+    const int a = 5;
+    const int b = 10;
+
+    const int sum = a + b;
+
+    if (a == 0) {
+        throw std::invalid_argument("Division by zero.");
+    }
+    const double quotient = static_cast<double>(b) / a;
+
+    std::cout << "Sum: " << sum << '\n';
+    std::cout << "Quotient: " << quotient << '\n';
+
+    return 0;
+}

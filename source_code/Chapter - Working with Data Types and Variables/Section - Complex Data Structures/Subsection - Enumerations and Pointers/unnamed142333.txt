@@ -1,0 +1,17 @@
+#include <iostream>
+#include <stdexcept>
+
+enum class Color { Red, Green, Blue };
+
+int main() {
+    Color color = Color::Green;
+    Color* colorPtr = &color;
+
+    *colorPtr = Color::Blue;
+
+    if (*colorPtr == Color::Blue) {
+        std::cout << "The color is now Blue!\n";
+    }
+
+    return 0;
+}

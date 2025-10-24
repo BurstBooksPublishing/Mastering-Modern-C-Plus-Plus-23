@@ -1,0 +1,11 @@
+#include <compare>
+#include <iostream>
+
+template <class T>
+int compare(const T& a, const T& b) noexcept {
+    static_assert(std::three_way_comparable<T>, "T must support <=>");
+    const std::strong_ordering cmp = a <=> b;
+    if (cmp < 0) return -1;
+    if (cmp > 0) return 1;
+    return 0;
+}

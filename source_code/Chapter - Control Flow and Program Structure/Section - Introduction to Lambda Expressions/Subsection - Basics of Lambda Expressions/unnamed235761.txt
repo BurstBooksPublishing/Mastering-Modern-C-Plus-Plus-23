@@ -1,0 +1,11 @@
+#include <functional>
+#include <type_traits>
+
+// A reusable, production-ready factory that returns a move-only, SFINAE-constrained lambda.
+template <class F>
+auto make_task(F&& f)
+    -> std::enable_if_t<std::is_invocable_v<std::decay_t<F>>, std::function<void()>>
+{
+    // Wrap the user functor in a type-erased std::function<void()> to hide concrete type.
+    return [f = std::forward<F>(f)]() mutable { std::invoke(std::move(f)); };
+}

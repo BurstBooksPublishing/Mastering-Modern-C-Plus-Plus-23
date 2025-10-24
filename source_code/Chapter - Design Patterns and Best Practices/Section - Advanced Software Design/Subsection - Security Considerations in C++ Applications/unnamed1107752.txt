@@ -1,0 +1,8 @@
+#include <cstring>
+#include <cstddef>
+
+void safeStringCopy(char* dest, const char* src, std::size_t size) noexcept {
+    if (!dest || !src || size == 0) return;          // Guard against null pointers or zero size
+    std::strncpy(dest, src, size - 1);               // Leave room for null terminator
+    dest[size - 1] = '\0';                           // Ensure null-termination
+}

@@ -1,0 +1,44 @@
+#include <algorithm>
+#include <cstddef>
+#include <utility>
+
+class MyClass {
+public:
+    static constexpr std::size_t Size = 10;
+
+    MyClass() : data(new int[Size]()) {}
+
+    // Rule-of-five: copy/move ctor + copy/move assign + dtor
+    MyClass(const MyClass& other) : data(new int[Size]) {
+        std::copy(other.data, other.data + Size, data);
+    }
+
+    MyClass& operator=(const MyClass& other) {
+        if (this != &other) {
+            MyClass tmp(other);   // strong exception safety
+            swap(tmp);
+        }
+        return *this;
+    }
+
+    MyClass(MyClass&& other) noexcept : data(nullptr) {
+        swap(other);
+    }
+
+    MyClass& operator=(MyClass&& other) noexcept {
+        if (this != &other) {
+            MyClass tmp(std::move(other));
+            swap(tmp);
+        }
+        return *this;
+    }
+
+    ~MyClass() { delete[] data; }
+
+    void swap(MyClass& other) noexcept {
+        std::swap(data, other.data);
+    }
+
+private:
+    int* data;
+};

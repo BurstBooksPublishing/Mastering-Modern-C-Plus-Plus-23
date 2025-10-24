@@ -1,0 +1,8 @@
+#include <stdexcept>
+
+int value = []() -> int {
+    const int v = get_value();          // fetch once
+    if (v < 0)                          // basic sanity check
+        throw std::runtime_error("get_value() returned negative value");
+    return v;
+}();

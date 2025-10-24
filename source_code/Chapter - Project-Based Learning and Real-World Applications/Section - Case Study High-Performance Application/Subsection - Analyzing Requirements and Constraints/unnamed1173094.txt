@@ -1,0 +1,22 @@
+#include <algorithm>
+#include <execution>
+#include <iostream>
+#include <vector>
+
+// Applies a transformation to every element in parallel and prints the results.
+void processDataParallel(const std::vector<int>& data) {
+    std::vector<int> results;
+    results.reserve(data.size());
+
+    std::transform(std::execution::par_unseq,
+                   data.begin(), data.end(),
+                   std::back_inserter(results),
+                   [](int v) { return v * 2; });
+
+    for (int v : results) std::cout << v << ' ';
+    std::cout << '\n';
+}
+
+int main() {
+    processDataParallel({1, 2, 3, 4, 5});
+}

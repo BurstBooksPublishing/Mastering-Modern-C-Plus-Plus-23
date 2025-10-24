@@ -1,0 +1,6 @@
+#include <cstdint>
+#include <type_traits>
+
+enum class Color : std::uint8_t { Red = 0, Green = 1, Blue = 2 };
+
+inline constexpr Color c = Color::Red;

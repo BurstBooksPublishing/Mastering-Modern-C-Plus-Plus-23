@@ -1,0 +1,17 @@
+#include <iostream>
+#include <type_traits>
+
+int main() {
+    int num = 10;
+
+    auto a = num;   // copy of num
+    auto& b = num;  // reference to num
+
+    // Demonstrate types
+    static_assert(std::is_same_v<decltype(a), int>, "a must be int");
+    static_assert(std::is_same_v<decltype(b), int&>, "b must be int&");
+
+    // Show aliasing behavior
+    b = 42;
+    std::cout << num << ' ' << a << '\n';  // 42 10
+}

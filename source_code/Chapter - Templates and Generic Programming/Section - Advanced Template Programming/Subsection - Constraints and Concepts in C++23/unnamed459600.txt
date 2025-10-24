@@ -1,0 +1,8 @@
+#include <iostream>
+#include <type_traits>
+
+template <typename T>
+void print_integer(T value) {
+    static_assert(std::is_integral_v<T>, "T must be an integral type");
+    std::cout << value << '\n';
+}

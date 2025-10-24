@@ -1,0 +1,25 @@
+#include <cstdint>
+#include <cstddef>
+#include <iostream>
+#include <iomanip>
+
+int main() {
+    int32_t a{42};
+    unsigned long flags{0u};
+    double rate{0.125};
+    long double precise{1.0L};
+    std::byte buffer[64]{};
+    bool enabled{true};
+
+    static_assert(std::is_trivially_copyable_v<int32_t>);
+    static_assert(sizeof(buffer) == 64);
+
+    std::cout << std::left
+              << "sizeof(int32_t) = " << std::setw(2) << sizeof(a) << " bytes\n"
+              << "sizeof(double)  = " << std::setw(2) << sizeof(rate) << " bytes\n"
+              << "buffer bytes    = " << sizeof(buffer) << '\n';
+
+    if (sizeof(int32_t) != 4) {
+        std::cerr << "Warning: expected 32-bit int; adjust types for portability.\n";
+    }
+}

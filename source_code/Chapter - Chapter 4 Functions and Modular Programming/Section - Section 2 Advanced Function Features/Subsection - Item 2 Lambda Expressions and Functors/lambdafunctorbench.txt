@@ -1,0 +1,54 @@
+#include <algorithm>
+#include <chrono>
+#include <cstddef>
+#include <functional>
+#include <iostream>
+#include <memory>
+#include <numeric>
+#include <random>
+#include <vector>
+
+// Immutable functor; constexpr + noexcept for maximum optimization.
+struct ScaleAndBias {
+    double scale;
+    double bias;
+    constexpr double operator()(double x) const noexcept { return x * scale + bias; }
+};
+
+// Generic, inline-friendly reduction.
+template <typename Callable>
+inline double invoke_many(Callable&& c, const std::vector<double>& data) noexcept {
+    return std::accumulate(data.begin(), data.end(), 0.0,
+                           [&c](double acc, double v) { return acc + std::forward<Callable>(c)(v); });
+}
+
+int main() {
+    constexpr std::size_t kSize = 1'000'000;
+
+    std::mt19937_64 rng{std::random_device{}()};
+    std::uniform_real_distribution<double> dist(-1.0, 1.0);
+    std::vector<double> data(kSize);
+    std::generate(data.begin(), data.end(), [&] { return dist(rng); });
+
+    auto mover = std::make_unique<int>(42);
+    auto lam = [ptr = std::move(mover)](double x) noexcept {
+        (void)ptr;
+        return x * 2.0;
+    };
+
+    ScaleAndBias fun{1.5, -0.3};
+    std::function<double(double)> erased = lam;
+
+    const auto time_it = [&](auto&& callable, const char* label) {
+        const auto start = std::chrono::high_resolution_clock::now();
+        const double result = invoke_many(callable, data);
+        const auto end = std::chrono::high_resolution_clock::now();
+        std::cout << label << ": "
+                  << std::chrono::duration<double>(end - start).count()
+                  << " s, sum = " << result << '\n';
+    };
+
+    time_it(lam,   "capturing lambda");
+    time_it(fun,   "functor");
+    time_it(erased,"std::function");
+}

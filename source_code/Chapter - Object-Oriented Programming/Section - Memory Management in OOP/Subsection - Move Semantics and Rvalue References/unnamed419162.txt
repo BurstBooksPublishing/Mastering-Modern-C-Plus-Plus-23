@@ -1,0 +1,17 @@
+#include <memory>
+#include <utility>
+
+class Resource {
+public:
+    Resource() = default;
+    Resource(const Resource&)            = delete;   // non-copyable
+    Resource& operator=(const Resource&) = delete;
+    Resource(Resource&&) noexcept        = default;  // movable
+    Resource& operator=(Resource&&) noexcept = default;
+    ~Resource() = default;
+};
+
+int main() {
+    Resource r1;
+    Resource r2 = std::move(r1);   // transfer ownership from r1 to r2
+}

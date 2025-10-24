@@ -1,0 +1,11 @@
+#include <iostream>
+#include <typeinfo>
+
+int main() {
+    const int    x = 42;   // compile-time constant integer
+    const double y = 3.14; // compile-time constant floating-point
+
+    std::cout << "x: " << x << " (" << typeid(x).name() << ")\n";
+    std::cout << "y: " << y << " (" << typeid(y).name() << ")\n";
+    return 0;
+}

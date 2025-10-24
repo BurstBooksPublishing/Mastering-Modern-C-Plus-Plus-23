@@ -1,0 +1,5 @@
+#include <variant>
+#include <optional>
+
+std::variant<double, int, std::string> v = 3.14;   // concrete variant type
+std::optional<double> opt = std::nullopt;          // typed optional

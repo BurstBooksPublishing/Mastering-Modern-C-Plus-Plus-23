@@ -1,0 +1,34 @@
+#include <algorithm>
+#include <iostream>
+#include <iterator>
+#include <ranges>
+#include <vector>
+
+class DataProcessor {
+public:
+    explicit DataProcessor(std::vector<int> data) : data_(std::move(data)) {}
+
+    void processData() {
+        processedData_.clear();
+        auto pipeline = data_
+                      | std::views::filter([](int x) { return x % 2 == 0; })
+                      | std::views::transform([](int x) { return x * 2; });
+        std::ranges::copy(pipeline, std::back_inserter(processedData_));
+    }
+
+    const std::vector<int>& processedData() const noexcept { return processedData_; }
+
+private:
+    std::vector<int> data_;
+    std::vector<int> processedData_;
+};
+
+int main() {
+    const std::vector<int> input{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+
+    DataProcessor processor(input);
+    processor.processData();
+
+    for (int v : processor.processedData()) std::cout << v << ' ';
+    std::cout << '\n';
+}

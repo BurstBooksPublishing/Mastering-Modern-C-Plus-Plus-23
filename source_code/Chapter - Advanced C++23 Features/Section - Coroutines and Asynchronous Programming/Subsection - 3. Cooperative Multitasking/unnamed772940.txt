@@ -1,0 +1,77 @@
+#include <iostream>
+#include <vector>
+#include <coroutine>
+#include <exception>
+#include <memory>
+
+// Global task queue
+std::vector<std::coroutine_handle<>> g_tasks;
+
+// Enqueue a coroutine for cooperative scheduling
+void schedule_task(std::coroutine_handle<> task) {
+    if (task && !task.done())
+        g_tasks.push_back(task);
+}
+
+// Execute all queued coroutines once, in FIFO order
+void run_scheduler() {
+    while (!g_tasks.empty()) {
+        auto task = g_tasks.front();
+        g_tasks.erase(g_tasks.begin());
+        task.resume();
+        if (!task.done())
+            schedule_task(task);          // re-queue if still active
+    }
+}
+
+// Minimal awaitable type that always suspends
+struct suspend_always {
+    bool await_ready() const noexcept { return false; }
+    void await_suspend(std::coroutine_handle<>) const noexcept {}
+    void await_resume() const noexcept {}
+};
+
+// Task coroutine type
+struct Task {
+    struct promise_type {
+        Task get_return_object() { return Task{std::coroutine_handle<promise_type>::from_promise(*this)}; }
+        suspend_always initial_suspend() noexcept { return {}; }
+        suspend_always final_suspend() noexcept { return {}; }
+        void return_void() noexcept {}
+        void unhandled_exception() { std::terminate(); }
+    };
+
+    std::coroutine_handle<promise_type> h;
+    explicit Task(std::coroutine_handle<promise_type> handle) : h(handle) {}
+    ~Task() { if (h) h.destroy(); }
+    Task(Task&& other) noexcept : h(std::exchange(other.h, {})) {}
+    Task& operator=(Task&& other) noexcept {
+        if (this != &other) {
+            if (h) h.destroy();
+            h = std::exchange(other.h, {});
+        }
+        return *this;
+    }
+};
+
+// Example coroutines
+Task task_a() {
+    std::cout << "Task A started\n";
+    co_await suspend_always{};
+    std::cout << "Task A resumed\n";
+}
+
+Task task_b() {
+    std::cout << "Task B started\n";
+    co_await suspend_always{};
+    std::cout << "Task B resumed\n";
+}
+
+int main() {
+    auto a = task_a();
+    auto b = task_b();
+
+    schedule_task(a.h);
+    schedule_task(b.h);
+    run_scheduler();
+}

@@ -1,0 +1,13 @@
+#include <iostream>
+
+int main() {
+    const int y = 15;
+
+    if (y > 10 && y < 20) {
+        std::cout << "y is between 10 and 20\n";
+    } else {
+        std::cout << "y is not greater than 10\n";
+    }
+
+    return 0;
+}

@@ -1,0 +1,4 @@
+#include <string>
+
+using Integer = int;
+using String  = std::string;   // Strong alias for clarity and future flexibility

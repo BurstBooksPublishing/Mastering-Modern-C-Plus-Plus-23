@@ -1,0 +1,3 @@
+#include <functional>
+
+const std::function<int(int)> square = [](int x) noexcept { return x * x; };

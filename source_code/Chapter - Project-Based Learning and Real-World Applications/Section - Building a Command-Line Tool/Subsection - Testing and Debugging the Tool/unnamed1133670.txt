@@ -1,0 +1,21 @@
+#include <cassert>
+#include <cstdint>
+#include <limits>
+#include <stdexcept>
+
+// Returns n! for 0 ≤ n ≤ 20 (fits in 64-bit).
+constexpr std::uint64_t factorial(unsigned int n) {
+    return (n <= 1) ? 1 : n * factorial(n - 1);
+}
+
+// Compile-time validation.
+static_assert(factorial(0) == 1);
+static_assert(factorial(5) == 120);
+
+void test_factorial() {
+    assert(factorial(0) == 1);
+    assert(factorial(1) == 1);
+    assert(factorial(5) == 120);
+    assert(factorial(10) == 3628800);
+    assert(factorial(20) == 2432902008176640000ULL);
+}

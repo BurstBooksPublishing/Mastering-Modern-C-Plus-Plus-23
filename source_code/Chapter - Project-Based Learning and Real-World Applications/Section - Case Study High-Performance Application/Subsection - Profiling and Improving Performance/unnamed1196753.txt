@@ -1,0 +1,8 @@
+#include <vector>
+#include <cstdint>
+
+std::vector<std::uint32_t> data;
+data.reserve(1'000'000);                 // pre-allocate exact capacity
+for (std::uint32_t i = 0; i < 1'000'000; ++i) {
+    data.emplace_back(i);              // construct in-place
+}

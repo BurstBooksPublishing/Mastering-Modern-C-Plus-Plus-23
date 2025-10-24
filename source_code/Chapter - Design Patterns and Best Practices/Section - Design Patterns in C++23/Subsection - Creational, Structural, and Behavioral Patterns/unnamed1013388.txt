@@ -1,0 +1,42 @@
+#include <memory>
+#include <vector>
+#include <algorithm>
+
+class Observer {
+public:
+    virtual ~Observer() = default;
+    virtual void update() = 0;
+};
+
+class Subject {
+    std::vector<std::weak_ptr<Observer>> observers;
+public:
+    void attach(std::shared_ptr<Observer> o) {
+        observers.emplace_back(o);
+    }
+    void detach(std::shared_ptr<Observer> o) {
+        observers.erase(
+            std::remove_if(observers.begin(), observers.end(),
+                [&](const std::weak_ptr<Observer>& w) {
+                    return w.expired() || w.lock() == o;
+                }),
+            observers.end());
+    }
+    void notify() {
+        for (auto it = observers.begin(); it != observers.end();) {
+            if (auto obs = it->lock()) {
+                obs->update();
+                ++it;
+            } else {
+                it = observers.erase(it);
+            }
+        }
+    }
+};
+
+class ConcreteObserver : public Observer {
+public:
+    void update() override {
+        // Update behavior
+    }
+};

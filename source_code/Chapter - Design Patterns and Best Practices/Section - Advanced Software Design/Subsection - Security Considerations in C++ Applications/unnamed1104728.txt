@@ -1,0 +1,7 @@
+#include <memory>
+#include <iostream>
+
+void safeMemoryManagement() {
+    auto ptr = std::make_unique<int>(42);   // allocate and own the resource
+    std::cout << *ptr << '\n';              // demonstrate safe usage
+}                                           // automatic deallocation on exit

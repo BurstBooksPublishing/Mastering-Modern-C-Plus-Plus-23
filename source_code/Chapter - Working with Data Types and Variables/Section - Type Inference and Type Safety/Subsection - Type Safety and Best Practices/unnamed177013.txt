@@ -1,0 +1,26 @@
+#include <iostream>
+#include <type_traits>
+#include <optional>
+#include <variant>
+
+int main() {
+    auto value = 42;
+    static_assert(std::is_same_v<decltype(value), int>, "Type mismatch");
+
+    constexpr double pi = 3.141592653589793;
+
+    enum class Color { Red, Green, Blue };
+    Color color = Color::Red;
+
+    std::optional<int> maybeValue = 42;
+    if (maybeValue) {
+        std::cout << "Value: " << *maybeValue << '\n';
+    }
+
+    std::variant<int, double> var = 3.14;
+    if (auto* d = std::get_if<double>(&var)) {
+        std::cout << "Double value: " << *d << '\n';
+    }
+
+    return 0;
+}

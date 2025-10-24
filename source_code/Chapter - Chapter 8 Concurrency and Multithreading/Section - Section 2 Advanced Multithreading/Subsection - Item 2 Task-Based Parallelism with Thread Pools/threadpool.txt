@@ -1,0 +1,84 @@
+#include <algorithm>
+#include <condition_variable>
+#include <exception>
+#include <functional>
+#include <future>
+#include <iostream>
+#include <mutex>
+#include <queue>
+#include <thread>
+#include <vector>
+
+class ThreadPool {
+public:
+    explicit ThreadPool(std::size_t workers = std::thread::hardware_concurrency()) {
+        if (workers == 0) workers = 1;
+        for (std::size_t i = 0; i < workers; ++i) {
+            workers_.emplace_back([this](std::stop_token st) { worker_loop(st); });
+        }
+    }
+
+    ~ThreadPool() {
+        {
+            std::lock_guard lg(m_);
+            stop_ = true;
+        }
+        cv_.notify_all();
+    }
+
+    template <typename F, typename... Args>
+    auto submit(F&& f, Args&&... args)
+        -> std::future<std::invoke_result_t<F, Args...>> {
+        using R = std::invoke_result_t<F, Args...>;
+        using Task = std::packaged_task<R()>;
+
+        auto task = std::make_shared<Task>(std::bind(std::forward<F>(f), std::forward<Args>(args)...));
+        std::future<R> fut = task->get_future();
+
+        {
+            std::lock_guard lg(m_);
+            if (stop_) throw std::runtime_error("submit on stopped ThreadPool");
+            tasks_.emplace([task]() { (*task)(); });
+        }
+        cv_.notify_one();
+        return fut;
+    }
+
+private:
+    void worker_loop(std::stop_token st) {
+        while (true) {
+            std::function<void()> task;
+            {
+                std::unique_lock ul(m_);
+                cv_.wait(ul, [&] { return stop_ || !tasks_.empty() || st.stop_requested(); });
+                if ((st.stop_requested() || stop_) && tasks_.empty()) return;
+                task = std::move(tasks_.front());
+                tasks_.pop();
+            }
+            task();
+        }
+    }
+
+    std::vector<std::jthread> workers_;
+    std::queue<std::function<void()>> tasks_;
+    std::mutex m_;
+    std::condition_variable cv_;
+    bool stop_{false};
+};
+
+int main() {
+    ThreadPool pool{4};
+
+    std::vector<std::future<long long>> futures;
+    for (int chunk = 0; chunk < 8; ++chunk) {
+        futures.emplace_back(pool.submit([chunk] {
+            long long s = 0;
+            for (int i = chunk * 1000; i < (chunk + 1) * 1000; ++i) s += i;
+            return s;
+        }));
+    }
+
+    long long total = 0;
+    for (auto& f : futures) total += f.get();
+    std::cout << "total = " << total << '\n';
+}

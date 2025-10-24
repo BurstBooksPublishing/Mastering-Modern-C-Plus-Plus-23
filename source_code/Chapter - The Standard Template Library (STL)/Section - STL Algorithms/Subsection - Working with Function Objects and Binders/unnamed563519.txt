@@ -1,0 +1,20 @@
+#include <algorithm>
+#include <iostream>
+#include <vector>
+
+bool is_divisible(int a, int b) noexcept {
+    return b != 0 && a % b == 0;          // Guard against division by zero
+}
+
+int main() {
+    std::vector<int> v{1, 2, 3, 4, 5, 6, 7, 8, 9};
+
+    // Remove elements divisible by 3
+    v.erase(std::remove_if(v.begin(), v.end(),
+                           [](int x) { return is_divisible(x, 3); }),
+            v.end());
+
+    for (int x : v) std::cout << x << ' ';
+    std::cout << '\n';
+    return 0;
+}

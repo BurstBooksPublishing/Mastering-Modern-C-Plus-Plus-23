@@ -1,0 +1,9 @@
+#include <type_traits>
+#include <stdexcept>
+
+template <typename T>
+constexpr T square(T value) noexcept(std::is_arithmetic_v<T>)
+{
+    static_assert(std::is_arithmetic_v<T>, "square requires an arithmetic type");
+    return value * value;
+}

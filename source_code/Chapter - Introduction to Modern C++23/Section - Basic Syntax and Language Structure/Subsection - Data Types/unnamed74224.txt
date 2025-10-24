@@ -1,0 +1,6 @@
+#include <array>
+#include <cstddef>
+
+constexpr std::array<int, 5> numbers{1, 2, 3, 4, 5};
+const int* ptr = numbers.data();          // Pointer to first element
+const int& ref = numbers.front();         // Reference to first element

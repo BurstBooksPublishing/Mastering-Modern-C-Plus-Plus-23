@@ -1,0 +1,4 @@
+#include <functional>
+
+const int multiplier = 3;
+const std::function<int(int)> multiply = [multiplier](int x) noexcept { return x * multiplier; };

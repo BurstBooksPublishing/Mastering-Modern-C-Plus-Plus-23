@@ -1,0 +1,96 @@
+#include <atomic>
+#include <cassert>
+#include <iostream>
+#include <memory_resource>
+#include <string>
+#include <thread>
+#include <vector>
+
+template <typename T>
+class SpscRing {
+public:
+    explicit SpscRing(std::size_t capacity,
+                      std::pmr::memory_resource* mr = std::pmr::get_default_resource())
+        : capacity_(next_pow2(capacity)),
+          mask_(capacity_ - 1),
+          buffer_(capacity_, mr) {
+        assert(capacity_ >= 2 && (capacity_ & (capacity_ - 1)) == 0);
+    }
+
+    bool push(const T& value) { return emplace_internal(value); }
+    bool push(T&& value) { return emplace_internal(std::move(value)); }
+
+    template <typename... Args>
+    bool emplace(Args&&... args) {
+        return emplace_internal(std::forward<Args>(args)...);
+    }
+
+    bool pop(T& out) {
+        std::size_t head = head_.load(std::memory_order_relaxed);
+        std::size_t tail = tail_.load(std::memory_order_acquire);
+        if (head == tail) return false; // empty
+
+        out = std::move(buffer_[head & mask_]);
+        head_.store(head + 1, std::memory_order_release);
+        return true;
+    }
+
+    [[nodiscard]] std::size_t capacity() const noexcept { return capacity_; }
+
+private:
+    static std::size_t next_pow2(std::size_t n) {
+        std::size_t p = 1;
+        while (p < n) p <<= 1;
+        return p;
+    }
+
+    template <typename U>
+    bool emplace_internal(U&& value) {
+        std::size_t tail = tail_.load(std::memory_order_relaxed);
+        std::size_t head = head_.load(std::memory_order_acquire);
+        if ((tail - head) == capacity_) return false; // full
+
+        buffer_[tail & mask_] = std::forward<U>(value);
+        tail_.store(tail + 1, std::memory_order_release);
+        return true;
+    }
+
+    const std::size_t capacity_;
+    const std::size_t mask_;
+    alignas(64) std::atomic<std::size_t> head_{0}; // consumer index
+    alignas(64) std::atomic<std::size_t> tail_{0}; // producer index
+    std::pmr::vector<T> buffer_;
+};
+
+int main() {
+    constexpr std::size_t N = 1 << 16;
+    std::pmr::monotonic_buffer_resource pool;
+    SpscRing<std::string> ring(N, &pool);
+
+    std::atomic<bool> done{false};
+
+    std::thread producer([&] {
+        for (int i = 0; i < 1'000'000; ++i) {
+            while (!ring.emplace(std::to_string(i))) {
+                std::this_thread::yield();
+            }
+        }
+        done.store(true, std::memory_order_release);
+    });
+
+    std::thread consumer([&] {
+        std::string item;
+        std::size_t count = 0;
+        while (!done.load(std::memory_order_acquire) || ring.pop(item)) {
+            if (ring.pop(item)) {
+                ++count;
+            } else {
+                std::this_thread::yield();
+            }
+        }
+        std::cout << "Consumed " << count << " items\n";
+    });
+
+    producer.join();
+    consumer.join();
+}

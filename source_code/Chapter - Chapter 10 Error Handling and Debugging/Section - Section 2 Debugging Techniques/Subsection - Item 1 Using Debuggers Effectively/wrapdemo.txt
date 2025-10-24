@@ -1,0 +1,23 @@
+#include <cstdint>
+#include <vector>
+#include <iostream>
+#include <csignal>
+
+void process(const std::vector<std::uint32_t>& data) {
+    std::uint32_t sum = 0u;
+    for (std::size_t i = 0; i < data.size(); ++i) {
+        const std::uint32_t prev = sum;
+        sum += data[i];
+        if (sum < prev) {               // wrap-around occurred
+            std::cerr << "wrap at index " << i << " sum=" << sum << '\n';
+            std::raise(SIGTRAP);
+        }
+    }
+    std::cout << "final sum=" << sum << '\n';
+}
+
+int main() {
+    std::vector<std::uint32_t> readings(20, 100'000'000u);
+    readings[10] = 4'000'000'000u;
+    process(readings);
+}

@@ -1,0 +1,17 @@
+#include <concepts>
+#include <experimental/meta>
+
+template<typename T>
+concept has_member = requires {
+    // Obtain reflection of the type T
+    consteval auto r = std::experimental::reflect_type<T>();
+
+    // Ensure at least one member exists
+    consteval auto members = std::experimental::members_of(r);
+    requires members.size() > 0;
+
+    // Check that the first member’s type is T itself
+    consteval auto first_member = members[0];
+    consteval auto first_type   = std::experimental::type_of(first_member);
+    requires first_type == r;
+};

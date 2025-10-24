@@ -1,0 +1,44 @@
+#include <charconv>
+#include <cstdint>
+#include <format>
+#include <iostream>
+#include <limits>
+#include <span>
+#include <stdexcept>
+#include <string>
+#include <vector>
+
+struct ParseError : std::runtime_error {
+    using std::runtime_error::runtime_error;
+};
+
+std::vector<std::byte> parse_length_prefixed(const std::string& input) {
+    const auto colon = input.find(':');
+    if (colon == std::string::npos) throw ParseError("missing ':'");
+
+    std::uint64_t len = 0;
+    if (auto [ptr, ec] = std::from_chars(input.data(), input.data() + colon, len);
+        ec != std::errc()) throw ParseError("invalid length");
+
+    constexpr std::uint64_t MAX_LEN = 10'000'000;
+    if (len > MAX_LEN) throw ParseError(std::format("length {} too large", len));
+
+    const std::uint64_t remaining = input.size() - (colon + 1);
+    if (len > remaining) throw ParseError("length exceeds available payload");
+
+    if (len > static_cast<std::uint64_t>(std::numeric_limits<std::size_t>::max()))
+        throw ParseError("length too large for host size_t");
+
+    const std::byte* payload = reinterpret_cast<const std::byte*>(input.data() + colon + 1);
+    return {payload, payload + len};
+}
+
+int main() {
+    try {
+        const auto v = parse_length_prefixed("5:hello");
+        std::cout << "Parsed " << v.size() << " bytes\n";
+    } catch (const std::exception& e) {
+        std::cerr << "parse error: " << e.what() << '\n';
+        return 1;
+    }
+}

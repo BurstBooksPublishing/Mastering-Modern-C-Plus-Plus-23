@@ -1,0 +1,13 @@
+#include <mutex>
+
+class MutexLock {
+public:
+    explicit MutexLock(std::mutex& mtx) : mutex_(mtx) { mutex_.lock(); }
+    ~MutexLock() noexcept { mutex_.unlock(); }
+
+    MutexLock(const MutexLock&)            = delete;
+    MutexLock& operator=(const MutexLock&) = delete;
+
+private:
+    std::mutex& mutex_;
+};

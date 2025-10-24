@@ -1,0 +1,38 @@
+#include <chrono>
+#include <iostream>
+#include <map>
+#include <string>
+#include <unordered_map>
+#include <vector>
+
+template <typename F>
+auto timeit(F&& f) {
+    const auto t0 = std::chrono::high_resolution_clock::now();
+    std::forward<F>(f)();
+    const auto t1 = std::chrono::high_resolution_clock::now();
+    return std::chrono::duration<double>(t1 - t0).count();
+}
+
+int main() {
+    constexpr std::size_t N = 1'000'000;
+
+    std::vector<int> v;
+    v.reserve(N);
+    const double tvec = timeit([&] {
+        for (std::size_t i = 0; i < N; ++i) v.push_back(static_cast<int>(i));
+    });
+    std::cout << "vector push_back with reserve: " << tvec << " s\n";
+
+    std::map<int, std::string> ordered;
+    const double tmap = timeit([&] {
+        for (std::size_t i = 0; i < N; ++i) ordered.emplace(static_cast<int>(i), "val");
+    });
+    std::cout << "std::map emplace: " << tmap << " s\n";
+
+    std::unordered_map<int, std::string> hashed;
+    hashed.reserve(N);
+    const double thash = timeit([&] {
+        for (std::size_t i = 0; i < N; ++i) hashed.emplace(static_cast<int>(i), "val");
+    });
+    std::cout << "std::unordered_map emplace with reserve: " << thash << " s\n";
+}

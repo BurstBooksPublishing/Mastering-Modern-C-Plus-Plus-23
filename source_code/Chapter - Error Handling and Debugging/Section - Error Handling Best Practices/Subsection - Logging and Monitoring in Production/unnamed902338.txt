@@ -1,0 +1,38 @@
+#include <atomic>
+#include <format>
+#include <iostream>
+#include <mutex>
+#include <string>
+#include <unordered_map>
+
+class Metrics {
+public:
+    void increment(const std::string& metric) {
+        std::lock_guard lock(mtx_);
+        ++counters_[metric];
+    }
+
+    void dump() const {
+        std::lock_guard lock(mtx_);
+        for (const auto& [metric, count] : counters_) {
+            std::cout << std::format("{}: {}\n", metric, count.load());
+        }
+    }
+
+private:
+    mutable std::mutex mtx_;
+    std::unordered_map<std::string, std::atomic<std::uint64_t>> counters_;
+};
+
+Metrics global_metrics;
+
+void process_request() {
+    global_metrics.increment("requests_processed");
+}
+
+int main() {
+    for (int i = 0; i < 10; ++i) {
+        process_request();
+    }
+    global_metrics.dump();
+}

@@ -1,0 +1,40 @@
+python
+import gdb
+import re
+
+class InspectContainer(gdb.Command):
+    """
+    Usage (inside GDB):
+        (gdb) inspect_container <container_expr>
+    Prints every element of any iterable C++ container (vector, list, map, etc.).
+    """
+
+    def __init__(self):
+        super(InspectContainer, self).__init__(
+            "inspect_container", gdb.COMMAND_USER, gdb.COMPLETE_EXPRESSION
+        )
+
+    def invoke(self, arg, from_tty):
+        if not arg:
+            raise gdb.GdbError("Usage: inspect_container <container_expr>")
+
+        try:
+            container = gdb.parse_and_eval(arg)
+        except gdb.error as e:
+            raise gdb.GdbError("Cannot evaluate '{}': {}".format(arg, e))
+
+        # Detect whether the container is a std::map / unordered_map
+        typename = str(container.type)
+        is_map = re.search(r'\bstd::(?:unordered_)?map\b', typename)
+
+        try:
+            for element in container:
+                if is_map:
+                    # element is a std::pair<const Key, T>
+                    print("{{ {} => {} }}".format(element['first'], element['second']))
+                else:
+                    print(element)
+        except TypeError:
+            raise gdb.GdbError("'{}' is not iterable".format(arg))
+
+InspectContainer()

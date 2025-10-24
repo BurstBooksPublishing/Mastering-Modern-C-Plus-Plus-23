@@ -1,0 +1,20 @@
+#include <iostream>
+#include <thread>
+#include <stdexcept>
+
+void thread_function() {
+    std::cout << "Hello from thread!\n";
+}
+
+int main() {
+    std::thread t(thread_function);
+
+    try {
+        t.join();               // Ensure thread always joins
+    } catch (const std::system_error& e) {
+        std::cerr << "Thread join failed: " << e.what() << '\n';
+        return EXIT_FAILURE;
+    }
+
+    return EXIT_SUCCESS;
+}

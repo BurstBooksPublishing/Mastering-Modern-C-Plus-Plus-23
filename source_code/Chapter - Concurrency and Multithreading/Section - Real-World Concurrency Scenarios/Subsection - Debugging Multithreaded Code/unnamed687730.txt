@@ -1,0 +1,21 @@
+#include <iostream>
+#include <thread>
+#include <vector>
+#include <mutex>
+
+std::mutex cout_mtx;                       // Protects std::cout
+
+void thread_function(int id) {
+    {
+        std::lock_guard<std::mutex> lock(cout_mtx);
+        std::cout << "Thread " << id << " started\n";
+    }
+
+    // Simulate work
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+    {
+        std::lock_guard<std::mutex> lock(cout_mtx);
+        std::cout << "Thread " << id << " finished\n";
+    }
+}

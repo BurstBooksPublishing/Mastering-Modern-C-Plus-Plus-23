@@ -1,0 +1,47 @@
+#include <exception>
+#include <iostream>
+#include <string>
+#include <stdexcept>
+
+struct FileError : std::runtime_error {
+    explicit FileError(const std::string& msg) : std::runtime_error(msg) {}
+};
+
+class Logger {
+public:
+    explicit Logger(std::string name)
+        : name_(std::move(name)),
+          active_exceptions_(std::uncaught_exceptions()) {}
+
+    ~Logger() noexcept {
+        if (std::uncaught_exceptions() > active_exceptions_) {
+            std::cerr << "Logger::~Logger(): unwinding while handling " << name_ << '\n';
+        } else {
+            std::clog << "Logger::~Logger(): clean shutdown for " << name_ << '\n';
+        }
+    }
+
+    Logger(const Logger&) = delete;
+    Logger& operator=(const Logger&) = delete;
+    Logger(Logger&&) = delete;
+    Logger& operator=(Logger&&) = delete;
+
+private:
+    std::string name_;
+    int active_exceptions_;
+};
+
+void load_mesh(const std::string& path) {
+    Logger lg{"load_mesh"};
+    if (path.empty()) {
+        throw FileError{"empty mesh path"};
+    }
+}
+
+int main() {
+    try {
+        load_mesh("");
+    } catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << '\n';
+    }
+}

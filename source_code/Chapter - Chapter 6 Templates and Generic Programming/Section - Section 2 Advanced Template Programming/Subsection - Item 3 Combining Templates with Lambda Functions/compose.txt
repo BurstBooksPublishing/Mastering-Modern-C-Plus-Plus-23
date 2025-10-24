@@ -1,0 +1,26 @@
+#include <iostream>
+#include <utility>
+#include <concepts>
+#include <functional>
+
+template <typename F, typename G>
+constexpr auto compose(F&& f, G&& g) {
+    return [f = std::forward<F>(f), g = std::forward<G>(g)]
+           <typename... Args>
+           (Args&&... args) -> decltype(auto)
+           requires std::invocable<decltype(g), Args...> &&
+                    std::invocable<decltype(f), std::invoke_result_t<decltype(g), Args...>>
+    {
+        return std::invoke(f, std::invoke(g, std::forward<Args>(args)...));
+    };
+}
+
+int main() {
+    auto doubler = []<typename T>(T x) { return x * 2; };
+    auto to_double_plus = [](int x) { return double(x) + 0.5; };
+
+    auto composed = compose(doubler, to_double_plus);
+
+    std::cout << composed(3) << '\n';   // 7
+    std::cout << composed(10) << '\n';  // 21
+}

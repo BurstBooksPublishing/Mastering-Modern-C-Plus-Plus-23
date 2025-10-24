@@ -1,0 +1,14 @@
+#include <iostream>
+#include <list>
+
+int main() {
+    std::list<int> lst{1, 2, 3, 4, 5};
+    lst.push_front(0);
+    lst.push_back(6);
+
+    for (const int& value : lst) {
+        std::cout << value << ' ';
+    }
+    std::cout << '\n';
+    return 0;
+}

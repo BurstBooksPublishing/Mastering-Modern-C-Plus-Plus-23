@@ -1,0 +1,9 @@
+#include <memory>
+#include <stdexcept>
+
+void safe_write() {
+    auto ptr = std::make_unique<int>();   // allocate and own the int
+    if (!ptr)                             // defensive check (make_unique never returns null, but keeps style consistent)
+        throw std::runtime_error("Allocation failed");
+    *ptr = 10;                            // safe write
+}

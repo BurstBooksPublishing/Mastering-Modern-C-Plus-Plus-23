@@ -1,0 +1,30 @@
+#include <string>
+#include <vector>
+#include <iostream>
+#include <type_traits>
+
+struct Person {
+    std::string name;
+    int age;
+};
+
+// Compile-time reflection helper: returns pointers to every data member
+template <typename T>
+constexpr auto member_pointers() {
+    if constexpr (std::is_same_v<T, Person>) {
+        return std::array{ &Person::name, &Person::age };
+    } else {
+        return std::array<void*, 0>{}; // fallback for unknown types
+    }
+}
+
+// Example usage: iterate over members
+void print_members(const Person& p) {
+    for (auto ptr : member_pointers<Person>()) {
+        if constexpr (std::is_same_v<decltype(ptr), std::string Person::*>) {
+            std::cout << p.*ptr << '\n';
+        } else if constexpr (std::is_same_v<decltype(ptr), int Person::*>) {
+            std::cout << p.*ptr << '\n';
+        }
+    }
+}

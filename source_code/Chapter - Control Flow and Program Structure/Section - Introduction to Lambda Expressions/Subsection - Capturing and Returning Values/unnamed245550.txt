@@ -1,0 +1,15 @@
+#include <iostream>
+#include <functional>
+
+int main() {
+    int x = 10;
+
+    // Capture by value: the lambda owns a copy of x.
+    const std::function<int()> lambda_by_value = [x]() noexcept { return x + 1; };
+
+    // Capture by reference: the lambda uses the original x.
+    const std::function<int()> lambda_by_ref = [&x]() noexcept { return x + 1; };
+
+    std::cout << lambda_by_value() << '\n'; // 11
+    std::cout << lambda_by_ref() << '\n';   // 11
+}

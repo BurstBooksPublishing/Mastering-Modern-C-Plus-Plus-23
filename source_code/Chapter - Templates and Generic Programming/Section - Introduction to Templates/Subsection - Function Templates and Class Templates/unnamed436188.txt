@@ -1,0 +1,7 @@
+#include <type_traits>
+
+template <typename T>
+constexpr typename std::enable_if_t<std::is_arithmetic_v<T>, T>
+max(T a, T b) noexcept {
+    return (a > b) ? a : b;
+}

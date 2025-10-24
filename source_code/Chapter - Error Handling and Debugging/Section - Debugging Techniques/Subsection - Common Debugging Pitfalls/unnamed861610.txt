@@ -1,0 +1,9 @@
+#include <iostream>
+
+int main() {
+    const int x = 10;               // Immutable value
+    if (x == 20) {                  // Equality check, not assignment
+        std::cout << "x is 20\n";   // Output newline only
+    }
+    return 0;
+}

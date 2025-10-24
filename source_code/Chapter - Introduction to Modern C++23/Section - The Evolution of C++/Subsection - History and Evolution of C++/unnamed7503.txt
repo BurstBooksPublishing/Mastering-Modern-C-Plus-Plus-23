@@ -1,0 +1,19 @@
+#include <algorithm>
+#include <iostream>
+#include <ranges>
+#include <vector>
+
+int main() {
+    std::vector<int> numbers{1, 2, 3, 4, 5};
+
+    // Filter even numbers lazily
+    auto evens = numbers | std::views::filter([](int n) { return n % 2 == 0; });
+
+    std::cout << "Even numbers: ";
+    for (int n : evens) std::cout << n << ' ';
+    std::cout << '\n';
+
+    // Generic print lambda
+    auto print = [](const auto& x) { std::cout << x << '\n'; };
+    print("Modern C++23 is evolving!");
+}

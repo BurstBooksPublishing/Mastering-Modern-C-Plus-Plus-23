@@ -1,0 +1,21 @@
+#include <algorithm>
+#include <iostream>
+#include <iterator>
+#include <vector>
+
+int main() {
+    std::vector<int> numbers{1, 2, 3, 4, 5};
+
+    const auto print = [](int n) { std::cout << n << ' '; };
+
+    std::for_each(numbers.begin(), numbers.end(), print);
+    std::cout << '\n';
+
+    const int delta = 10;
+    std::transform(numbers.begin(), numbers.end(), numbers.begin(),
+                   [delta](int n) { return n + delta; });
+
+    std::copy(numbers.begin(), numbers.end(),
+              std::ostream_iterator<int>(std::cout, " "));
+    std::cout << '\n';
+}

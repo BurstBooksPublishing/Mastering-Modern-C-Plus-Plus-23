@@ -1,0 +1,20 @@
+#include <iostream>
+#include <unistd.h>
+#include <sys/wait.h>
+
+int main() {
+    pid_t pid = fork();
+
+    if (pid == 0) {
+        std::cout << "Child process: PID=" << getpid() << std::endl;
+        _exit(EXIT_SUCCESS);          // Terminate child cleanly
+    } else if (pid > 0) {
+        int status;
+        waitpid(pid, &status, 0);     // Prevent zombie
+        std::cout << "Parent process: child PID=" << pid << std::endl;
+    } else {
+        std::cerr << "Fork failed" << std::endl;
+        return EXIT_FAILURE;
+    }
+    return EXIT_SUCCESS;
+}

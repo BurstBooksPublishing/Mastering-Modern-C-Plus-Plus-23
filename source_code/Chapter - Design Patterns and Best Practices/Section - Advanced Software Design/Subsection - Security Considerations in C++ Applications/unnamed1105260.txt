@@ -1,0 +1,8 @@
+#include <algorithm>
+#include <cctype>
+#include <string>
+
+bool isValidInput(const std::string& input) {
+    return std::all_of(input.begin(), input.end(),
+                       [](unsigned char c) { return std::isalnum(c); });
+}

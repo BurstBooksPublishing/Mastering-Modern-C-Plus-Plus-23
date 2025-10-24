@@ -1,0 +1,10 @@
+#include <type_traits>
+
+// Computes n! at compile-time.
+// Precondition: n >= 0 and n <= 20 (fits in 64-bit).
+constexpr unsigned long long factorial(unsigned int n) noexcept {
+    return n <= 1 ? 1ULL : n * factorial(n - 1);
+}
+
+// Compile-time constant: 5! == 120
+static_assert(factorial(5) == 120, "factorial(5) must be 120");

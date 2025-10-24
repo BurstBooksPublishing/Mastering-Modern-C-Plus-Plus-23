@@ -1,0 +1,27 @@
+#include <atomic>
+#include <mutex>
+
+namespace utils {
+
+class Counter {
+public:
+    Counter() : value_{0} {}
+
+    // Thread-safe increment; returns the new value.
+    int increment() {
+        std::lock_guard<std::mutex> lock{mutex_};
+        return ++value_;
+    }
+
+    // Lock-free increment for high-contention scenarios.
+    int increment_atomic() {
+        return ++atomic_value_;
+    }
+
+private:
+    int value_;
+    std::mutex mutex_;
+    std::atomic<int> atomic_value_{0};
+};
+
+} // namespace utils

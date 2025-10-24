@@ -1,0 +1,27 @@
+#include <algorithm>
+#include <iostream>
+#include <vector>
+
+int main() {
+    const std::vector<int> numbers{1, 2, 3, 4, 5};
+
+    // Print original values
+    for (int n : numbers) std::cout << n << ' ';
+    std::cout << '\n';
+
+    // Count even numbers
+    const std::size_t even_count =
+        std::count_if(numbers.begin(), numbers.end(),
+                      [](int n) { return n % 2 == 0; });
+    std::cout << "Even numbers count: " << even_count << '\n';
+
+    // Create doubled copy
+    std::vector<int> doubled;
+    doubled.reserve(numbers.size());
+    std::transform(numbers.begin(), numbers.end(), std::back_inserter(doubled),
+                   [](int n) { return n * 2; });
+
+    // Print doubled values
+    for (int n : doubled) std::cout << n << ' ';
+    std::cout << '\n';
+}

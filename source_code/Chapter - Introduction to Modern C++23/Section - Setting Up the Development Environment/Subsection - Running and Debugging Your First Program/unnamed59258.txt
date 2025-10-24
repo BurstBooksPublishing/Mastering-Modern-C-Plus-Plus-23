@@ -1,0 +1,9 @@
+#include <iostream>
+#include <print>   // C++23 std::print
+
+int main() {
+    std::println("Welcome to Modern C++23!");
+
+    constexpr int number = 42;          // compile-time constant
+    std::println("The answer to life, the universe, and everything is: {}", number);
+}

@@ -1,0 +1,5 @@
+#include <algorithm>
+#include <vector>
+
+std::vector<int> container{3, 1, 2};
+std::sort(container.begin(), container.end());

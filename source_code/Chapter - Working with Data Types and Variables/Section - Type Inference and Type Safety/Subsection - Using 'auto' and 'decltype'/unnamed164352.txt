@@ -1,0 +1,7 @@
+#include <type_traits>
+
+template <typename T, typename U>
+constexpr auto add(T&& t, U&& u) noexcept(noexcept(std::declval<T>() + std::declval<U>()))
+    -> std::decay_t<decltype(std::forward<T>(t) + std::forward<U>(u))> {
+    return std::forward<T>(t) + std::forward<U>(u);
+}

@@ -1,0 +1,23 @@
+yaml
+- name: Generate coverage report
+  run: |
+    # Build with coverage flags
+    cmake -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="--coverage -O0"
+    cmake --build build --parallel
+
+    # Run tests to collect *.gcda files
+    ctest --test-dir build --output-on-failure
+
+    # Capture coverage data
+    lcov --rc lcov_branch_coverage=1 \
+         --capture \
+         --directory build \
+         --output-file coverage.info \
+         --exclude '/usr/*' \
+         --exclude '*/build/*' \
+         --exclude '*/test/*'
+
+    # Generate HTML report
+    genhtml --rc lcov_branch_coverage=1 \
+            coverage.info \
+            --output-directory coverage_report

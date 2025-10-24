@@ -1,0 +1,10 @@
+#include <string>
+#include <print>
+
+int main() {
+    const int    x = 42;               // immutable integral value
+    const double y = 3.14;             // immutable floating-point value
+    const std::string z = "Hello, C++23!";  // immutable string with RAII
+
+    std::println("{} {} {}", x, y, z); // safe, formatted output
+}

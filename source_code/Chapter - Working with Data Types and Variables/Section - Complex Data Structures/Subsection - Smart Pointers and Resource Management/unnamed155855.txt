@@ -1,0 +1,21 @@
+#include <cstdio>
+#include <iostream>
+#include <memory>
+
+struct FileDeleter {
+    void operator()(FILE* f) const noexcept {
+        if (f) std::fclose(f);
+    }
+};
+
+int main() {
+    std::unique_ptr<FILE, FileDeleter> file{std::fopen("example.txt", "r")};
+
+    if (!file) {
+        std::cerr << "Failed to open example.txt\n";
+        return EXIT_FAILURE;
+    }
+
+    std::cout << "File opened successfully\n";
+    return EXIT_SUCCESS;
+}

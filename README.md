@@ -1,4 +1,4 @@
-# Mastering Modern C23
+# Mastering Modern C Plus Plus 23
 
 ### Cover
 <img src="covers/Front.png" alt="Book Cover" width="300" style="max-width: 100%; height: auto; border-radius: 6px; box-shadow: 0 3px 8px rgba(0,0,0,0.1);"/>

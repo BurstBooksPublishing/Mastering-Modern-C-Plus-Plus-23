@@ -1,0 +1,15 @@
+// main.cpp
+#include <iostream>
+#include <string>
+#include <stdexcept>
+#include <cstdlib>
+
+int main() {
+    const std::string cmd = "clang++ --version";
+    int exitCode = std::system(cmd.c_str());
+    if (exitCode != 0) {
+        std::cerr << "Command failed with exit code " << exitCode << '\n';
+        return EXIT_FAILURE;
+    }
+    return EXIT_SUCCESS;
+}

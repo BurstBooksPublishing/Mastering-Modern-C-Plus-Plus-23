@@ -1,0 +1,16 @@
+#include <algorithm>
+#include <cassert>
+#include <iostream>
+#include <iterator>
+#include <vector>
+
+int main() {
+    std::vector<int> vec{5, 3, 1, 4, 2};
+
+    assert(!vec.empty());          // guard against empty input
+    std::ranges::sort(vec);        // in-place ascending sort
+    assert(std::ranges::is_sorted(vec));
+
+    std::ranges::copy(vec, std::ostream_iterator<int>(std::cout, " "));
+    std::cout << '\n';
+}

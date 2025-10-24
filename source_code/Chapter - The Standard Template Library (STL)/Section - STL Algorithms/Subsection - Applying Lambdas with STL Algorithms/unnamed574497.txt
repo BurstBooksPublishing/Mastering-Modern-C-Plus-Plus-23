@@ -1,0 +1,16 @@
+#include <iostream>
+#include <vector>
+#include <numeric>   // std::accumulate
+#include <cstddef>   // std::size_t
+
+int main() {
+    const std::vector<int> numbers{1, 2, 3, 4, 5};
+
+    // Compute product; use 64-bit accumulator to reduce overflow risk
+    const long long product = std::accumulate(
+        numbers.begin(), numbers.end(), 1LL,
+        [](long long acc, int val) { return acc * val; });
+
+    std::cout << "Product: " << product << '\n';
+    return 0;
+}

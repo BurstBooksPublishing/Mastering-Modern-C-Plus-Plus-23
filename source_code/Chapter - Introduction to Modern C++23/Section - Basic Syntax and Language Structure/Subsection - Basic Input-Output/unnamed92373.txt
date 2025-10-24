@@ -1,0 +1,7 @@
+#include <iostream>
+
+int main() {
+    const int number = 42;          // Immutable value
+    std::cout << "The answer is: " << number << '\n';
+    return 0;
+}

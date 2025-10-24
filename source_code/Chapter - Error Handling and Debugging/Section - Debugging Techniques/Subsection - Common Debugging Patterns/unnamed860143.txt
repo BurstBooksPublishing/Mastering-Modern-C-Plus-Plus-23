@@ -1,0 +1,8 @@
+#include <vector>
+#include <iostream>
+
+void processVector(const std::vector<int>& vec) {
+    for (const int value : vec) {
+        std::cout << value << '\n';
+    }
+}

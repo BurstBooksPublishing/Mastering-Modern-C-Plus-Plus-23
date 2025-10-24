@@ -1,0 +1,13 @@
+#include <cstdio>
+#include <memory>
+#include <stdexcept>
+
+int main() {
+    // RAII wrapper for FILE*; closes automatically on scope exit
+    auto file = std::unique_ptr<std::FILE, decltype([](std::FILE* f) { if (f) std::fclose(f); })>(
+        std::fopen("log.txt", "w")
+    );
+    if (!file) throw std::runtime_error("fopen failed");
+
+    std::fprintf(file.get(), "RAII-managed I/O\n");
+}

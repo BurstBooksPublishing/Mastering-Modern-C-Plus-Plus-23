@@ -1,0 +1,29 @@
+#include <memory>
+#include <type_traits>
+#include <vector>
+
+template <typename T,
+          typename Allocator = std::allocator<T>>
+class Container {
+    static_assert(!std::is_pointer_v<T>, "T must not be a pointer type");
+
+public:
+    using value_type      = T;
+    using allocator_type  = Allocator;
+    using size_type       = std::size_t;
+
+    explicit Container(const Allocator& alloc = Allocator())
+        : data_(alloc) {}
+
+    void push_back(const T& value) { data_.push_back(value); }
+    void push_back(T&& value)      { data_.push_back(std::move(value)); }
+
+    [[nodiscard]] bool empty() const noexcept { return data_.empty(); }
+    [[nodiscard]] size_type size() const noexcept { return data_.size(); }
+
+    T& operator[](size_type pos)             { return data_[pos]; }
+    const T& operator[](size_type pos) const { return data_[pos]; }
+
+private:
+    std::vector<T, Allocator> data_;
+};

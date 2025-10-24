@@ -1,0 +1,5 @@
+#include <atomic>
+
+void increment(std::atomic<int>& x) noexcept {
+    ++x;  // atomic increment for thread-safe usage
+}

@@ -1,0 +1,9 @@
+#include <type_traits>
+
+namespace detail {
+    int global = 42;
+}
+
+decltype(auto) func() noexcept {
+    return (detail::global);   // returns int&
+}

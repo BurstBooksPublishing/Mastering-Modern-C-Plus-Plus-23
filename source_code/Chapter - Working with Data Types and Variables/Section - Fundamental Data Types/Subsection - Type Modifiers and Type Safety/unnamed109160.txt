@@ -1,0 +1,18 @@
+#include <iostream>
+#include <type_traits>
+
+int main() {
+    const int x = 10;
+    volatile int y = 20;
+    constexpr int z = 30;
+
+    static_assert(std::is_integral_v<decltype(x)>, "x must be integral");
+    static_assert(std::is_volatile_v<decltype(y)>, "y must be volatile");
+    static_assert(std::is_const_v<decltype(z)>, "z must be const");
+
+    constexpr double pi = 3.14159;
+    constexpr int pi_int = static_cast<int>(pi);  // compile-time truncation
+
+    std::cout << "x: " << x << ", y: " << y << ", z: " << z << '\n';
+    std::cout << "pi_int: " << pi_int << '\n';
+}

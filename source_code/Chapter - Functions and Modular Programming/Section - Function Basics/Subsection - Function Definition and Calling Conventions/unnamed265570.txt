@@ -1,0 +1,5 @@
+#include <utility>
+
+auto get_coordinates() -> std::pair<int, int> {
+    return {10, 20};
+}

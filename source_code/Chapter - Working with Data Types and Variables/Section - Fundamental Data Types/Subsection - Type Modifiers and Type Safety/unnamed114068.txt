@@ -1,0 +1,6 @@
+#include <atomic>
+#include <cstdint>
+
+// Memory-mapped hardware register (read-only from CPU side)
+inline std::atomic<uint32_t>& hardwareRegister =
+    *reinterpret_cast<std::atomic<uint32_t>*>(0x4000'0000);

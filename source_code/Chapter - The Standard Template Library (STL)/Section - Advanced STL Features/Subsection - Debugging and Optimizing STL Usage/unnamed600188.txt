@@ -1,0 +1,8 @@
+#include <vector>
+#include <cstddef>
+
+std::vector<int> data;
+data.reserve(1'000'000);          // single allocation, O(1) amortized push_back
+for (std::size_t i = 0; i < 1'000'000; ++i) {
+    data.push_back(static_cast<int>(i));
+}

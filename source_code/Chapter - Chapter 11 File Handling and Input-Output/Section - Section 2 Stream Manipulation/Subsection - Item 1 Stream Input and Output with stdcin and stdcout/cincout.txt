@@ -1,0 +1,35 @@
+#include <iostream>
+#include <limits>
+#include <string>
+#include <vector>
+#include <iomanip>
+
+int main() {
+    std::ios::sync_with_stdio(false);
+    std::cin.tie(nullptr);
+
+    int version{};
+    if (!(std::cin >> version)) {
+        std::cerr << "Failed to parse version\n";
+        std::cin.clear();
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        return 1;
+    }
+    std::cout << "Parsed version: " << version << '\n';
+
+    std::string line;
+    std::getline(std::cin >> std::ws, line);
+    std::cout << "Line: [" << line << "]\n";
+
+    constexpr double val = 3.141592653589793;
+    std::cout << std::hexfloat << val << '\n'
+              << std::defaultfloat << std::fixed << std::setprecision(4)
+              << val << '\n';
+
+    std::vector<char> buffer(4096);
+    std::cin.read(buffer.data(), static_cast<std::streamsize>(buffer.size()));
+    if (const std::streamsize n = std::cin.gcount(); n > 0) {
+        std::cout.write(buffer.data(), n);
+        std::cout.flush();
+    }
+}

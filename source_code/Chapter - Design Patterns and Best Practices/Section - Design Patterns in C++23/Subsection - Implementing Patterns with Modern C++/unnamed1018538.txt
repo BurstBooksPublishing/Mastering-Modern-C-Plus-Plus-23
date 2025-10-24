@@ -1,0 +1,62 @@
+#include <iostream>
+#include <memory>
+#include <stdexcept>
+
+// Singleton: Meyers' C++11 thread-safe implementation
+class Singleton {
+public:
+    static Singleton& instance() noexcept {
+        static Singleton inst;
+        return inst;
+    }
+
+    void doSomething() const {
+        std::cout << "Singleton is doing something!\n";
+    }
+
+    Singleton(const Singleton&)            = delete;
+    Singleton& operator=(const Singleton&) = delete;
+    Singleton(Singleton&&)                 = delete;
+    Singleton& operator=(Singleton&&)      = delete;
+
+private:
+    Singleton() = default;
+    ~Singleton() = default;
+};
+
+// Product hierarchy
+class Product {
+public:
+    virtual ~Product() = default;
+    virtual void use() const = 0;
+};
+
+class ConcreteProduct : public Product {
+public:
+    void use() const override {
+        std::cout << "Using ConcreteProduct\n";
+    }
+};
+
+// Creator hierarchy
+class Creator {
+public:
+    virtual ~Creator() = default;
+    virtual std::unique_ptr<Product> createProduct() const = 0;
+};
+
+class ConcreteCreator : public Creator {
+public:
+    std::unique_ptr<Product> createProduct() const override {
+        return std::make_unique<ConcreteProduct>();
+    }
+};
+
+int main() {
+    Singleton::instance().doSomething();
+
+    ConcreteCreator creator;
+    auto product = creator.createProduct();
+    if (!product) throw std::runtime_error("Product creation failed");
+    product->use();
+}

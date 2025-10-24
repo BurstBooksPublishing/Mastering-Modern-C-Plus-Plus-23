@@ -1,0 +1,40 @@
+#include <algorithm>
+#include <iostream>
+#include <memory>
+#include <string>
+#include <type_traits>
+#include <vector>
+
+struct Texture {
+    std::string id;
+    std::unique_ptr<int[]> pixels;               // non-copyable resource
+    explicit Texture(std::string s) : id(std::move(s)), pixels(std::make_unique<int[]>(42)) {}
+    Texture(const Texture&) = delete;
+    Texture& operator=(const Texture&) = delete;
+    Texture(Texture&&) noexcept = default;
+    Texture& operator=(Texture&&) noexcept = default;
+};
+
+int main() {
+    std::vector<Texture> pool;
+    pool.reserve(2);                             // avoid reallocations
+    pool.emplace_back("tex0");
+    pool.emplace_back("tex1");
+
+    for (auto& tex : pool) {                     // modify in place
+        tex.id += "_processed";
+        std::cout << tex.id << '\n';
+    }
+
+    auto it = std::find_if(pool.begin(), pool.end(),
+                           [](const Texture& t) { return t.id.find("tex1") != std::string::npos; });
+    static_assert(std::is_same_v<decltype(it), std::vector<Texture>::iterator>);
+
+    auto process = [](auto&& container) {
+        for (auto&& e : container) { (void)e; }
+    };
+    process(pool);
+    process(std::vector<Texture>{});
+
+    return 0;
+}

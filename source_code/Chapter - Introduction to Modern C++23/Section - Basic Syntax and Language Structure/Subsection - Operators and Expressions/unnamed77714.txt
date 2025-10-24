@@ -1,0 +1,39 @@
+#include <iostream>
+#include <stdexcept>
+
+int main() {
+    const int a = 10;
+    const int b = 5;
+
+    if (b == 0) throw std::invalid_argument("Division by zero");
+
+    const int sum        = a + b;
+    const int difference = a - b;
+    const int product    = a * b;
+    const int quotient   = a / b;
+    const int remainder  = a % b;
+
+    const bool isEqual     = (a == b);
+    const bool isNotEqual  = (a != b);
+    const bool isGreater   = (a > b);
+    const bool isLess      = (a < b);
+
+    const bool logicalAnd = (a > 0 && b > 0);
+    const bool logicalOr  = (a > 0 || b > 0);
+    const bool logicalNot = !(a == b);
+
+    std::cout << "Sum: "        << sum        << '\n'
+              << "Difference: " << difference << '\n'
+              << "Product: "    << product    << '\n'
+              << "Quotient: "   << quotient   << '\n'
+              << "Remainder: "  << remainder  << '\n'
+              << "Is Equal: "     << isEqual    << '\n'
+              << "Is Not Equal: " << isNotEqual << '\n'
+              << "Is Greater: "   << isGreater  << '\n'
+              << "Is Less: "      << isLess     << '\n'
+              << "Logical AND: "  << logicalAnd << '\n'
+              << "Logical OR: "   << logicalOr  << '\n'
+              << "Logical NOT: "  << logicalNot << '\n';
+
+    return 0;
+}

@@ -1,0 +1,50 @@
+#include <iostream>
+#include <queue>
+#include <mutex>
+#include <condition_variable>
+#include <thread>
+#include <chrono>
+
+class Pipeline {
+public:
+    void produce(int count) {
+        for (int i = 0; i < count; ++i) {
+            std::unique_lock lock(mtx_);
+            cv_.wait(lock, [this] { return data_.size() < capacity_; });
+            data_.push(i);
+            std::cout << "Produced: " << i << '\n';
+            lock.unlock();
+            cv_.notify_all();
+        }
+    }
+
+    void consume(int count) {
+        for (int i = 0; i < count; ++i) {
+            std::unique_lock lock(mtx_);
+            cv_.wait(lock, [this] { return !data_.empty(); });
+            int value = data_.front();
+            data_.pop();
+            std::cout << "Consumed: " << value << '\n';
+            lock.unlock();
+            cv_.notify_all();
+        }
+    }
+
+private:
+    std::queue<int> data_;
+    static constexpr size_t capacity_ = 10;
+    std::mutex mtx_;
+    std::condition_variable cv_;
+};
+
+int main() {
+    Pipeline pipeline;
+    constexpr int items = 5;
+
+    std::thread producer([&] { pipeline.produce(items); });
+    std::thread consumer([&] { pipeline.consume(items); });
+
+    producer.join();
+    consumer.join();
+    return 0;
+}

@@ -1,0 +1,16 @@
+#include <iostream>
+#include <vector>
+#include <ranges>
+#include <algorithm>
+
+int main() {
+    const std::vector<int> data{1, 2, 3, 4, 5};
+
+    // Produce sliding windows of size 3; empty if data.size() < 3
+    auto windows = data | std::views::slide(3);
+
+    for (const auto& window : windows) {
+        std::ranges::copy(window, std::ostream_iterator<int>(std::cout, " "));
+        std::cout << '\n';
+    }
+}

@@ -1,0 +1,7 @@
+#include <stdexcept>
+
+int factorial_tail_recursive(int n, int accumulator = 1) {
+    if (n < 0) throw std::invalid_argument("factorial undefined for negative numbers");
+    if (n == 0) return accumulator;
+    return factorial_tail_recursive(n - 1, n * accumulator);
+}

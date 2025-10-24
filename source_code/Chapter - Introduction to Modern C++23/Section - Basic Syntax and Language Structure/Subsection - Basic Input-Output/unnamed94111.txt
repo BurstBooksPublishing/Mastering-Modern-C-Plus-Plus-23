@@ -1,0 +1,7 @@
+#include <iostream>
+
+int main() {
+    std::cerr << "Error: Invalid input!\n";
+    std::clog << "Log: Program started.\n";
+    return 0;
+}

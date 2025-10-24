@@ -1,0 +1,11 @@
+#include <experimental/meta>
+#include <string_view>
+#include <vector>
+
+struct MyStruct {
+    int x;
+    double y;
+};
+
+// Reflect the type itself, not the global scope.
+constexpr auto metadata = std::experimental::reflect_type<MyStruct>();

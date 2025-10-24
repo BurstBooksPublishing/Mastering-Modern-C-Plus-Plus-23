@@ -1,0 +1,7 @@
+#include <stdexcept>
+#include <string>
+
+class ApplicationError : public std::runtime_error {
+public:
+    explicit ApplicationError(const std::string& msg) : std::runtime_error(msg) {}
+};

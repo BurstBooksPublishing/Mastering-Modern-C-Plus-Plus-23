@@ -1,0 +1,67 @@
+#include <chrono>
+#include <exception>
+#include <future>
+#include <iostream>
+#include <thread>
+#include <vector>
+
+void produce(std::promise<int> p, bool succeed) {
+    try {
+        std::this_thread::sleep_for(std::chrono::milliseconds(150));
+        if (!succeed) throw std::runtime_error("produce failed");
+        p.set_value(42);
+    } catch (...) {
+        p.set_exception(std::current_exception());
+    }
+}
+
+void consume(std::future<int> f, const char* name) {
+    try {
+        std::cout << name << " got value: " << f.get() << '\n';
+    } catch (const std::exception& e) {
+        std::cout << name << " observed exception: " << e.what() << '\n';
+    }
+}
+
+int main() {
+    // 1) promise/future with exception propagation
+    {
+        std::promise<int> p;
+        auto f = p.get_future();
+        std::thread prod(produce, std::move(p), false);
+        consume(std::move(f), "direct_consumer");
+        prod.join();
+    }
+
+    // 2) shared_future broadcasting
+    {
+        std::promise<int> p;
+        std::shared_future<int> sf = p.get_future().share();
+        std::vector<std::thread> consumers;
+        for (int i = 0; i < 3; ++i) {
+            consumers.emplace_back([sf, i] {
+                try {
+                    std::cout << "shared_consumer[" << i << "] value: " << sf.get() << '\n';
+                } catch (...) {
+                    std::cout << "shared_consumer[" << i << "] error\n";
+                }
+            });
+        }
+        p.set_value(7);
+        for (auto& t : consumers) t.join();
+    }
+
+    // 3) std::async launch policies
+    {
+        auto deferred = std::async(std::launch::deferred, [] {
+            std::cout << "deferred executed in get()\n";
+            return 1;
+        });
+        auto asynced = std::async(std::launch::async, [] {
+            std::cout << "async executed in background\n";
+            return 2;
+        });
+        std::cout << "async result: " << asynced.get() << '\n';
+        std::cout << "deferred result: " << deferred.get() << '\n';
+    }
+}

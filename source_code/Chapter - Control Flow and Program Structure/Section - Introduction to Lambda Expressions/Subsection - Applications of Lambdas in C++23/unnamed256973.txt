@@ -1,0 +1,13 @@
+#include <iostream>
+
+int main() {
+    int x = 10;
+    int y = 20;
+
+    auto lambda = [x, &y]() noexcept {
+        std::cout << "x: " << x << ", y: " << y << '\n';
+        y += 10; // modifies caller's y
+    };
+
+    lambda();
+}

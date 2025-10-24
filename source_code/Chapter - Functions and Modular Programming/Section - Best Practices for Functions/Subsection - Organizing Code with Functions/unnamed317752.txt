@@ -1,0 +1,8 @@
+#include <stdexcept>
+
+// Returns the square of x; throws on overflow.
+int square(int x) {
+    if (x != 0 && (x > 46340 || x < -46340))   // 46340² fits in 32-bit int
+        throw std::overflow_error("square overflow");
+    return x * x;
+}

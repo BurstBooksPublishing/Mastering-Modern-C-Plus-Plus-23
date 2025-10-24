@@ -1,0 +1,40 @@
+#include <coroutine>
+#include <iostream>
+#include <stdexcept>
+
+struct Task {
+    struct promise_type {
+        Task get_return_object() noexcept { return Task{std::coroutine_handle<promise_type>::from_promise(*this)}; }
+        std::suspend_never initial_suspend() noexcept { return {}; }
+        std::suspend_never final_suspend() noexcept { return {}; }
+        void return_void() noexcept {}
+        void unhandled_exception() { std::terminate(); }
+    };
+
+    using handle_type = std::coroutine_handle<promise_type>;
+    handle_type h;
+
+    explicit Task(handle_type h_) noexcept : h{h_} {}
+    ~Task() { if (h) h.destroy(); }
+    Task(Task&& other) noexcept : h{std::exchange(other.h, {})} {}
+    Task& operator=(Task&& other) noexcept {
+        if (this != &other) {
+            if (h) h.destroy();
+            h = std::exchange(other.h, {});
+        }
+        return *this;
+    }
+    Task(const Task&) = delete;
+    Task& operator=(const Task&) = delete;
+};
+
+Task asyncOperation() {
+    std::cout << "Starting async operation...\n";
+    co_await std::suspend_always{};
+    std::cout << "Async operation completed.\n";
+}
+
+int main() {
+    auto task = asyncOperation();
+    std::cout << "Main thread continues...\n";
+}

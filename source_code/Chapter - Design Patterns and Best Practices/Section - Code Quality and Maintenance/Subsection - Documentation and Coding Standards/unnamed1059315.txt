@@ -1,0 +1,9 @@
+#include <vector>
+#include <utility>   // std::move
+#include <cstdint>   // fixed-width integers
+
+// Compute the value and move it into the result variable to avoid copies.
+auto result = std::move(computeValue());
+
+// Use a fixed-width integer type for clarity and portability.
+std::vector<int32_t> numbers{1, 2, 3};

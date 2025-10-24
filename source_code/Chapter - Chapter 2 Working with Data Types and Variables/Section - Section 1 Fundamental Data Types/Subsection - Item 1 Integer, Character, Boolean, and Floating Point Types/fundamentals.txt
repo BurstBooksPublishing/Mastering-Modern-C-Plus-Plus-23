@@ -1,0 +1,39 @@
+#include <cstdint>
+#include <limits>
+#include <cmath>
+#include <iomanip>
+#include <iostream>
+
+int main() {
+    std::int32_t net_order_id = 42;
+    std::uint64_t large_counter = 0ULL;
+
+    if (large_counter < std::numeric_limits<std::uint64_t>::max()) {
+        ++large_counter;
+    }
+
+    unsigned char buffer[4] = {0xFFu, 0x00u, 0x7Fu, 0x80u};
+
+    bool flag = (net_order_id != 0);
+    std::cout << "flag as int: " << static_cast<int>(flag) << '\n';
+
+    double a = 0.1 * 3;
+    double b = 0.3;
+    double eps = std::numeric_limits<double>::epsilon() * 10.0;
+    if (std::fabs(a - b) <= eps * std::fabs(b)) {
+        std::cout << "a and b considered equal within tolerance\n";
+    } else {
+        std::cout << std::setprecision(17) << "a=" << a << " b=" << b << '\n';
+    }
+
+    std::cout << "int32_t min/max: "
+              << std::numeric_limits<std::int32_t>::min() << "/"
+              << std::numeric_limits<std::int32_t>::max() << '\n';
+    std::cout << "double epsilon: " << std::numeric_limits<double>::epsilon() << '\n';
+
+    int safe_init = static_cast<int>(3.14);
+
+    (void)buffer;
+    (void)safe_init;
+    return 0;
+}

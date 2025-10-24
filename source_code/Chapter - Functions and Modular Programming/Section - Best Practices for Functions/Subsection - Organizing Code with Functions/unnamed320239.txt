@@ -1,0 +1,12 @@
+#include <cstdlib>   // std::abort
+#include <iostream>  // std::cerr
+
+// A function guaranteed not to propagate exceptions; terminates on failure.
+void safeOperation() noexcept {
+    try {
+        // All non-throwing logic goes here.
+    } catch (...) {
+        std::cerr << "safeOperation: unexpected exception\n";
+        std::abort();          // Enforce noexcept guarantee
+    }
+}

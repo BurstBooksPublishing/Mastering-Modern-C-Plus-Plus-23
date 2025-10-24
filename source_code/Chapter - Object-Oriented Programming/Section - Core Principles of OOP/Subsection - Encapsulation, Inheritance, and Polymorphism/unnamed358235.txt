@@ -1,0 +1,37 @@
+#include <iostream>
+#include <memory>
+#include <vector>
+
+class Shape {
+public:
+    virtual ~Shape() = default;
+    virtual void draw() const = 0;
+};
+
+class Circle final : public Shape {
+public:
+    void draw() const override {
+        std::cout << "Drawing a circle.\n";
+    }
+};
+
+class Square final : public Shape {
+public:
+    void draw() const override {
+        std::cout << "Drawing a square.\n";
+    }
+};
+
+void drawShape(const Shape& shape) {
+    shape.draw();
+}
+
+int main() {
+    std::vector<std::unique_ptr<Shape>> shapes;
+    shapes.emplace_back(std::make_unique<Circle>());
+    shapes.emplace_back(std::make_unique<Square>());
+
+    for (const auto& s : shapes) {
+        drawShape(*s);
+    }
+}

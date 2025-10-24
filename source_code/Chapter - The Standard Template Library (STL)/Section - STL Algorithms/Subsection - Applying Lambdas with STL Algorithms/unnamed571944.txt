@@ -1,0 +1,15 @@
+#include <algorithm>
+#include <iostream>
+#include <vector>
+
+int main() {
+    const std::vector<int> numbers{1, 2, 3, 4, 5};
+
+    std::vector<int> squared;
+    squared.reserve(numbers.size());          // avoid reallocations
+    std::transform(numbers.begin(), numbers.end(), std::back_inserter(squared),
+                   [](int n) { return n * n; });
+
+    for (int v : squared) std::cout << v << ' ';
+    std::cout << '\n';
+}

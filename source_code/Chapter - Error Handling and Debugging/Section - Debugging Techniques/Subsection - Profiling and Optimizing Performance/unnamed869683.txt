@@ -1,0 +1,14 @@
+#include <array>
+#include <iostream>
+
+int main() {
+    constexpr std::size_t N = 10;               // fixed compile-time size
+    std::array<int, N> arr{};                   // zero-initialised
+
+    for (std::size_t i = 0; i < arr.size(); ++i) {
+        arr[i] = static_cast<int>(i * i);       // prevent narrowing
+    }
+
+    std::cout << "Array size: " << arr.size() << '\n';
+    return 0;
+}

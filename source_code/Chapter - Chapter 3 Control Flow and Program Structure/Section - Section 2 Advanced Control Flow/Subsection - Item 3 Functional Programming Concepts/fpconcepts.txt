@@ -1,0 +1,46 @@
+#include <algorithm>
+#include <execution>
+#include <iostream>
+#include <numeric>
+#include <ranges>
+#include <vector>
+
+// Applies f to every element of r and returns a std::vector.
+// Requires: R models std::ranges::input_range, F is invocable on range_value_t<R>.
+template <std::ranges::input_range R, std::invocable<std::ranges::range_value_t<R>> F>
+auto eager_map(R&& r, F&& f) {
+    using result_t = std::remove_cvref_t<std::invoke_result_t<F&, std::ranges::range_value_t<R>>>;
+    std::vector<result_t> out;
+    if constexpr (std::ranges::sized_range<R>) out.reserve(std::ranges::size(r));
+    for (auto&& e : r) out.emplace_back(std::invoke(f, e));
+    return out;
+}
+
+// Parallel reduction of r with init and op.
+// Requires: Op is associative and commutative for correct parallel semantics.
+template <std::ranges::input_range R, typename T, typename Op>
+T parallel_fold(R&& r, T init, Op op) {
+    return std::reduce(std::execution::par_unseq,
+                       std::ranges::begin(r), std::ranges::end(r),
+                       init, op);
+}
+
+int main() {
+    constexpr std::size_t N = 1'000'000;
+    std::vector<int> v(N);
+    std::iota(v.begin(), v.end(), 1);
+
+    auto squares = eager_map(v, [](int x) { return 1LL * x * x; });
+
+    auto even_squares = v
+                      | std::views::transform([](int x) { return 1LL * x * x; })
+                      | std::views::filter([](long long s) { return (s & 1) == 0; });
+
+    long long sum_lazy = std::reduce(std::execution::seq,
+                                     even_squares.begin(), even_squares.end(), 0LL);
+
+    long long sum_parallel = parallel_fold(squares, 0LL, std::plus<>{});
+
+    std::cout << "sum_lazy = " << sum_lazy << '\n'
+              << "sum_parallel = " << sum_parallel << '\n';
+}

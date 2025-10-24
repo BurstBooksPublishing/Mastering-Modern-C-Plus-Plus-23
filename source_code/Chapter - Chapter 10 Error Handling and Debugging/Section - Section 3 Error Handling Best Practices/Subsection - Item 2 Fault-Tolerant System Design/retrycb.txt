@@ -1,0 +1,90 @@
+#include <atomic>
+#include <chrono>
+#include <exception>
+#include <functional>
+#include <iostream>
+#include <mutex>
+#include <stdexcept>
+#include <thread>
+#include <type_traits>
+
+class CircuitBreaker {
+public:
+    explicit CircuitBreaker(std::size_t max_failures,
+                            std::chrono::milliseconds cooldown) noexcept
+        : max_failures_(max_failures),
+          cooldown_(cooldown),
+          failures_(0),
+          open_until_(std::chrono::steady_clock::time_point::min()) {}
+
+    [[nodiscard]] bool allow() const noexcept {
+        return std::chrono::steady_clock::now() >= open_until_.load(std::memory_order_acquire);
+    }
+
+    void on_success() noexcept {
+        std::lock_guard lg(m_);
+        failures_ = 0;
+        open_until_.store(std::chrono::steady_clock::time_point::min(), std::memory_order_release);
+    }
+
+    void on_failure() noexcept {
+        std::lock_guard lg(m_);
+        if (++failures_ >= max_failures_) {
+            open_until_.store(std::chrono::steady_clock::now() + cooldown_, std::memory_order_release);
+        }
+    }
+
+private:
+    const std::size_t max_failures_;
+    const std::chrono::milliseconds cooldown_;
+    std::size_t failures_;
+    mutable std::mutex m_;
+    std::atomic<std::chrono::steady_clock::time_point> open_until_;
+};
+
+template <typename F>
+auto retry_with_circuit(F&& fn,
+                        CircuitBreaker& cb,
+                        std::size_t max_retries,
+                        std::chrono::milliseconds base_backoff)
+    -> std::invoke_result_t<F> {
+    using Ret = std::invoke_result_t<F>;
+
+    for (std::size_t attempt = 0; attempt <= max_retries; ++attempt) {
+        if (!cb.allow()) throw std::runtime_error("circuit breaker open");
+
+        try {
+            Ret result = std::invoke(std::forward<F>(fn));
+            cb.on_success();
+            return result;
+        } catch (...) {
+            cb.on_failure();
+            if (attempt == max_retries) throw;
+            std::this_thread::sleep_for(base_backoff * (1ull << attempt));
+        }
+    }
+    __builtin_unreachable();
+}
+
+int unreliable_service(int seed) {
+    if (seed % 3 == 0) throw std::runtime_error("transient error");
+    return seed * 2;
+}
+
+int main() {
+    CircuitBreaker cb(3, std::chrono::seconds(2));
+
+    for (int i = 1; i <= 10; ++i) {
+        try {
+            int val = retry_with_circuit(
+                [i] { return unreliable_service(i); },
+                cb,
+                2,
+                std::chrono::milliseconds(50));
+            std::cout << "success: " << val << '\n';
+        } catch (const std::exception& e) {
+            std::cout << "failed call: " << e.what() << '\n';
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    }
+}

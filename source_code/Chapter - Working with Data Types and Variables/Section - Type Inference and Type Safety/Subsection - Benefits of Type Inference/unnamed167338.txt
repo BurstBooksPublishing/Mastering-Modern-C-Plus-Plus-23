@@ -1,0 +1,26 @@
+#include <initializer_list>
+#include <iostream>
+#include <type_traits>
+
+int main() {
+    // Deduce std::initializer_list<int>
+    auto numbers = {1, 2, 3, 4, 5};
+
+    for (const auto& num : numbers) {
+        std::cout << num << ' ';
+    }
+    std::cout << '\n';
+
+    // Same type as numbers
+    decltype(numbers) moreNumbers = {6, 7, 8, 9, 10};
+
+    // Generic lambda
+    auto add = [](auto a, auto b) { return a + b; };
+    std::cout << "Sum: " << add(3.5, 2.5) << '\n';
+
+    // Ensure result is int
+    auto result = add(10, 20);
+    static_assert(std::is_same_v<decltype(result), int>, "Type mismatch!");
+
+    return 0;
+}

@@ -1,0 +1,11 @@
+#include <vector>
+#include <algorithm>
+#include <execution>
+#include <future>
+
+void process_data_parallel(const std::vector<int>& data) {
+    // Launch parallel transform; discard results to avoid unused-variable warnings
+    std::transform(std::execution::par, data.begin(), data.end(),
+                   std::back_inserter(std::vector<int>{}),
+                   [](int value) { return value * value + 2 * value + 1; });
+}

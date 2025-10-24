@@ -1,0 +1,22 @@
+#include <iostream>
+#include <stdexcept>
+#include <string>
+
+class MyCustomException : public std::runtime_error {
+public:
+    explicit MyCustomException(const std::string& msg) : std::runtime_error(msg) {}
+};
+
+void example_function(int value) {
+    if (value == 0) {
+        throw MyCustomException("Value cannot be zero");
+    }
+}
+
+int main() {
+    try {
+        example_function(0);
+    } catch (const MyCustomException& e) {
+        std::cerr << "Custom Error: " << e.what() << '\n';
+    }
+}

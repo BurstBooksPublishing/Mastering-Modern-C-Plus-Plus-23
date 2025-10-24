@@ -1,0 +1,11 @@
+#include <concepts>
+#include <type_traits>
+
+template <typename T>
+concept Numeric = std::is_arithmetic_v<T>;
+
+template <std::same_as<T> U>
+    requires Numeric<T> && Numeric<U>
+constexpr auto add(T a, U b) noexcept -> decltype(a + b) {
+    return a + b;
+}

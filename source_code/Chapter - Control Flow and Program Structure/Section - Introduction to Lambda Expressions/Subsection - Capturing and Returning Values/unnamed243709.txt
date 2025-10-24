@@ -1,0 +1,18 @@
+#include <iostream>
+#include <utility>
+
+int main() {
+    int x = 10;
+    int y = 20;
+
+    // Immutable capture by value; noexcept for clarity
+    auto lambda1 = [x]() noexcept { return x * 2; };
+
+    // Mutable capture by reference; noexcept because y is an int
+    auto lambda2 = [&y]() noexcept { y *= 2; };
+
+    lambda2(); // y becomes 40
+
+    std::cout << "lambda1(): " << lambda1() << '\n';
+    std::cout << "y after lambda2(): " << y << '\n';
+}

@@ -1,0 +1,100 @@
+#include <iostream>
+#include <memory>
+#include <unordered_map>
+#include <functional>
+#include <vector>
+#include <mutex>
+#include <algorithm>
+
+// Renderer interface
+struct Renderer {
+    virtual ~Renderer() = default;
+    virtual void draw() = 0;
+};
+
+// Concrete renderers
+struct OpenGLRenderer final : Renderer {
+    void draw() override { std::cout << "OpenGL draw\n"; }
+};
+
+struct VulkanRenderer final : Renderer {
+    void draw() override { std::cout << "Vulkan draw\n"; }
+};
+
+// Factory
+class RendererFactory {
+public:
+    using Creator = std::function<std::unique_ptr<Renderer>()>;
+
+    void register_creator(std::string key, Creator c) {
+        creators_.emplace(std::move(key), std::move(c));
+    }
+
+    [[nodiscard]] std::unique_ptr<Renderer> create(const std::string& key) const {
+        if (auto it = creators_.find(key); it != creators_.end()) return it->second();
+        return nullptr;
+    }
+
+private:
+    std::unordered_map<std::string, Creator> creators_;
+};
+
+// Event system
+struct Event {
+    std::string name;
+};
+
+struct Subscriber {
+    virtual ~Subscriber() = default;
+    virtual void on_event(const Event&) = 0;
+};
+
+class EventBus {
+public:
+    void subscribe(std::shared_ptr<Subscriber> s) {
+        std::lock_guard lock(mutex_);
+        subs_.emplace_back(s);
+    }
+
+    void publish(const Event& e) {
+        std::lock_guard lock(mutex_);
+        subs_.erase(std::remove_if(subs_.begin(), subs_.end(),
+                                   [](const std::weak_ptr<Subscriber>& w) { return w.expired(); }),
+                    subs_.end());
+        for (auto& w : subs_)
+            if (auto sp = w.lock()) sp->on_event(e);
+    }
+
+private:
+    std::vector<std::weak_ptr<Subscriber>> subs_;
+    mutable std::mutex mutex_;
+};
+
+// Subscriber implementation
+class LoggingSubscriber final : public Subscriber {
+public:
+    explicit LoggingSubscriber(std::function<void(const Event&)> strategy)
+        : strategy_(std::move(strategy)) {}
+
+    void on_event(const Event& e) override { strategy_(e); }
+
+private:
+    std::function<void(const Event&)> strategy_;
+};
+
+int main() {
+    RendererFactory factory;
+    factory.register_creator("opengl", [] { return std::make_unique<OpenGLRenderer>(); });
+    factory.register_creator("vulkan", [] { return std::make_unique<VulkanRenderer>(); });
+
+    if (auto r = factory.create("opengl")) r->draw();
+
+    EventBus bus;
+    auto logger = std::make_shared<LoggingSubscriber>(
+        [](const Event& e) { std::cout << "Logged event: " << e.name << '\n'; });
+    bus.subscribe(logger);
+    bus.publish(Event{"FrameStart"});
+
+    logger.reset();
+    bus.publish(Event{"FrameEnd"});
+}

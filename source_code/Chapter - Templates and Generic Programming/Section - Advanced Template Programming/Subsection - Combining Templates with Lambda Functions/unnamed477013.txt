@@ -1,0 +1,10 @@
+#include <utility>
+
+template <typename Func1, typename Func2>
+constexpr auto compose(Func1&& f1, Func2&& f2) noexcept {
+    return [f1 = std::forward<Func1>(f1),
+            f2 = std::forward<Func2>(f2)](auto&& x) noexcept(noexcept(f1(f2(std::forward<decltype(x)>(x)))))
+        -> decltype(f1(f2(std::forward<decltype(x)>(x)))) {
+        return f1(f2(std::forward<decltype(x)>(x)));
+    };
+}

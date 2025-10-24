@@ -1,0 +1,17 @@
+#include <iostream>
+#include <memory>
+#include <vector>
+#include <functional>
+
+int main() {
+    // queue of move-only tasks (e.g., captured unique_ptr)
+    std::vector<std::move_only_function<void()>> tasks;
+    tasks.emplace_back([p = std::make_unique<int>(42)]() {
+        std::cout << "owned value: " << *p << '\n';
+    });
+
+    // move task out and execute
+    auto task = std::move(tasks.back());
+    tasks.pop_back();
+    task(); // prints "owned value: 42"
+}

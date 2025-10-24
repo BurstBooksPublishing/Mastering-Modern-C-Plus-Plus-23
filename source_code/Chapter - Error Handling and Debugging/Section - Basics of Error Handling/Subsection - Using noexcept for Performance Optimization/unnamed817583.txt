@@ -1,0 +1,12 @@
+#include <iostream>
+#include <stdexcept>
+
+void handle_error(bool some_condition) {
+    try {
+        if (some_condition) {
+            throw std::runtime_error("An error occurred");
+        }
+    } catch (const std::runtime_error& e) {
+        std::cerr << "Caught exception: " << e.what() << '\n';
+    }
+}

@@ -1,0 +1,4 @@
+#include <array>
+#include <cstdint>
+
+constexpr std::array<int, 5> numbers = {1, 2, 3, 4, 5};

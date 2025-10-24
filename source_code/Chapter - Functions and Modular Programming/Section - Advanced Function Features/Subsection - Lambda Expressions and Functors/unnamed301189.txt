@@ -1,0 +1,6 @@
+#include <atomic>
+#include <functional>
+
+std::atomic<int> x{0};
+std::function<void()> increment_x = [&x]() { ++x; };
+increment_x(); // x becomes 1

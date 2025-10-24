@@ -1,0 +1,16 @@
+#include <type_traits>
+#include <concepts>
+
+template<typename T>
+struct Wrapper {
+    void process() {
+        // Default implementation for non-floating-point types
+    }
+};
+
+template<std::floating_point T>
+struct Wrapper<T> {
+    void process() {
+        // Optimized implementation for floating-point types
+    }
+};

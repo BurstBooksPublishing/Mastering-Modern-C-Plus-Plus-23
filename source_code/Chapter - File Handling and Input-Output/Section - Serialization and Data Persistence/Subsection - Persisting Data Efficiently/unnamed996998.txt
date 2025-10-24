@@ -1,0 +1,19 @@
+#include <fstream>
+#include <stdexcept>
+#include <string>
+
+struct Point3D {
+    double x{}, y{}, z{};
+};
+
+Point3D deserializePoint(const std::string& filename) {
+    std::ifstream inFile(filename, std::ios::binary);
+    if (!inFile)
+        throw std::runtime_error("Cannot open file: " + filename);
+
+    Point3D point;
+    if (!inFile.read(reinterpret_cast<char*>(&point), sizeof(point)))
+        throw std::runtime_error("Failed to read Point3D from file: " + filename);
+
+    return point;
+}

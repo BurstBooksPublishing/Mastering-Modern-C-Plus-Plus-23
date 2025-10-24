@@ -1,0 +1,38 @@
+#include <stdexcept>
+#include <limits>
+
+class Base {
+protected:                       // keep data out of public interface
+    int value_{0};               // trailing underscore for member names
+public:
+    Base() = default;
+    explicit Base(int v) : value_{v} {}
+    virtual ~Base() = default;
+
+    int value() const noexcept { return value_; }
+};
+
+class A : public virtual Base {
+public:
+    A() = default;
+    explicit A(int v) : Base{v} {}
+};
+
+class B : public virtual Base {
+public:
+    B() = default;
+    explicit B(int v) : Base{v} {}
+};
+
+class C : public A, public B {
+public:
+    C() = default;
+    explicit C(int v) : Base{v}, A{v}, B{v} {}   // single Base sub-object
+
+    void setValue(int v) {
+        if (v < std::numeric_limits<int>::min() ||
+            v > std::numeric_limits<int>::max())
+            throw std::out_of_range("value out of range");
+        value_ = v;
+    }
+};

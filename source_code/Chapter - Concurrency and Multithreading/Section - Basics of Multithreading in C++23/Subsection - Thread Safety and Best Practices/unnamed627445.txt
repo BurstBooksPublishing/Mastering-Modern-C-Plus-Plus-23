@@ -1,0 +1,30 @@
+#include <iostream>
+#include <thread>
+#include <vector>
+#include <mutex>
+#include <atomic>
+
+std::mutex cout_mtx;                       // Protects std::cout
+
+void threadFunction(unsigned id) {
+    {
+        std::lock_guard<std::mutex> lock(cout_mtx);
+        std::cout << "Thread ID: " << id << " is running.\n";
+    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+}
+
+int main() {
+    constexpr unsigned num_threads = 5;
+    std::vector<std::thread> threads;
+    threads.reserve(num_threads);
+
+    for (unsigned i = 0; i < num_threads; ++i)
+        threads.emplace_back(threadFunction, i);
+
+    for (auto& t : threads)
+        if (t.joinable()) t.join();
+
+    std::cout << "All threads have completed.\n";
+    return 0;
+}

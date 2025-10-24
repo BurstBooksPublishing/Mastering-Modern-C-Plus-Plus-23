@@ -1,0 +1,21 @@
+#include <cstdint>
+#include <iostream>
+#include <type_traits>
+
+enum class Flags : std::uint32_t {
+    A = 1 << 0,
+    B = 1 << 1,
+    C = 1 << 2
+};
+
+// Enable bitwise operators for Flags
+constexpr Flags operator|(Flags lhs, Flags rhs) noexcept {
+    return static_cast<Flags>(
+        static_cast<std::underlying_type_t<Flags>>(lhs) |
+        static_cast<std::underlying_type_t<Flags>>(rhs));
+}
+
+int main() {
+    Flags combined = Flags::B | Flags::C;
+    std::cout << static_cast<std::uint32_t>(combined) << '\n';
+}

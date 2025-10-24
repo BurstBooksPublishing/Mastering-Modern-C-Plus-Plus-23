@@ -1,0 +1,61 @@
+#include <fstream>
+#include <iostream>
+#include <string>
+#include <coroutine>
+#include <thread>
+#include <future>
+#include <stdexcept>
+
+struct AsyncRead {
+    std::ifstream file;
+    std::string result;
+    std::exception_ptr error{};
+
+    explicit AsyncRead(const std::string& filename) : file(filename) {
+        if (!file)
+            throw std::runtime_error("cannot open file");
+    }
+
+    bool await_ready() const noexcept { return false; }
+
+    void await_suspend(std::coroutine_handle<> h) {
+        std::thread([this, h] {
+            try {
+                std::getline(file, result);
+            } catch (...) {
+                error = std::current_exception();
+            }
+            h.resume();
+        }).detach();
+    }
+
+    std::string await_resume() {
+        if (error) std::rethrow_exception(error);
+        return result;
+    }
+};
+
+struct Task {
+    struct promise_type {
+        Task get_return_object() { return {}; }
+        std::suspend_never initial_suspend() noexcept { return {}; }
+        std::suspend_never final_suspend() noexcept { return {}; }
+        void return_void() {}
+        void unhandled_exception() { std::terminate(); }
+    };
+};
+
+Task readFileAsync(const std::string& filename) {
+    try {
+        AsyncRead reader(filename);
+        std::string content = co_await reader;
+        std::cout << "File content: " << content << '\n';
+    } catch (const std::exception& ex) {
+        std::cerr << "Error: " << ex.what() << '\n';
+    }
+}
+
+int main() {
+    readFileAsync("example.txt");
+    std::this_thread::sleep_for(std::chrono::seconds(1)); // wait for detached thread
+}

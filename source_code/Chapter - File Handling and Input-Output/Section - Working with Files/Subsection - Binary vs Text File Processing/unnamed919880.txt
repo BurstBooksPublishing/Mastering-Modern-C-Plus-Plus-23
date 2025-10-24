@@ -1,0 +1,30 @@
+#include <fstream>
+#include <iostream>
+#include <string>
+
+int main() {
+    constexpr const char* kFileName = "example.txt";
+
+    {
+        std::ofstream outFile(kFileName, std::ios::out | std::ios::trunc);
+        if (!outFile) {
+            std::cerr << "Failed to open file for writing: " << kFileName << '\n';
+            return 1;
+        }
+        outFile << "Hello, World!\n";
+    } // RAII closes outFile
+
+    {
+        std::ifstream inFile(kFileName);
+        if (!inFile) {
+            std::cerr << "Failed to open file for reading: " << kFileName << '\n';
+            return 1;
+        }
+        std::string line;
+        while (std::getline(inFile, line)) {
+            // Process each line
+        }
+    } // RAII closes inFile
+
+    return 0;
+}

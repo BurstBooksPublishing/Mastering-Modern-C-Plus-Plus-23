@@ -1,0 +1,53 @@
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <vector>
+#include <memory>
+#include <algorithm>
+#include <stdexcept>
+
+class RotatingBuffer : public std::streambuf {
+public:
+    explicit RotatingBuffer(std::size_t capacity = 4096)
+        : buffer_(capacity), capacity_(capacity), head_(0) {}
+
+protected:
+    int_type overflow(int_type ch) override {
+        if (traits_type::eq_int_type(ch, traits_type::eof()))
+            return traits_type::not_eof(ch);
+
+        if (head_ == capacity_)
+            head_ = 0;
+
+        buffer_[head_++] = static_cast<char>(ch);
+        return ch;
+    }
+
+    std::streamsize xsputn(const char* s, std::streamsize n) override {
+        for (std::streamsize i = 0; i < n; ++i) {
+            if (overflow(s[i]) == traits_type::eof())
+                return i;
+        }
+        return n;
+    }
+
+private:
+    std::vector<char> buffer_;
+    std::size_t capacity_;
+    std::size_t head_;
+};
+
+class RotatingOStream : public std::ostream {
+public:
+    explicit RotatingOStream(std::size_t capacity = 4096)
+        : std::ostream(&buffer_), buffer_(capacity) {}
+
+private:
+    RotatingBuffer buffer_;
+};
+
+int main() {
+    RotatingOStream ros(1024);
+    ros << "Hello, World!";
+    return 0;
+}

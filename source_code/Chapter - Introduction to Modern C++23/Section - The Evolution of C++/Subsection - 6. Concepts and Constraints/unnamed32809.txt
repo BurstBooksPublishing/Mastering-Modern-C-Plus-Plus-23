@@ -1,0 +1,10 @@
+#include <concepts>
+#include <limits>
+
+template<std::integral T>
+constexpr T add(T a, T b) noexcept {
+    using limits = std::numeric_limits<T>;
+    if (a > 0 && b > limits::max() - a) return limits::max();   // overflow
+    if (a < 0 && b < limits::min() - a) return limits::min();   // underflow
+    return static_cast<T>(a + b);
+}

@@ -1,0 +1,10 @@
+#include <list>
+#include <iostream>
+
+int main() {
+    std::list<int> linked_list{1, 2, 3, 4, 5};   // initialize list with values
+    for (const int& value : linked_list) {       // iterate safely over elements
+        std::cout << value << ' ';
+    }
+    return 0;
+}

@@ -1,0 +1,7 @@
+#include <string>
+
+int main() {
+    const int    x = 42;          // constant integer
+    const double y = 3.14;        // constant floating-point
+    const std::string z = "Hello"; // safe, mutable string
+}

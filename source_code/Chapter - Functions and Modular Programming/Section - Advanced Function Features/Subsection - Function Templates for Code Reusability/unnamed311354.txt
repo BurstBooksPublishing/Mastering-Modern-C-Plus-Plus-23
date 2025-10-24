@@ -1,0 +1,14 @@
+#include <iostream>
+#include <string>
+#include <type_traits>
+
+template <typename T>
+void print(const T& value) {
+    static_assert(!std::is_pointer_v<T>, "Pointer types are not supported");
+    std::cout << value << '\n';
+}
+
+template <>
+void print(const std::string& value) {
+    std::cout << "String: " << value << '\n';
+}

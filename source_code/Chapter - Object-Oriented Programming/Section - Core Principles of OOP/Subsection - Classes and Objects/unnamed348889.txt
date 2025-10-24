@@ -1,0 +1,20 @@
+#include <cstdint>
+#include <utility>
+
+class Point {
+public:
+    constexpr Point() noexcept = default;
+    constexpr Point(std::int32_t x, std::int32_t y) noexcept : x_(x), y_(y) {}
+
+    constexpr std::int32_t x() const noexcept { return x_; }
+    constexpr std::int32_t y() const noexcept { return y_; }
+
+    constexpr void set_x(std::int32_t x) noexcept { x_ = x; }
+    constexpr void set_y(std::int32_t y) noexcept { y_ = y; }
+
+    constexpr bool operator==(const Point& other) const noexcept = default;
+
+private:
+    std::int32_t x_{};
+    std::int32_t y_{};
+};

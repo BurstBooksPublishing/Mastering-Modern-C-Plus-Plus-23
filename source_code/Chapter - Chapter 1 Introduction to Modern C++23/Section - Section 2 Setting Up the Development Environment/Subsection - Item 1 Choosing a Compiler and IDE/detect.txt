@@ -1,0 +1,29 @@
+#include <iostream>
+#include <sstream>
+#include <string_view>
+
+int main() {
+    std::ostringstream oss;
+
+    // Detect compiler and version
+#if defined(__clang__)
+    oss << "Compiler: Clang " << __clang_major__ << '.' << __clang_minor__;
+#elif defined(__GNUC__) && !defined(__clang__)
+    oss << "Compiler: GCC " << __GNUC__ << '.' << __GNUC_MINOR__;
+#elif defined(_MSC_VER)
+    oss << "Compiler: MSVC _MSC_VER=" << _MSC_VER;
+#else
+    oss << "Compiler: unknown";
+#endif
+
+    // Append C++ standard value
+    oss << "; __cplusplus=" << __cplusplus;
+    std::cout << oss.str() << '\n';
+
+    // Compile-time check for C++23
+    if constexpr (__cplusplus >= 202302L) {
+        std::cout << "C++23 or newer detected at compile-time.\n";
+    } else {
+        std::cout << "Older than C++23 detected at compile-time.\n";
+    }
+}

@@ -1,0 +1,33 @@
+#include <iostream>
+#include <thread>
+#include <vector>
+#include <mutex>
+#include <atomic>
+
+std::mutex cout_mtx;               // Protects std::cout
+std::atomic<int> shared_data{0};   // Lock-free counter
+
+void increment_shared_data(int id) {
+    for (int i = 0; i < 1000; ++i) {
+        ++shared_data;            // Atomic increment
+        {
+            std::lock_guard<std::mutex> lk(cout_mtx);
+            std::cout << "Thread " << id << " incremented shared_data to "
+                      << shared_data << '\n';
+        }
+    }
+}
+
+int main() {
+    constexpr int kThreads = 10;
+    std::vector<std::thread> threads;
+    threads.reserve(kThreads);
+
+    for (int i = 0; i < kThreads; ++i)
+        threads.emplace_back(increment_shared_data, i);
+
+    for (auto& t : threads) t.join();
+
+    std::cout << "Final value of shared_data: " << shared_data << '\n';
+    return 0;
+}

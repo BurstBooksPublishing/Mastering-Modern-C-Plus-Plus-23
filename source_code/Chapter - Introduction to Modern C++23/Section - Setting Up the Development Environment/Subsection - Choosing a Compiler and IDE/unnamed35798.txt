@@ -1,0 +1,14 @@
+#include <iostream>
+#include <format>
+#include <print>   // C++23 <print> (fallback to cout if unavailable)
+
+int main() {
+    const std::string message = std::format("Welcome to Modern C++23!");
+
+    // Prefer std::print when available; otherwise fall back to iostream
+#if __cpp_lib_print >= 202207L
+    std::print("{}\n", message);
+#else
+    std::cout << message << '\n';
+#endif
+}

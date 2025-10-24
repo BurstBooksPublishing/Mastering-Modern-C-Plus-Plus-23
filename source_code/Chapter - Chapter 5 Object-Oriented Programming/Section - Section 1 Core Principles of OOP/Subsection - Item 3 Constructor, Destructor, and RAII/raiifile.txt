@@ -1,0 +1,50 @@
+#include <cstdio>
+#include <stdexcept>
+#include <utility>
+#include <vector>
+
+class FileRAII {
+public:
+    explicit FileRAII(const char* path, const char* mode) {
+        file_ = std::fopen(path, mode);
+        if (!file_) throw std::runtime_error("fopen failed");
+    }
+
+    FileRAII(const FileRAII&) = delete;
+    FileRAII& operator=(const FileRAII&) = delete;
+
+    FileRAII(FileRAII&& other) noexcept : file_(other.file_) {
+        other.file_ = nullptr;
+    }
+    FileRAII& operator=(FileRAII&& other) noexcept {
+        if (this != &other) {
+            close();
+            file_ = other.file_;
+            other.file_ = nullptr;
+        }
+        return *this;
+    }
+
+    ~FileRAII() noexcept { close(); }
+
+    std::FILE* get() const noexcept { return file_; }
+    explicit operator bool() const noexcept { return file_ != nullptr; }
+
+private:
+    std::FILE* file_ = nullptr;
+
+    void close() noexcept {
+        if (file_) {
+            std::fclose(file_);
+            file_ = nullptr;
+        }
+    }
+};
+
+void process_file(const char* path) {
+    FileRAII f(path, "rb");
+    std::vector<char> buffer(1024);
+    if (std::fread(buffer.data(), 1, buffer.size(), f.get()) == 0) {
+        // handle EOF or error
+    }
+}

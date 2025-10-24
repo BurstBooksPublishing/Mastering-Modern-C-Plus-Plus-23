@@ -1,0 +1,9 @@
+#include <iostream>
+#include <vector>
+
+void printVector(const std::vector<int>& vec) {
+    for (const int value : vec) {
+        std::cout << value << ' ';
+    }
+    std::cout << '\n';
+}

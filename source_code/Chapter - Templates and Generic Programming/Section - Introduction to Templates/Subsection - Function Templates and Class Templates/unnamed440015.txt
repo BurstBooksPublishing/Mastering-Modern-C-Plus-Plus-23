@@ -1,0 +1,6 @@
+#include <utility>   // std::pair
+#include <string>    // std::string
+
+// Create two strongly-typed pairs with heterogeneous value types
+std::pair<int, double> p1{1, 3.14};
+std::pair<std::string, bool> p2{"Test", true};

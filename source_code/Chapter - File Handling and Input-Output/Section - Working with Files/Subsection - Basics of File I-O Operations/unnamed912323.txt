@@ -1,0 +1,13 @@
+#include <fstream>
+#include <iostream>
+
+int main() {
+    std::ifstream inFile("nonexistent.txt");
+    if (!inFile) {
+        std::cerr << "Error: Could not open file.\n";
+        if (inFile.fail()) std::cerr << "Failbit is set.\n";
+        if (inFile.bad())  std::cerr << "Badbit is set.\n";
+        return EXIT_FAILURE;
+    }
+    return EXIT_SUCCESS;
+}

@@ -1,0 +1,33 @@
+#include <cstdint>
+#include <iostream>
+#include <optional>
+#include <vector>
+
+struct Meters {
+    double value{};
+    explicit constexpr Meters(double v) noexcept : value(v) {}
+    constexpr Meters operator+(Meters rhs) const noexcept { return Meters(value + rhs.value); }
+};
+
+enum class Status : std::uint8_t { OK = 0, Error = 1 };
+
+int main() {
+    std::vector<Meters> positions;
+    positions.emplace_back(1.5);
+    positions.emplace_back(2.25);
+
+    for (const auto& pos : positions) {
+        Meters delta{0.5};
+        Meters next = pos + delta;
+        std::cout << "pos: " << pos.value << " -> next: " << next.value << '\n';
+    }
+
+    auto get_first_ref = [&positions]() -> decltype(auto) { return (positions.front()); };
+    decltype(auto) ref = get_first_ref();
+    static_cast<void>(ref);
+
+    [[maybe_unused]] double meters_double = static_cast<double>(positions.front().value);
+    std::optional<Meters> maybe_m = std::nullopt;
+
+    return static_cast<int>(Status::OK);
+}

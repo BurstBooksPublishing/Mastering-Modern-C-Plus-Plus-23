@@ -1,0 +1,66 @@
+#include <chrono>
+#include <ctime>
+#include <fstream>
+#include <iomanip>
+#include <iostream>
+#include <memory>
+#include <mutex>
+#include <string>
+#include <system_error>
+
+class Logger {
+public:
+    enum class Level { INFO, WARN, ERROR };
+
+    explicit Logger(const std::string& path)
+        : file_{path, std::ios::app}, level_{Level::INFO} {
+        if (!file_) throw std::system_error(errno, std::system_category(),
+                                            "Cannot open log file");
+    }
+
+    void setLevel(Level lvl) noexcept { level_ = lvl; }
+
+    void log(const std::string& msg, Level lvl = Level::INFO) {
+        if (lvl < level_) return;
+
+        std::lock_guard<std::mutex> lock{mtx_};
+        auto now = std::chrono::system_clock::to_time_t(
+                       std::chrono::system_clock::now());
+        file_ << std::put_time(std::localtime(&now), "%F %T")
+              << " [" << toString(lvl) << "] " << msg << '\n'
+              << std::flush;
+    }
+
+    void info(const std::string& msg)  { log(msg, Level::INFO);  }
+    void warn(const std::string& msg)  { log(msg, Level::WARN);  }
+    void error(const std::string& msg) { log(msg, Level::ERROR); }
+
+private:
+    static const char* toString(Level lvl) noexcept {
+        switch (lvl) {
+            case Level::INFO:  return "INFO";
+            case Level::WARN:  return "WARN";
+            case Level::ERROR: return "ERROR";
+        }
+        return "UNKNOWN";
+    }
+
+    std::ofstream file_;
+    std::mutex    mtx_;
+    Level         level_;
+};
+
+int main() {
+    try {
+        Logger logger("production.log");
+        logger.info("Application started");
+
+        logger.error("Database connection failed");
+
+        logger.info("Application shutting down");
+    } catch (const std::system_error& e) {
+        std::cerr << "Fatal: " << e.what() << " (" << e.code() << ")\n";
+        return EXIT_FAILURE;
+    }
+    return EXIT_SUCCESS;
+}

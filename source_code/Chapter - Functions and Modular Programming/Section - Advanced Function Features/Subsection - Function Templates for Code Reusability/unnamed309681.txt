@@ -1,0 +1,17 @@
+#include <type_traits>
+#include <cmath>
+
+template <typename T1, typename T2>
+bool is_equal(T1 a, T2 b) noexcept
+{
+    using CT = std::common_type_t<T1, T2>;
+
+    if constexpr (std::is_floating_point_v<CT>) {
+        constexpr CT epsilon = std::numeric_limits<CT>::epsilon();
+        return std::fabs(static_cast<CT>(a) - static_cast<CT>(b)) <=
+               epsilon * std::max(std::fabs(static_cast<CT>(a)),
+                                  std::fabs(static_cast<CT>(b)));
+    } else {
+        return a == b;
+    }
+}

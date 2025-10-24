@@ -1,0 +1,16 @@
+#include <iostream>
+#include <stdexcept>
+#include <string>
+
+class CustomException : public std::runtime_error {
+public:
+    explicit CustomException(const std::string& msg) : std::runtime_error(msg) {}
+};
+
+int main() {
+    try {
+        throw CustomException("Custom error message");
+    } catch (const CustomException& e) {
+        std::cerr << "Caught custom exception: " << e.what() << '\n';
+    }
+}

@@ -1,0 +1,8 @@
+#include <iostream>
+#include <memory>
+
+int main() {
+    auto ptr = std::make_unique<int>(42);   // allocate and initialize
+    std::cout << *ptr << '\n';              // dereference and print
+    return 0;
+}

@@ -1,0 +1,30 @@
+#include <iostream>
+#include <thread>
+#include <mutex>
+#include <vector>
+
+std::mutex mtx;
+int shared_data = 0;
+
+void increment(int times) {
+    for (int i = 0; i < times; ++i) {
+        std::lock_guard<std::mutex> lock(mtx); // RAII ensures unlock on any exit path
+        ++shared_data;
+    }
+}
+
+int main() {
+    constexpr int threads = 10;
+    constexpr int increments_per_thread = 1000;
+
+    std::vector<std::thread> pool;
+    pool.reserve(threads);
+
+    for (int i = 0; i < threads; ++i)
+        pool.emplace_back(increment, increments_per_thread);
+
+    for (auto& t : pool) t.join();
+
+    std::cout << "Shared data: " << shared_data << '\n';
+    return 0;
+}

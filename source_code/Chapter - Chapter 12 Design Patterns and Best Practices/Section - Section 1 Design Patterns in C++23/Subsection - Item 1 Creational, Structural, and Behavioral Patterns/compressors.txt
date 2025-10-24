@@ -1,0 +1,92 @@
+#include <chrono>
+#include <cstdint>
+#include <iostream>
+#include <memory>
+#include <stdexcept>
+#include <string>
+#include <string_view>
+#include <vector>
+
+// Abstract product
+class Compressor {
+public:
+    virtual ~Compressor() = default;
+    virtual std::vector<std::byte> compress(std::string_view data) = 0;
+};
+
+// Fast compressor: length-prefixed copy
+class FastCompressor final : public Compressor {
+public:
+    std::vector<std::byte> compress(std::string_view data) override {
+        std::vector<std::byte> out;
+        out.reserve(data.size() + sizeof(uint32_t));
+        uint32_t len = static_cast<uint32_t>(data.size());
+        const auto* p = reinterpret_cast<const std::byte*>(&len);
+        out.insert(out.end(), p, p + sizeof(len));
+        out.insert(out.end(),
+                   reinterpret_cast<const std::byte*>(data.data()),
+                   reinterpret_cast<const std::byte*>(data.data() + data.size()));
+        return out;
+    }
+};
+
+// Ratio compressor: drop vowels
+class RatioCompressor final : public Compressor {
+public:
+    std::vector<std::byte> compress(std::string_view data) override {
+        std::vector<std::byte> out;
+        out.reserve(data.size());
+        for (char c : data) {
+            switch (c) {
+                case 'a': case 'e': case 'i': case 'o': case 'u':
+                case 'A': case 'E': case 'I': case 'O': case 'U':
+                    continue;
+                default:
+                    out.push_back(static_cast<std::byte>(c));
+            }
+        }
+        return out;
+    }
+};
+
+// Decorator: add timing
+class LoggingCompressor final : public Compressor {
+public:
+    explicit LoggingCompressor(std::unique_ptr<Compressor> inner)
+        : inner_(std::move(inner)) {
+        if (!inner_) throw std::invalid_argument("inner compressor is null");
+    }
+
+    std::vector<std::byte> compress(std::string_view data) override {
+        using clock = std::chrono::steady_clock;
+        const auto t0 = clock::now();
+        auto out = inner_->compress(data);
+        const auto t1 = clock::now();
+        const auto us = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0);
+        std::clog << "compress took " << us.count() << " µs, "
+                  << "out=" << out.size() << " bytes\n";
+        return out;
+    }
+
+private:
+    std::unique_ptr<Compressor> inner_;
+};
+
+// Factory
+std::unique_ptr<Compressor> create_compressor(std::string_view tag, bool with_logging = false) {
+    std::unique_ptr<Compressor> p;
+    if (tag == "fast") {
+        p = std::make_unique<FastCompressor>();
+    } else if (tag == "ratio") {
+        p = std::make_unique<RatioCompressor>();
+    } else {
+        throw std::invalid_argument("unknown compressor tag");
+    }
+    return with_logging ? std::make_unique<LoggingCompressor>(std::move(p)) : std::move(p);
+}
+
+int main() {
+    const std::string data = "This is a sample payload used in HPC telemetry.";
+    auto compressor = create_compressor("ratio", true);
+    [[maybe_unused]] auto compressed = compressor->compress(data);
+}

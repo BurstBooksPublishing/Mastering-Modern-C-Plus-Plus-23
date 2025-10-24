@@ -1,0 +1,26 @@
+#include <iostream>
+#include <type_traits>
+#include <typeinfo>
+
+// Detect if T is a pointer
+template <typename T>
+struct is_pointer : std::false_type {};
+
+template <typename T>
+struct is_pointer<T*> : std::true_type {};
+
+// Remove one level of pointer from T
+template <typename T>
+struct remove_pointer { using type = T; };
+
+template <typename T>
+struct remove_pointer<T*> { using type = T; };
+
+int main() {
+    std::cout << std::boolalpha;
+    std::cout << "Is int* a pointer? " << is_pointer<int*>::value << '\n';
+    std::cout << "Is int a pointer? " << is_pointer<int>::value << '\n';
+
+    using BaseType = remove_pointer<int*>::type;
+    std::cout << "Underlying type of int* is: " << typeid(BaseType).name() << '\n';
+}

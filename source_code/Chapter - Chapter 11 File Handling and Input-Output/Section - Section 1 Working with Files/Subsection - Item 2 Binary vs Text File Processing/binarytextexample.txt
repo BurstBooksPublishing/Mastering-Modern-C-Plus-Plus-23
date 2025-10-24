@@ -1,0 +1,80 @@
+#include <cstdint>
+#include <fstream>
+#include <iostream>
+#include <stdexcept>
+#include <string>
+#include <vector>
+
+static inline void put_le32(std::uint32_t v, std::byte out[4]) noexcept {
+    out[0] = static_cast<std::byte>(v & 0xFFu);
+    out[1] = static_cast<std::byte>((v >> 8) & 0xFFu);
+    out[2] = static_cast<std::byte>((v >> 16) & 0xFFu);
+    out[3] = static_cast<std::byte>((v >> 24) & 0xFFu);
+}
+
+static inline std::uint32_t get_le32(const std::byte in[4]) noexcept {
+    return static_cast<std::uint32_t>(in[0]) |
+           (static_cast<std::uint32_t>(in[1]) << 8) |
+           (static_cast<std::uint32_t>(in[2]) << 16) |
+           (static_cast<std::uint32_t>(in[3]) << 24);
+}
+
+void write_binary_le(const std::string& path, const std::vector<std::uint32_t>& data) {
+    std::ofstream ofs(path, std::ios::binary);
+    if (!ofs) throw std::runtime_error("failed to open file for binary write");
+    std::vector<std::byte> buf(data.size() * 4);
+    for (size_t i = 0; i < data.size(); ++i) {
+        put_le32(data[i], &buf[i * 4]);
+    }
+    ofs.write(reinterpret_cast<const char*>(buf.data()), static_cast<std::streamsize>(buf.size()));
+}
+
+std::vector<std::uint32_t> read_binary_le(const std::string& path) {
+    std::ifstream ifs(path, std::ios::binary);
+    if (!ifs) throw std::runtime_error("failed to open file for binary read");
+    ifs.seekg(0, std::ios::end);
+    std::streamoff sz = ifs.tellg();
+    if (sz < 0 || sz % 4 != 0) throw std::runtime_error("binary file size not a multiple of 4");
+    std::vector<std::byte> buf(static_cast<size_t>(sz));
+    ifs.seekg(0, std::ios::beg);
+    ifs.read(reinterpret_cast<char*>(buf.data()), sz);
+    std::vector<std::uint32_t> out;
+    out.reserve(buf.size() / 4);
+    for (size_t i = 0; i < buf.size(); i += 4) {
+        out.push_back(get_le32(&buf[i]));
+    }
+    return out;
+}
+
+void write_text(const std::string& path, const std::vector<std::uint32_t>& data) {
+    std::ofstream ofs(path);
+    if (!ofs) throw std::runtime_error("failed to open file for text write");
+    for (std::uint32_t v : data) ofs << v << '\n';
+}
+
+std::vector<std::uint32_t> read_text(const std::string& path) {
+    std::ifstream ifs(path);
+    if (!ifs) throw std::runtime_error("failed to open file for text read");
+    std::vector<std::uint32_t> out;
+    std::uint32_t v;
+    while (ifs >> v) out.push_back(v);
+    return out;
+}
+
+int main() {
+    std::vector<std::uint32_t> values;
+    values.reserve(8);
+    for (std::uint32_t i = 1; i <= 8; ++i) values.push_back(i * 10u);
+
+    write_binary_le("data.bin", values);
+    write_text("data.txt", values);
+
+    auto bin_read = read_binary_le("data.bin");
+    auto txt_read = read_text("data.txt");
+
+    std::cout << "binary read:";
+    for (std::uint32_t v : bin_read) std::cout << ' ' << v;
+    std::cout << "\ntext  read:";
+    for (std::uint32_t v : txt_read) std::cout << ' ' << v;
+    std::cout << '\n';
+}

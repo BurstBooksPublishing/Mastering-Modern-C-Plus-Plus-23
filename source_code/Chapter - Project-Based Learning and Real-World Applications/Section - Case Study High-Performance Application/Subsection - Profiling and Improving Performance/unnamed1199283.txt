@@ -1,0 +1,9 @@
+#include <type_traits>
+
+template <typename T>
+constexpr T factorial(T n) noexcept {
+    static_assert(std::is_integral_v<T>, "Integral type required");
+    return (n <= 1) ? 1 : n * factorial(n - 1);
+}
+
+constexpr unsigned long long result = factorial(10ULL);

@@ -1,0 +1,11 @@
+#include <iostream>
+#include <limits>
+#include <stdexcept>
+
+// Returns the quotient or throws on error.
+int safe_divide(int a, int b) {
+    if (b == 0) throw std::invalid_argument("Division by zero");
+    if (b == -1 && a == std::numeric_limits<int>::min())
+        throw std::overflow_error("Division overflow");
+    return a / b;
+}

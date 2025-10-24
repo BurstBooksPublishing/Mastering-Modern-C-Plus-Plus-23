@@ -1,0 +1,17 @@
+#include <gtest/gtest.h>
+
+// Minimal interface assumed by the tests
+int add(int a, int b);
+int subtract(int a, int b);
+
+TEST(MyLibraryTest, AdditionTest) {
+    EXPECT_EQ(add(2, 3), 5);
+    EXPECT_EQ(add(-1, 1), 0);
+    EXPECT_EQ(add(0, 0), 0);
+}
+
+TEST(MyLibraryTest, SubtractionTest) {
+    EXPECT_EQ(subtract(5, 3), 2);
+    EXPECT_EQ(subtract(0, 0), 0);
+    EXPECT_EQ(subtract(-1, -1), 0);
+}

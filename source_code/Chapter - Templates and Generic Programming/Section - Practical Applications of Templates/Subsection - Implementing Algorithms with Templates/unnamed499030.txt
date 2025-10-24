@@ -1,0 +1,11 @@
+#include <vector>
+#include <stdexcept>
+#include <numeric>
+
+template <typename T>
+T dot_product(const std::vector<T>& v1, const std::vector<T>& v2) {
+    if (v1.size() != v2.size()) {
+        throw std::invalid_argument("Vectors must be of the same size");
+    }
+    return std::inner_product(v1.begin(), v1.end(), v2.begin(), T{});
+}

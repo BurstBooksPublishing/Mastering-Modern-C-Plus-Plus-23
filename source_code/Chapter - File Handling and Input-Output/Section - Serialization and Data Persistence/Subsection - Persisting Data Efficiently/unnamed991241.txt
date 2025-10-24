@@ -1,0 +1,38 @@
+#include <cereal/archives/binary.hpp>
+#include <cereal/types/string.hpp>
+#include <fstream>
+#include <iostream>
+#include <string>
+
+struct Person {
+    std::string name;
+    int age{};
+    double height{};
+
+    template <class Archive>
+    void serialize(Archive& ar) { ar(name, age, height); }
+};
+
+int main() {
+    const std::string file = "person.dat";
+
+    {
+        Person person{"John Doe", 30, 1.75};
+        std::ofstream os(file, std::ios::binary);
+        if (!os) throw std::runtime_error("Cannot open file for writing");
+        cereal::BinaryOutputArchive oar(os);
+        oar(person);
+    }
+
+    Person loaded;
+    {
+        std::ifstream is(file, std::ios::binary);
+        if (!is) throw std::runtime_error("Cannot open file for reading");
+        cereal::BinaryInputArchive iar(is);
+        iar(loaded);
+    }
+
+    std::cout << "Name: "   << loaded.name   << '\n'
+              << "Age: "    << loaded.age    << '\n'
+              << "Height: " << loaded.height << '\n';
+}

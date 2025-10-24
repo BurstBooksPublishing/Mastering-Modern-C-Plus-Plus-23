@@ -1,0 +1,11 @@
+#include <cmath>
+#include <stdexcept>
+
+constexpr double kPi = 3.14159265358979323846;
+
+double CalculateArea(double radius) {
+    if (radius < 0.0) throw std::invalid_argument("radius must be non-negative");
+    return kPi * radius * radius;
+}
+
+double area = CalculateArea(2.5);

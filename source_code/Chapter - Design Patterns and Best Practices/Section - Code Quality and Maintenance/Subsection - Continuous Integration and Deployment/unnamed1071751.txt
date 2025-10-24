@@ -1,0 +1,44 @@
+yaml
+name: C++ CD
+
+on:
+  workflow_run:
+    workflows: ["C++ CI"]
+    branches: [main]
+    types: [completed]
+
+env:
+  ARTIFACT_NAME: app.tar.gz
+  REMOTE_USER: ${{ secrets.REMOTE_USER }}
+  REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+  REMOTE_PATH: ${{ secrets.REMOTE_PATH }}
+  SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+
+jobs:
+  deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          path: build/app
+
+      - name: Package application
+        run: tar -czf "$ARTIFACT_NAME" -C build/app .
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "$REMOTE_HOST" >> ~/.ssh/known_hosts
+
+      - name: Deploy to server
+        run: |
+          scp -i ~/.ssh/deploy_key "$ARTIFACT_NAME" "$REMOTE_USER@$REMOTE_HOST:$REMOTE_PATH"
+          ssh -i ~/.ssh/deploy_key "$REMOTE_USER@$REMOTE_HOST" \
+            "cd $REMOTE_PATH && tar -xzf $ARTIFACT_NAME && rm $ARTIFACT_NAME"

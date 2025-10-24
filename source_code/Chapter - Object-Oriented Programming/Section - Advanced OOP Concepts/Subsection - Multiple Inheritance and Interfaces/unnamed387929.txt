@@ -1,0 +1,35 @@
+#include <cmath>
+#include <memory>
+#include <vector>
+
+class Shape {
+public:
+    virtual double area() const noexcept = 0;
+    virtual ~Shape() = default;
+};
+
+class Movable {
+public:
+    virtual void move(double dx, double dy) noexcept = 0;
+    virtual ~Movable() = default;
+};
+
+class Circle final : public Shape, public Movable {
+public:
+    Circle(double x, double y, double radius)
+        : x_(x), y_(y), radius_(std::abs(radius)) {}
+
+    double area() const noexcept override {
+        return M_PI * radius_ * radius_;
+    }
+
+    void move(double dx, double dy) noexcept override {
+        x_ += dx;
+        y_ += dy;
+    }
+
+private:
+    double x_;
+    double y_;
+    double radius_;
+};

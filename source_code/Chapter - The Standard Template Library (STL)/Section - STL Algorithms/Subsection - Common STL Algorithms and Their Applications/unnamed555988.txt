@@ -1,0 +1,10 @@
+#include <algorithm>
+#include <vector>
+
+int main() {
+    std::vector<int> v = {1, 2, 3};
+    std::sort(v.begin(), v.end());               // Ensure lexicographically smallest first
+    do {
+        // Process permutation
+    } while (std::next_permutation(v.begin(), v.end()));
+}

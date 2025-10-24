@@ -1,0 +1,37 @@
+#include <iostream>
+#include <memory>
+#include <stdexcept>
+
+class FaultTolerantSystem {
+public:
+    FaultTolerantSystem() : backup_(std::make_unique<BackupSystem>()) {}
+
+    void performCriticalOperation() noexcept {
+        try {
+            primaryOperation();
+        } catch (const std::exception& ex) {
+            std::cerr << "Primary failure: " << ex.what() << '\n';
+            backup_->fallbackOperation();
+        }
+    }
+
+private:
+    void primaryOperation() {
+        throw std::runtime_error("Primary system failure");
+    }
+
+    class BackupSystem {
+    public:
+        void fallbackOperation() const noexcept {
+            std::cout << "Backup system activated. Operation successful.\n";
+        }
+    };
+
+    std::unique_ptr<BackupSystem> backup_;
+};
+
+int main() {
+    FaultTolerantSystem system;
+    system.performCriticalOperation();
+    return 0;
+}

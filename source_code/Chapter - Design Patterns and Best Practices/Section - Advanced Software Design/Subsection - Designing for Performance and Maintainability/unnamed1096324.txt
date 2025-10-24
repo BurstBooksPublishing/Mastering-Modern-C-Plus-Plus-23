@@ -1,0 +1,8 @@
+#include <memory>
+#include <iostream>
+
+int main() {
+    auto ptr = std::make_unique<int>(42);   // RAII-managed heap integer
+    std::cout << *ptr << '\n';              // Use the resource
+    return 0;                               // Automatic cleanup on scope exit
+}

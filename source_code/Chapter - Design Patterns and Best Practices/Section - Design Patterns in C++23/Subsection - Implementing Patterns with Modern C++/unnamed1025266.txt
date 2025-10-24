@@ -1,0 +1,29 @@
+#include <functional>
+#include <iostream>
+#include <memory>
+
+class Context {
+public:
+    using Strategy = std::function<void()>;
+
+    void setStrategy(Strategy strategy) {
+        strategy_ = std::move(strategy);
+    }
+
+    void executeStrategy() const {
+        if (strategy_) {
+            strategy_();
+        }
+    }
+
+private:
+    Strategy strategy_;
+};
+
+void strategyA() {
+    std::cout << "Executing Strategy A\n";
+}
+
+void strategyB() {
+    std::cout << "Executing Strategy B\n";
+}

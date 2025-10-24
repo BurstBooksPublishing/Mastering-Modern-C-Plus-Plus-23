@@ -1,0 +1,47 @@
+#include <filesystem>
+#include <fstream>
+#include <iostream>
+#include <vector>
+#include <chrono>
+#include <string_view>
+
+namespace fs = std::filesystem;
+
+std::vector<std::byte> read_file(const fs::path& p) {
+    const auto size = fs::file_size(p);
+    std::vector<std::byte> buffer(size);
+    std::ifstream in{p, std::ios::binary};
+    in.exceptions(std::ios::failbit | std::ios::badbit);
+    in.read(reinterpret_cast<char*>(buffer.data()), static_cast<std::streamsize>(size));
+    return buffer;
+}
+
+void write_file_atomic(const fs::path& p, std::span<const std::byte> data) {
+    const fs::path tmp = p.string() + ".tmp";
+    {
+        std::ofstream out{tmp, std::ios::binary | std::ios::trunc};
+        out.exceptions(std::ios::failbit | std::ios::badbit);
+        out.write(reinterpret_cast<const char*>(data.data()), static_cast<std::streamsize>(data.size()));
+    }
+    fs::rename(tmp, p);
+}
+
+int main(int argc, char* argv[]) {
+    try {
+        if (argc != 3) {
+            std::cerr << "usage: " << argv[0] << " <src> <dst>\n";
+            return 1;
+        }
+        const fs::path src{argv[1]};
+        const fs::path dst{argv[2]};
+
+        const auto start = std::chrono::steady_clock::now();
+        const auto data = read_file(src);
+        write_file_atomic(dst, data);
+        const auto elapsed = std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count();
+        std::cout << "Copied " << data.size() << " bytes in " << elapsed << "s\n";
+    } catch (const std::exception& e) {
+        std::cerr << "error: " << e.what() << '\n';
+        return 2;
+    }
+}

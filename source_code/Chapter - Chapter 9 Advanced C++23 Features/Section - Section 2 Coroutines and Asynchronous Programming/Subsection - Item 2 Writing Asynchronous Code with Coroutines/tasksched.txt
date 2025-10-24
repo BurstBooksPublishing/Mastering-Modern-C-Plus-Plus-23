@@ -1,0 +1,151 @@
+#include <chrono>
+#include <condition_variable>
+#include <coroutine>
+#include <exception>
+#include <future>
+#include <iostream>
+#include <mutex>
+#include <queue>
+#include <thread>
+#include <optional>
+
+// Global scheduler for coroutines
+struct Scheduler {
+    static Scheduler& instance() noexcept {
+        static Scheduler s;
+        return s;
+    }
+
+    void post(std::coroutine_handle<> h) {
+        {
+            std::lock_guard lg(m_);
+            q_.push(h);
+        }
+        cv_.notify_one();
+    }
+
+    void run() {
+        std::unique_lock ul(m_);
+        for (;;) {
+            cv_.wait(ul, [this] { return !q_.empty() || stop_; });
+            if (stop_) break;
+            auto h = q_.front();
+            q_.pop();
+            ul.unlock();
+            h.resume();
+            ul.lock();
+        }
+    }
+
+    void stop() noexcept {
+        {
+            std::lock_guard lg(m_);
+            stop_ = true;
+        }
+        cv_.notify_all();
+    }
+
+private:
+    Scheduler() = default;
+    std::mutex m_;
+    std::condition_variable cv_;
+    std::queue<std::coroutine_handle<>> q_;
+    bool stop_ = false;
+};
+
+// Awaitable task type
+template <typename T>
+struct Task {
+    struct promise_type {
+        std::optional<T> value;
+        std::exception_ptr ex;
+        std::coroutine_handle<> cont{};
+
+        Task get_return_object() {
+            return Task{std::coroutine_handle<promise_type>::from_promise(*this)};
+        }
+        std::suspend_always initial_suspend() noexcept { return {}; }
+        struct final_awaiter {
+            bool await_ready() noexcept { return false; }
+            std::coroutine_handle<> await_suspend(std::coroutine_handle<promise_type> h) noexcept {
+                return h.promise().cont ? h.promise().cont : std::noop_coroutine();
+            }
+            void await_resume() noexcept {}
+        };
+        final_awaiter final_suspend() noexcept { return {}; }
+        void unhandled_exception() noexcept { ex = std::current_exception(); }
+        void return_value(T v) noexcept(std::is_nothrow_move_constructible_v<T>) { value = std::move(v); }
+    };
+
+    using handle_type = std::coroutine_handle<promise_type>;
+    handle_type coro{};
+
+    explicit Task(handle_type h) noexcept : coro(h) {}
+    Task(Task&& o) noexcept : coro(std::exchange(o.coro, {})) {}
+    Task& operator=(Task&& o) noexcept {
+        if (this != &o) {
+            if (coro) coro.destroy();
+            coro = std::exchange(o.coro, {});
+        }
+        return *this;
+    }
+    ~Task() { if (coro) coro.destroy(); }
+
+    void start() { Scheduler::instance().post(coro); }
+
+    struct awaiter {
+        handle_type coro;
+        bool await_ready() const noexcept { return !coro || coro.done(); }
+        void await_suspend(std::coroutine_handle<> h) noexcept {
+            coro.promise().cont = h;
+            coro.resume();
+        }
+        T await_resume() {
+            if (coro.promise().ex) std::rethrow_exception(coro.promise().ex);
+            return std::move(*coro.promise().value);
+        }
+    };
+    awaiter operator co_await() const noexcept { return awaiter{coro}; }
+};
+
+// Sleep awaitable (demo only; production should use event loop timers)
+struct Sleep {
+    std::chrono::milliseconds dur;
+    bool await_ready() const noexcept { return dur.count() <= 0; }
+    void await_suspend(std::coroutine_handle<> h) const {
+        std::thread([h, d = dur] {
+            std::this_thread::sleep_for(d);
+            Scheduler::instance().post(h);
+        }).detach();
+    }
+    void await_resume() const noexcept {}
+};
+
+// Simulate async work
+Task<int> async_work(int id, std::chrono::milliseconds dur) {
+    co_await Sleep{dur};
+    co_return id * 10;
+}
+
+// Orchestrate two concurrent tasks
+Task<void> orchestrator(std::shared_ptr<std::promise<void>> done) {
+    auto t1 = async_work(1, std::chrono::milliseconds(300));
+    auto t2 = async_work(2, std::chrono::milliseconds(500));
+    t1.start();
+    t2.start();
+    int r1 = co_await t1;
+    int r2 = co_await t2;
+    std::cout << "Results: " << r1 << " + " << r2 << " = " << (r1 + r2) << '\n';
+    done->set_value();
+}
+
+int main() {
+    std::thread worker([] { Scheduler::instance().run(); });
+
+    auto done = std::make_shared<std::promise<void>>();
+    orchestrator(done).start();
+    done->get_future().wait();
+
+    Scheduler::instance().stop();
+    worker.join();
+}

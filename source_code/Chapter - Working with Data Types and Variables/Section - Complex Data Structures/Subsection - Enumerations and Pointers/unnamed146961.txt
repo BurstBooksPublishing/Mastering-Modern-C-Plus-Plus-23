@@ -1,0 +1,20 @@
+#include <memory>
+#include <vector>
+
+enum class NodeType { Data, Control };
+
+struct Node {
+    NodeType type;
+    int value;
+    std::unique_ptr<Node> next;          // automatic ownership & cleanup
+};
+
+// Build list safely; returns the head
+std::unique_ptr<Node> makeSampleList() {
+    auto head = std::make_unique<Node>(NodeType::Data, 10, nullptr);
+    head->next = std::make_unique<Node>(NodeType::Control, 20, nullptr);
+    return head;
+}
+
+// Global list (optional)
+std::unique_ptr<Node> g_head = makeSampleList();

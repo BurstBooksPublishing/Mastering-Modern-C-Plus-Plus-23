@@ -1,0 +1,19 @@
+#include <iostream>
+#include <concepts>
+
+template<typename T>
+concept Incrementable = requires(T t) {
+    { ++t } -> std::same_as<T&>;
+};
+
+template<Incrementable T>
+void incrementAndPrint(T value) {
+    ++value;
+    std::cout << "Incremented value: " << value << '\n';
+}
+
+int main() {
+    int num = 5;
+    incrementAndPrint(num);
+    // incrementAndPrint("Hello"); // compile-time error
+}

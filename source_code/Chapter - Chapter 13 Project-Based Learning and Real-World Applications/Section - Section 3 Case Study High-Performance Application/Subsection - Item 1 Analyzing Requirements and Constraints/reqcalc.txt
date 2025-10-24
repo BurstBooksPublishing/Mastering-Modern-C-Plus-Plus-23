@@ -1,0 +1,45 @@
+#include <algorithm>
+#include <cmath>
+#include <iomanip>
+#include <iostream>
+#include <limits>
+#include <thread>
+
+// Returns the minimum number of physical CPU cores required to sustain
+// the given throughput while respecting the maximum per-core utilization.
+unsigned minimal_cores(double cpu_seconds_per_request,
+                       double target_requests_per_sec,
+                       double max_utilization) {
+    if (cpu_seconds_per_request <= 0.0 ||
+        target_requests_per_sec <= 0.0 ||
+        max_utilization <= 0.0 || max_utilization > 1.0) {
+        throw std::invalid_argument("All arguments must be positive and max_utilization <= 1.0");
+    }
+
+    const double required_cpu_seconds = cpu_seconds_per_request * target_requests_per_sec;
+    return static_cast<unsigned>(std::ceil(required_cpu_seconds / max_utilization));
+}
+
+int main() {
+    const double cpu_time = 0.010;   // seconds per request
+    const double target_tps = 200.0; // requests per second
+    const double util = 0.75;        // target per-core utilization
+
+    const unsigned cores = minimal_cores(cpu_time, target_tps, util);
+
+    std::cout << std::fixed << std::setprecision(3);
+    std::cout << "Per-request CPU (s): " << cpu_time << '\n'
+              << "Target throughput (req/s): " << target_tps << '\n'
+              << "Assumed max utilization: " << util << '\n'
+              << "Minimal physical cores required: " << cores << '\n';
+
+    const unsigned avail_cores = std::max(1u, std::min(cores, std::thread::hardware_concurrency()));
+    const double S = 4.0; // desired speedup
+    const unsigned N = avail_cores;
+
+    // Amdahl's law: p = (1 - 1/S) / (1 - 1/N)
+    const double p = (N == 1) ? 1.0 : std::clamp((1.0 - 1.0 / S) / (1.0 - 1.0 / N), 0.0, 1.0);
+
+    std::cout << "To reach S=" << S << " on N=" << N << " cores requires p=" << p << '\n';
+    return 0;
+}

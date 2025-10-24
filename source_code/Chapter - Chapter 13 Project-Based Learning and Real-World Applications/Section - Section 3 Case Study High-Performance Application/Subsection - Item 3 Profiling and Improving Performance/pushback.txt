@@ -1,0 +1,46 @@
+#include <algorithm>
+#include <chrono>
+#include <cstddef>
+#include <iostream>
+#include <numeric>
+#include <random>
+#include <vector>
+
+static long long benchmark_push_back(std::size_t N, bool use_reserve) {
+    std::mt19937_64 rng{42};
+    std::uniform_int_distribution<int> d{0, 100};
+    std::vector<int> v;
+    if (use_reserve) v.reserve(N);
+
+    for (std::size_t i = 0; i < N; ++i) v.push_back(d(rng));
+
+    // Prevent dead-code elimination by returning observable result
+    return std::accumulate(v.begin(), v.end(), 0LL);
+}
+
+int main() {
+    constexpr std::size_t N = 10'000'000;
+    constexpr int iterations = 5;
+    using clk = std::chrono::steady_clock;
+
+    // Warm-up
+    benchmark_push_back(N / 10, true);
+
+    for (bool reserve : {false, true}) {
+        std::vector<long long> times;
+        times.reserve(iterations);
+
+        for (int it = 0; it < iterations; ++it) {
+            const auto t0 = clk::now();
+            const long long sum = benchmark_push_back(N, reserve);
+            const auto t1 = clk::now();
+            const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0).count();
+            times.push_back(ms);
+            std::cout << "iter=" << it << " reserve=" << reserve << " time_ms=" << ms
+                      << " checksum=" << sum << '\n';
+        }
+
+        std::nth_element(times.begin(), times.begin() + times.size() / 2, times.end());
+        std::cout << "median time_ms reserve=" << reserve << " = " << times[times.size() / 2] << '\n';
+    }
+}

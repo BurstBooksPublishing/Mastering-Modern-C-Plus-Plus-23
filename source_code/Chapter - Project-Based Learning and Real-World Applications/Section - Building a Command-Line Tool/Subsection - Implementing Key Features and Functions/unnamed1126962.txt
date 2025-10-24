@@ -1,0 +1,16 @@
+#include <algorithm>
+#include <execution>
+#include <iostream>
+#include <vector>
+
+int main() {
+    std::vector<int> data{5, 3, 1, 4, 2};
+
+    std::sort(std::execution::par_unseq, data.begin(), data.end());
+
+    for (const int num : data) {
+        std::cout << num << ' ';
+    }
+    std::cout << '\n';
+    return 0;
+}

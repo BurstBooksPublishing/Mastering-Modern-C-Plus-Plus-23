@@ -1,0 +1,22 @@
+#include <cmath>
+#include <limits>
+#include <stdexcept>
+
+std::pair<double, double> solveQuadratic(double a, double b, double c) {
+    if (std::abs(a) < std::numeric_limits<double>::epsilon())
+        throw std::invalid_argument("Coefficient 'a' must be non-zero.");
+
+    const double discriminant = b * b - 4.0 * a * c;
+
+    if (discriminant < 0.0)
+        throw std::domain_error("Discriminant is negative; no real roots.");
+
+    const double sqrt_disc = std::sqrt(discriminant);
+    const double two_a = 2.0 * a;
+
+    // Use stable formula to avoid cancellation
+    const double root1 = (b >= 0.0) ? (-b - sqrt_disc) / two_a : (-b + sqrt_disc) / two_a;
+    const double root2 = c / (a * root1);
+
+    return {root1, root2};
+}

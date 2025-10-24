@@ -1,0 +1,12 @@
+#include <vector>
+#include <utility>
+
+void process(std::vector<int>&& vec) {
+    // vec is now owned by this function
+}
+
+int main() {
+    std::vector<int> data{1, 2, 3, 4, 5};
+    process(std::move(data)); // Transfer ownership, no copy
+    return 0;
+}

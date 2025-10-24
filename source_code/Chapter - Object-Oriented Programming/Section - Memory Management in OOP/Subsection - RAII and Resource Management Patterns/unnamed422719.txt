@@ -1,0 +1,26 @@
+#include <iostream>
+#include <memory>
+
+class Resource {
+public:
+    Resource()  { std::cout << "Resource Acquired\n"; }
+    ~Resource() { std::cout << "Resource Released\n"; }
+
+    void use() const { std::cout << "Resource Used\n"; }
+
+    // Non-copyable, non-movable to enforce single ownership
+    Resource(const Resource&)            = delete;
+    Resource& operator=(const Resource&) = delete;
+    Resource(Resource&&)                 = delete;
+    Resource& operator=(Resource&&)      = delete;
+};
+
+void exampleFunction() {
+    auto res = std::make_unique<Resource>();
+    res->use();
+}
+
+int main() {
+    exampleFunction();
+    return 0;
+}

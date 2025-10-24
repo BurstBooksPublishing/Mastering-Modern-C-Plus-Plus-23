@@ -1,0 +1,28 @@
+#include <iostream>
+#include <memory>
+
+class Printer {
+public:
+    virtual ~Printer() = default;
+    virtual void print() = 0;
+};
+
+class Scanner {
+public:
+    virtual ~Scanner() = default;
+    virtual void scan() = 0;
+};
+
+class AllInOnePrinter : public Printer, public Scanner {
+public:
+    void print() override { std::cout << "Printing...\n"; }
+    void scan() override { std::cout << "Scanning...\n"; }
+};
+
+int main() {
+    std::unique_ptr<Printer> p = std::make_unique<AllInOnePrinter>();
+    std::unique_ptr<Scanner> s = std::make_unique<AllInOnePrinter>();
+
+    p->print();
+    s->scan();
+}

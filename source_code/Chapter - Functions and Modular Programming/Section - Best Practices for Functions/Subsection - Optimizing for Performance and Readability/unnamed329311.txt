@@ -1,0 +1,10 @@
+#include <type_traits>
+
+template <typename T, typename U>
+constexpr auto add(T&& x, U&& y)
+    -> std::enable_if_t<std::is_arithmetic_v<std::decay_t<T>> &&
+                        std::is_arithmetic_v<std::decay_t<U>>,
+                        decltype(std::forward<T>(x) + std::forward<U>(y))>
+{
+    return std::forward<T>(x) + std::forward<U>(y);
+}

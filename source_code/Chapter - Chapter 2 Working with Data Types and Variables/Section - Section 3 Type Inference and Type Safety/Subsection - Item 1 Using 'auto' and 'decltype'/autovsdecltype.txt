@@ -1,0 +1,41 @@
+#include <iostream>
+#include <type_traits>
+#include <utility>
+
+// Compile-time type printer (GCC/Clang only)
+template <typename T>
+void print_type() {
+    std::cout << __PRETTY_FUNCTION__ << '\n';
+}
+
+int global = 42;
+
+int  get_value()            { return global; }          // prvalue
+int& get_lref()             { return global; }          // lvalue
+int&& get_rref() noexcept   { return std::move(global); } // xvalue
+
+int main() {
+    int x = 5;
+    const int cx = 6;
+    int arr[3] = {1, 2, 3};
+
+    auto        a  = x;          // int
+    auto        b  = (x);        // int
+    auto&       r  = x;          // int&
+    decltype(x) d1 = x;          // int
+    decltype((x)) d2 = x;        // int&
+
+    auto        a2   = arr;      // int*
+    decltype(arr) darr{1, 2, 3}; // int[3]
+
+    auto                 v  = get_value();  // int
+    decltype(get_value()) v2 = get_value(); // int
+    decltype(get_lref())  v3 = get_lref();  // int&
+
+    print_type<decltype(a)>();
+    print_type<decltype(r)>();
+    print_type<decltype(d1)>();
+    print_type<decltype(d2)>();
+    print_type<decltype(a2)>();
+    print_type<decltype(darr)>();
+}

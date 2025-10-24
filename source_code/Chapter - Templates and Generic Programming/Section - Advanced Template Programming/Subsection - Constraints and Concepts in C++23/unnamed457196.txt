@@ -1,0 +1,11 @@
+#include <memory>
+#include <type_traits>
+
+template <typename Ptr>
+void process_ptr(Ptr&& ptr) {
+    static_assert(std::is_pointer_v<std::remove_reference_t<Ptr>>,
+                  "process_ptr requires a raw pointer type");
+
+    if (!ptr) return;          // Skip null pointers
+    // Critical processing logic goes here
+}

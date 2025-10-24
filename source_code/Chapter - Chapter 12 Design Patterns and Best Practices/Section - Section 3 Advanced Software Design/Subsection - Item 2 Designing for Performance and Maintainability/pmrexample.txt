@@ -1,0 +1,22 @@
+#include <memory_resource>
+#include <vector>
+#include <string>
+#include <iostream>
+
+int main() {
+    alignas(std::max_align_t) char buffer[1 << 16];                 // 64 KiB stack buffer
+    std::pmr::monotonic_buffer_resource pool{buffer, sizeof(buffer)}; // uses buffer first
+    std::pmr::polymorphic_allocator<char> alloc{&pool};
+
+    std::pmr::vector<std::pmr::string> strings{alloc};
+    strings.reserve(1000);
+
+    for (int i = 0; i < 1000; ++i) {
+        strings.emplace_back(std::pmr::string{"entry:", alloc});
+        strings.back().append(std::to_string(i));
+    }
+
+    std::cout << "First: " << strings.front() << '\n';
+
+    pool.release(); // bulk free; no destructors run
+}

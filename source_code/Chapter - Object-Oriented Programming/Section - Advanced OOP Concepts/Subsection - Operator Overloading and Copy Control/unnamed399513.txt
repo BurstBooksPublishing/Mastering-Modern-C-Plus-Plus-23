@@ -1,0 +1,27 @@
+#include <utility>
+
+class MyClass {
+public:
+    MyClass() : data(new int[10]) {}
+
+    // Rule-of-five: explicitly delete copy operations
+    MyClass(const MyClass&)            = delete;
+    MyClass& operator=(const MyClass&) = delete;
+
+    // Move constructor
+    MyClass(MyClass&& other) noexcept : data(std::exchange(other.data, nullptr)) {}
+
+    // Move assignment operator
+    MyClass& operator=(MyClass&& other) noexcept {
+        if (this != &other) {
+            delete[] data;
+            data = std::exchange(other.data, nullptr);
+        }
+        return *this;
+    }
+
+    ~MyClass() { delete[] data; }
+
+private:
+    int* data;
+};

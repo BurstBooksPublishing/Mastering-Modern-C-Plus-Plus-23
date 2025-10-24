@@ -1,0 +1,31 @@
+#include <iostream>
+#include <boost/asio.hpp>
+#include <boost/asio/experimental/awaitable_operators.hpp>
+
+namespace asio = boost::asio;
+using asio::ip::tcp;
+using namespace asio::experimental::awaitable_operators;
+
+asio::awaitable<void> async_connect(tcp::socket socket, const std::string& host, const std::string& port) {
+    try {
+        auto [ex] = co_await asio::this_coro::executor;
+        tcp::resolver resolver(ex);
+        auto endpoints = co_await resolver.async_resolve(host, port, asio::use_awaitable);
+        co_await asio::async_connect(socket, endpoints, asio::use_awaitable);
+        std::cout << "Connected to " << host << ":" << port << '\n';
+    } catch (const std::exception& ex) {
+        std::cerr << "Connect error: " << ex.what() << '\n';
+    }
+}
+
+int main() {
+    try {
+        asio::io_context io_context(1);
+        tcp::socket socket(io_context);
+        co_spawn(io_context, async_connect(std::move(socket), "example.com", "80"), asio::detached);
+        io_context.run();
+    } catch (const std::exception& ex) {
+        std::cerr << "Fatal: " << ex.what() << '\n';
+        return 1;
+    }
+}

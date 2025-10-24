@@ -1,0 +1,10 @@
+#include <vector>
+#include <string>
+
+std::vector<std::string> createStrings() {
+    return {"Hello", "World"};          // RVO constructs vector in place
+}
+
+int main() {
+    auto result = createStrings();      // Type deduced as std::vector<std::string>
+}

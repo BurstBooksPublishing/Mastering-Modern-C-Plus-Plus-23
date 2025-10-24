@@ -1,0 +1,15 @@
+#include <iostream>
+#include <string>
+
+std::string greetUser(const std::string& name = "Guest", int age = 0) {
+    if (age > 0) {
+        return "Hello, " + name + "! You are " + std::to_string(age) + " years old.";
+    }
+    return "Hello, " + name + "!";
+}
+
+int main() {
+    std::cout << greetUser() << '\n';
+    std::cout << greetUser("Alice") << '\n';
+    std::cout << greetUser("Bob", 30) << '\n';
+}

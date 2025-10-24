@@ -1,0 +1,24 @@
+#include <atomic>
+#include <iostream>
+#include <thread>
+
+std::atomic<int> x{0};
+std::atomic<int> y{0};
+
+void producer() {
+    x.store(1, std::memory_order_relaxed);          // Publish data
+    y.store(1, std::memory_order_release);          // Signal readiness
+}
+
+void consumer() {
+    while (y.load(std::memory_order_acquire) != 1)  // Wait for signal
+        ;
+    std::cout << "x: " << x.load(std::memory_order_relaxed) << '\n';
+}
+
+int main() {
+    std::thread t1(producer);
+    std::thread t2(consumer);
+    t1.join();
+    t2.join();
+}

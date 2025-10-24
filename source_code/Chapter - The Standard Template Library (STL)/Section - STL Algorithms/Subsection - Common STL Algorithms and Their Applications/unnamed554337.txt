@@ -1,0 +1,5 @@
+#include <numeric>
+#include <vector>
+
+std::vector<int> v{1, 2, 3, 4, 5};
+const int sum = std::accumulate(v.begin(), v.end(), 0);   // 15

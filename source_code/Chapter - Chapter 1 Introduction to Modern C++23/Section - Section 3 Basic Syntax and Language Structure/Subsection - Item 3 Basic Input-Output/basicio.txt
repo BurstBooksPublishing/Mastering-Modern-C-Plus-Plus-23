@@ -1,0 +1,38 @@
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <string>
+
+int main() {
+    std::ios::sync_with_stdio(false);
+    std::cin.tie(nullptr);
+
+    long long sum = 0;
+    int value;
+    while (std::cin >> value) sum += value;
+    if (!std::cin.eof() && std::cin.fail()) {
+        std::cerr << "Input terminated due to parse error\n";
+    } else {
+        std::cout << "Sum: " << sum << '\n';
+    }
+
+    std::ifstream in("example.txt");
+    if (!in) {
+        std::cerr << "Failed to open example.txt\n";
+    } else {
+        std::string line;
+        while (std::getline(in, line)) std::cout << line << '\n';
+        if (in.bad()) std::cerr << "I/O error while reading file\n";
+    }
+
+    std::ifstream bin("data.bin", std::ios::binary);
+    if (bin) {
+        constexpr std::size_t chunk = 4096;
+        std::vector<char> buffer(chunk);
+        while (bin.read(buffer.data(), buffer.size()) || bin.gcount()) {
+            std::streamsize n = bin.gcount();
+            // process buffer[0..n)
+        }
+    }
+    return 0;
+}

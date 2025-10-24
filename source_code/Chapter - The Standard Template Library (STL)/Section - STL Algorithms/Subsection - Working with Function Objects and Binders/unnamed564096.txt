@@ -1,0 +1,23 @@
+#include <algorithm>
+#include <functional>
+#include <iostream>
+#include <iterator>
+#include <vector>
+
+struct Point {
+    int x{};
+    int y{};
+    [[nodiscard]] int sum() const noexcept { return x + y; }
+};
+
+int main() {
+    const std::vector<Point> points{{1, 2}, {3, 4}, {5, 6}};
+    std::vector<int> sums;
+    sums.reserve(points.size());                    // prevent reallocations
+    std::transform(points.begin(), points.end(),
+                   std::back_inserter(sums),
+                   std::mem_fn(&Point::sum));
+    std::copy(sums.begin(), sums.end(),
+              std::ostream_iterator<int>(std::cout, " "));
+    return 0;
+}

@@ -1,0 +1,15 @@
+#include <iostream>
+#include <stdexcept>
+
+int main() {
+    auto square = [](int x) noexcept -> int { return x * x; };
+
+    try {
+        int value = 5;
+        std::cout << square(value) << '\n';
+    } catch (const std::exception& ex) {
+        std::cerr << "Error: " << ex.what() << '\n';
+        return EXIT_FAILURE;
+    }
+    return EXIT_SUCCESS;
+}

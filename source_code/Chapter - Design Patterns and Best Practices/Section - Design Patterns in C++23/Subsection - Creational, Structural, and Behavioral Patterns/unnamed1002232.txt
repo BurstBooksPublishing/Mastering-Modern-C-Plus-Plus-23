@@ -1,0 +1,75 @@
+#include <functional>
+#include <vector>
+#include <iostream>
+#include <memory>
+#include <mutex>
+
+// Creational Pattern: Singleton
+class Singleton {
+public:
+    static Singleton& instance() {
+        static Singleton inst;
+        return inst;
+    }
+
+    void doSomething() { /* ... */ }
+
+private:
+    Singleton()  = default;
+    ~Singleton() = default;
+    Singleton(const Singleton&)            = delete;
+    Singleton& operator=(const Singleton&) = delete;
+};
+
+// Structural Pattern: Adapter
+class LegacyComponent {
+public:
+    void legacyOperation() { /* ... */ }
+};
+
+class Target {
+public:
+    virtual ~Target() = default;
+    virtual void request() = 0;
+};
+
+class Adapter : public Target {
+public:
+    explicit Adapter(std::shared_ptr<LegacyComponent> lc) : legacy_(std::move(lc)) {}
+    void request() override { legacy_->legacyOperation(); }
+
+private:
+    std::shared_ptr<LegacyComponent> legacy_;
+};
+
+// Behavioral Pattern: Observer
+class Subject {
+public:
+    using ObserverFn = std::function<void()>;
+
+    void attach(ObserverFn obs) {
+        std::lock_guard<std::mutex> lock(mtx_);
+        observers_.push_back(std::move(obs));
+    }
+
+    void notify() {
+        std::lock_guard<std::mutex> lock(mtx_);
+        for (const auto& obs : observers_) obs();
+    }
+
+private:
+    std::vector<ObserverFn> observers_;
+    std::mutex mtx_;
+};
+
+class Observer {
+public:
+    explicit Observer(Subject& s) : subject_(s) {
+        subject_.attach([this] { update(); });
+    }
+
+    void update() { std::cout << "Observer notified\n"; }
+
+private:
+    Subject& subject_;
+};

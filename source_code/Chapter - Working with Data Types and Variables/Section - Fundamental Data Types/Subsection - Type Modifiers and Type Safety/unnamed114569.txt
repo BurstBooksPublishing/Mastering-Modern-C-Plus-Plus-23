@@ -1,0 +1,23 @@
+#include <atomic>
+#include <mutex>
+
+class Cache {
+public:
+    int getValue() const {
+        if (!cached_.load(std::memory_order_acquire)) {
+            std::lock_guard<std::mutex> lock(mtx_);
+            if (!cached_.load(std::memory_order_relaxed)) {
+                cachedValue_ = computeValue();
+                cached_.store(true, std::memory_order_release);
+            }
+        }
+        return cachedValue_;
+    }
+
+private:
+    int computeValue() const { return 42; } // Placeholder computation
+
+    mutable std::atomic<bool> cached_{false};
+    mutable int cachedValue_{0};
+    mutable std::mutex mtx_;
+};

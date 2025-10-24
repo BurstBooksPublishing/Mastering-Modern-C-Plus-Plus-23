@@ -1,0 +1,25 @@
+#include <iostream>
+#include <thread>
+#include <atomic>
+
+// One counter shared by all threads; monotonically increasing.
+static std::atomic<int> globalId{0};
+
+// Each thread keeps its own unique ID.
+thread_local int threadId{0};
+
+void printId() {
+    std::cout << "Thread ID: " << threadId << '\n';
+}
+
+int main() {
+    threadId = ++globalId;          // assign ID to main thread
+
+    std::thread t([] {
+        threadId = ++globalId;      // assign ID to worker thread
+        printId();
+    });
+
+    t.join();
+    printId();
+}

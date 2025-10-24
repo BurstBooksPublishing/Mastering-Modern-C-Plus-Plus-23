@@ -1,0 +1,29 @@
+#include <type_traits>
+
+template <typename T, typename U>
+constexpr bool equal(const T& a, const U& b) noexcept {
+    static_assert(std::is_arithmetic_v<T> && std::is_arithmetic_v<U>,
+                  "Arguments must be arithmetic types");
+    return a == b;
+}
+
+template <typename T, typename U>
+constexpr bool not_equal(const T& a, const U& b) noexcept {
+    static_assert(std::is_arithmetic_v<T> && std::is_arithmetic_v<U>,
+                  "Arguments must be arithmetic types");
+    return a != b;
+}
+
+template <typename T, typename U>
+constexpr bool less(const T& a, const U& b) noexcept {
+    static_assert(std::is_arithmetic_v<T> && std::is_arithmetic_v<U>,
+                  "Arguments must be arithmetic types");
+    return a < b;
+}
+
+template <typename T, typename U>
+constexpr bool greater_equal(const T& a, const U& b) noexcept {
+    static_assert(std::is_arithmetic_v<T> && std::is_arithmetic_v<U>,
+                  "Arguments must be arithmetic types");
+    return a >= b;
+}

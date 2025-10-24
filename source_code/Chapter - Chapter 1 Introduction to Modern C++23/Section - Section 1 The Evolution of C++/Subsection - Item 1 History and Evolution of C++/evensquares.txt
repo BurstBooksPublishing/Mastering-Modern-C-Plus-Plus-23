@@ -1,0 +1,21 @@
+#include <algorithm>
+#include <concepts>
+#include <iostream>
+#include <ranges>
+#include <vector>
+
+template<std::integral T>
+[[nodiscard]] auto even_squares(const std::vector<T>& v)
+{
+    return v
+         | std::views::filter([](T x) { return x % 2 == 0; })
+         | std::views::transform([](T x) { return x * x; });
+}
+
+int main()
+{
+    const std::vector<int> data{1, 2, 3, 4, 5, 6};
+
+    for (const int sq : even_squares(data))
+        std::cout << sq << '\n';
+}

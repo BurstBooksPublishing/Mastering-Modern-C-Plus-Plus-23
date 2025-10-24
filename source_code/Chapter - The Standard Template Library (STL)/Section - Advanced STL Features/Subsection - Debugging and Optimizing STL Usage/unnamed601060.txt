@@ -1,0 +1,12 @@
+#include <vector>
+#include <utility>
+
+void process(const std::vector<int>& vec) noexcept {
+    // Work with read-only view; no copy
+}
+
+int main() {
+    std::vector<int> data{1, 2, 3, 4, 5};
+    process(data);          // No copy
+    process(std::move(data)); // Transfer ownership if no longer needed
+}

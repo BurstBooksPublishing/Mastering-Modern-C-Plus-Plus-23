@@ -1,0 +1,13 @@
+#include <iostream>
+#include <ranges>
+#include <vector>
+
+int main() {
+    auto squares = std::views::transform([](int x) { return x * x; });
+
+    for (int x : std::views::iota(1, 6) | squares) {
+        std::cout << x << ' ';
+    }
+    std::cout << '\n';
+    return 0;
+}

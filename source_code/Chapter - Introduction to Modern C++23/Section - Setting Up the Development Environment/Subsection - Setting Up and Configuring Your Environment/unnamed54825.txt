@@ -1,0 +1,17 @@
+// main.cpp
+#include <iostream>
+#include <string>
+#include <vector>
+#include <algorithm>
+#include <ranges>
+#include <format>
+
+// Example: read integers, sort descending, print
+int main() {
+    std::vector<int> data;
+    for (int v; std::cin >> v; ) data.push_back(v);
+
+    std::ranges::sort(data, std::greater<>());
+
+    for (const int v : data) std::cout << std::format("{}\n", v);
+}

@@ -1,0 +1,85 @@
+#include <cstdint>
+#include <exception>
+#include <iostream>
+#include <stdexcept>
+#include <string>
+#include <system_error>
+
+namespace storage {
+
+enum class errc : std::int32_t { ok = 0, disk_full = 1, corrupted = 2 };
+
+class storage_error_category final : public std::error_category {
+public:
+    const char* name() const noexcept override { return "storage"; }
+
+    std::string message(int ev) const override {
+        switch (static_cast<errc>(ev)) {
+            case errc::ok:        return "no error";
+            case errc::disk_full: return "disk full";
+            case errc::corrupted: return "data corrupted";
+        }
+        return "unknown storage error";
+    }
+};
+
+inline const std::error_category& category() noexcept {
+    static const storage_error_category instance;
+    return instance;
+}
+
+inline std::error_code make_error_code(errc e) noexcept {
+    return {static_cast<int>(e), category()};
+}
+
+} // namespace storage
+
+namespace std {
+template<>
+struct is_error_code_enum<storage::errc> : true_type {};
+}
+
+class StorageError : public std::runtime_error {
+public:
+    StorageError(std::string path, storage::errc ec)
+        : std::runtime_error("storage error"),
+          path_(std::move(path)),
+          code_(ec) {}
+
+    const std::string& path() const noexcept { return path_; }
+    storage::errc code() const noexcept { return code_; }
+
+private:
+    std::string path_;
+    storage::errc code_;
+};
+
+void print_exception(const std::exception& e, int level = 0) {
+    std::cerr << std::string(level, ' ') << "exception: " << e.what();
+    if (auto* se = dynamic_cast<const StorageError*>(&e)) {
+        std::cerr << " (path=" << se->path()
+                  << ", code=" << static_cast<int>(se->code()) << ')';
+    }
+    std::cerr << '\n';
+
+    try {
+        std::rethrow_if_nested(e);
+    } catch (const std::exception& nested) {
+        print_exception(nested, level + 2);
+    } catch (...) {
+        std::cerr << std::string(level + 2, ' ') << "unknown exception\n";
+    }
+}
+
+int main() {
+    try {
+        try {
+            throw std::system_error(storage::make_error_code(storage::errc::disk_full));
+        } catch (...) {
+            std::throw_with_nested(StorageError("/var/data/snapshot.bin",
+                                                storage::errc::disk_full));
+        }
+    } catch (const std::exception& e) {
+        print_exception(e);
+    }
+}

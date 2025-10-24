@@ -1,0 +1,42 @@
+#include <cmath>
+#include <iostream>
+#include <memory>
+#include <vector>
+
+struct Shape {
+    virtual ~Shape() = default;
+    virtual double area() const noexcept = 0;
+    virtual void describe(std::ostream& os) const {
+        os << "Shape with area " << area();
+    }
+};
+
+class Circle final : public Shape {
+public:
+    explicit Circle(double r) : r_{r} {}
+    double area() const noexcept override { return M_PI * r_ * r_; }
+    void describe(std::ostream& os) const override {
+        os << "Circle(r=" << r_ << ") area=" << area();
+    }
+private:
+    double r_;
+};
+
+class Rectangle final : public Shape {
+public:
+    Rectangle(double w, double h) : w_{w}, h_{h} {}
+    double area() const noexcept override { return w_ * h_; }
+private:
+    double w_, h_;
+};
+
+int main() {
+    std::vector<std::unique_ptr<Shape>> scene;
+    scene.emplace_back(std::make_unique<Circle>(1.0));
+    scene.emplace_back(std::make_unique<Rectangle>(2.0, 3.0));
+
+    for (const auto& obj : scene) {
+        obj->describe(std::cout);
+        std::cout << '\n';
+    }
+}

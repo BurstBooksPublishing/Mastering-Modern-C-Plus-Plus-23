@@ -1,0 +1,15 @@
+#include <iostream>
+#include <stdexcept>
+
+// Compile-time factorial with overflow check
+constexpr unsigned long long factorial(unsigned int n) {
+    return (n <= 1) ? 1ULL
+                    : (n > 20) ? throw std::invalid_argument("overflow")
+                               : n * factorial(n - 1);
+}
+
+int main() {
+    constexpr unsigned long long fact = factorial(10);
+    std::cout << "Factorial of 10: " << fact << '\n';
+    return 0;
+}

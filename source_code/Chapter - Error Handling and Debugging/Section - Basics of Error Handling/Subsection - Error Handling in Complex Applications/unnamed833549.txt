@@ -1,0 +1,39 @@
+#include <iostream>
+#include <stdexcept>
+#include <random>
+
+class ComplexApplication {
+public:
+    void performCriticalOperation() {
+        try {
+            if (shouldFail()) {
+                throw std::runtime_error("Critical operation failed!");
+            }
+            std::cout << "Operation successful!\n";
+        } catch (const std::exception& e) {
+            std::cerr << "Error: " << e.what() << '\n';
+            throw; // propagate to caller
+        }
+    }
+
+    void run() {
+        try {
+            performCriticalOperation();
+        } catch (const std::exception& e) {
+            std::cerr << "Unhandled exception: " << e.what() << '\n';
+        }
+    }
+
+private:
+    bool shouldFail() {
+        static std::mt19937 rng{std::random_device{}()};
+        static std::uniform_int_distribution<int> dist(0, 1);
+        return dist(rng) == 1;
+    }
+};
+
+int main() {
+    ComplexApplication app;
+    app.run();
+    return 0;
+}

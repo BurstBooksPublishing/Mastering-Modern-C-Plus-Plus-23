@@ -1,0 +1,6 @@
+#include <iostream>
+#include <string>
+
+void print_message(const std::string& message = "Hello, World!") {
+    std::cout << message << '\n';
+}

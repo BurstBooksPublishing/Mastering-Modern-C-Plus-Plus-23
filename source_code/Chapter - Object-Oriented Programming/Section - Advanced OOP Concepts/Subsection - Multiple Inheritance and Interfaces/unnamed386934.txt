@@ -1,0 +1,26 @@
+#include <memory>
+#include <vector>
+
+class Drawable {
+public:
+    virtual void draw() const = 0;
+    virtual ~Drawable() = default;
+};
+
+using DrawablePtr = std::unique_ptr<Drawable>;
+
+class Scene {
+public:
+    void add(std::unique_ptr<Drawable> d) {
+        objects_.push_back(std::move(d));
+    }
+
+    void render() const {
+        for (const auto& obj : objects_) {
+            obj->draw();
+        }
+    }
+
+private:
+    std::vector<std::unique_ptr<Drawable>> objects_;
+};

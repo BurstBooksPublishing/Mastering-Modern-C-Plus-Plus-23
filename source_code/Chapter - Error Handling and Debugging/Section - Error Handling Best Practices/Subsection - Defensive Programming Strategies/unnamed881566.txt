@@ -1,0 +1,20 @@
+#include <chrono>
+#include <iomanip>
+#include <iostream>
+#include <mutex>
+#include <string>
+
+namespace {
+
+std::mutex log_mutex;
+
+} // namespace
+
+void log_event(const std::string& message) {
+    const auto now = std::chrono::system_clock::now();
+    const std::time_t t = std::chrono::system_clock::to_time_t(now);
+
+    std::lock_guard<std::mutex> lock(log_mutex);
+    std::cerr << std::put_time(std::localtime(&t), "%Y-%m-%d %H:%M:%S")
+              << " LOG: " << message << '\n';
+}

@@ -1,0 +1,49 @@
+#include <iostream>
+#include <string>
+#include <string_view>
+#include <unordered_map>
+#include <optional>
+
+enum class Event { Start, Stop, Update, Render, Unknown };
+
+[[nodiscard]] constexpr int priority_for(Event e) noexcept {
+    return (e == Event::Stop) ? 10 : 1;
+}
+
+[[nodiscard]] constexpr std::string_view name_of(Event e) noexcept {
+    switch (e) {
+        case Event::Start:  return "Start";
+        case Event::Stop:   return "Stop";
+        case Event::Update: return "Update";
+        case Event::Render: return "Render";
+        default:            return "Unknown";
+    }
+}
+
+void dispatch(Event e, const std::unordered_map<std::string, std::string>& resources) {
+    if (auto it = resources.find(std::string(name_of(e))); it != resources.end()) {
+        std::cout << "Found resource for " << name_of(e) << ": " << it->second << '\n';
+    } else if (e == Event::Stop) {
+        std::cout << "Stop event: flushing and shutting down.\n";
+    } else {
+        switch (e) {
+            case Event::Start:  std::cout << "Initialize systems.\n"; break;
+            case Event::Update: std::cout << "Advance simulation step.\n"; break;
+            case Event::Render: std::cout << "Issue draw calls.\n"; break;
+            default:            std::cout << "Unknown event.\n"; break;
+        }
+    }
+
+    std::cout << "Event " << name_of(e) << " has priority " << priority_for(e) << ".\n";
+}
+
+int main() {
+    const std::unordered_map<std::string, std::string> resources{
+        {"Start", "init.cfg"},
+        {"Render", "shaders.bin"},
+    };
+
+    dispatch(Event::Start,  resources);
+    dispatch(Event::Update, resources);
+    dispatch(Event::Stop,   resources);
+}

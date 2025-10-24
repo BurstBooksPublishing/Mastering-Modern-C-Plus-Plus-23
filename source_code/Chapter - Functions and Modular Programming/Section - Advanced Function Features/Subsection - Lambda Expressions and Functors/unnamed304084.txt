@@ -1,0 +1,18 @@
+#include <functional>
+#include <iostream>
+
+// Applies a callable to an integer value.
+void apply_function(int x, const std::function<void(int)>& func) {
+    func(x);
+}
+
+int main() {
+    // Lambda usage
+    apply_function(5, [](int x) { std::cout << x * 2 << '\n'; });
+
+    // Functor usage
+    struct Printer {
+        void operator()(int x) const { std::cout << x * 2 << '\n'; }
+    };
+    apply_function(5, Printer{});
+}

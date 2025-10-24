@@ -1,0 +1,18 @@
+#include <array>
+#include <cstddef>
+#include <new>
+
+struct alignas(64) CacheAlignedData {
+    std::array<int, 16> data{};
+};
+
+// Global cache-aligned array
+alignas(64) std::array<CacheAlignedData, 10> g_array;
+
+void process_data(std::size_t index) noexcept {
+    if (index >= g_array.size()) return;          // bounds check
+    auto& block = g_array[index].data;
+    for (std::size_t i = 0; i < block.size(); ++i) {
+        block[i] += static_cast<int>(i);
+    }
+}

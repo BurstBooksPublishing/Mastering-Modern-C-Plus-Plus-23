@@ -1,0 +1,34 @@
+#include <mutex>
+#include <atomic>
+
+class Singleton {
+public:
+    static Singleton& getInstance() noexcept {
+        Singleton* tmp = instance_.load(std::memory_order_acquire);
+        if (!tmp) {
+            std::lock_guard<std::mutex> lock(mtx_);
+            tmp = instance_.load(std::memory_order_relaxed);
+            if (!tmp) {
+                tmp = new Singleton;
+                instance_.store(tmp, std::memory_order_release);
+            }
+        }
+        return *tmp;
+    }
+
+    void doSomething() noexcept {
+        // Singleton functionality
+    }
+
+private:
+    Singleton() = default;
+    ~Singleton() = default;
+    Singleton(const Singleton&) = delete;
+    Singleton& operator=(const Singleton&) = delete;
+
+    static std::mutex mtx_;
+    static std::atomic<Singleton*> instance_;
+};
+
+std::mutex Singleton::mtx_;
+std::atomic<Singleton*> Singleton::instance_{nullptr};

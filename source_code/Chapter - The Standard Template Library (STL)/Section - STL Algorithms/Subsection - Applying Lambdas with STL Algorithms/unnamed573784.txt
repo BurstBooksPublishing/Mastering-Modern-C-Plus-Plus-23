@@ -1,0 +1,15 @@
+#include <algorithm>
+#include <iostream>
+#include <vector>
+
+int main() {
+    const std::vector<int> numbers{1, 2, 3, 4, 5};
+
+    const auto it = std::find_if(numbers.begin(), numbers.end(),
+                                 [](int n) { return n % 2 == 0; });
+
+    if (it != numbers.end()) {
+        std::cout << "First even number: " << *it << '\n';
+    }
+    return 0;
+}

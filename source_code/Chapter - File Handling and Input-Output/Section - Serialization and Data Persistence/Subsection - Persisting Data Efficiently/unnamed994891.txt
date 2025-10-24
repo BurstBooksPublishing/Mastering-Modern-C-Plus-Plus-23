@@ -1,0 +1,46 @@
+#include <cmath>
+#include <limits>
+
+struct Point3D {
+    double x{}, y{}, z{};
+
+    constexpr Point3D() noexcept = default;
+    constexpr Point3D(double x_, double y_, double z_) noexcept : x(x_), y(y_), z(z_) {}
+
+    constexpr Point3D operator+(const Point3D& rhs) const noexcept {
+        return {x + rhs.x, y + rhs.y, z + rhs.z};
+    }
+
+    constexpr Point3D operator-(const Point3D& rhs) const noexcept {
+        return {x - rhs.x, y - rhs.y, z - rhs.z};
+    }
+
+    constexpr Point3D operator*(double s) const noexcept {
+        return {x * s, y * s, z * s};
+    }
+
+    constexpr Point3D operator/(double s) const noexcept {
+        return *this * (1.0 / s);
+    }
+
+    constexpr double dot(const Point3D& rhs) const noexcept {
+        return x * rhs.x + y * rhs.y + z * rhs.z;
+    }
+
+    constexpr Point3D cross(const Point3D& rhs) const noexcept {
+        return {
+            y * rhs.z - z * rhs.y,
+            z * rhs.x - x * rhs.z,
+            x * rhs.y - y * rhs.x
+        };
+    }
+
+    double norm() const noexcept {
+        return std::sqrt(x * x + y * y + z * z);
+    }
+
+    Point3D normalized() const noexcept {
+        const double n = norm();
+        return n > std::numeric_limits<double>::epsilon() ? *this / n : Point3D{};
+    }
+};

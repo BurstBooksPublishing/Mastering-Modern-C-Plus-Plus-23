@@ -1,0 +1,7 @@
+#include <iostream>
+#include <cstdlib>   // std::exit
+
+int main() {
+    std::cout << "Hello, Modern C++23!\n";
+    return EXIT_SUCCESS;   // well-defined exit status
+}

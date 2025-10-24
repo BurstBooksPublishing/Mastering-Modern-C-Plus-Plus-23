@@ -1,0 +1,13 @@
+#include <iostream>
+
+int main() {
+    constexpr int kMaxIterations = 100;
+    constexpr int kBreakpoint    = 50;
+
+    for (int i = 0; i < kMaxIterations; ++i) {
+        if (i == kBreakpoint) {
+            std::cout << "Breakpoint hit at i = " << i << '\n';
+        }
+    }
+    return 0;
+}

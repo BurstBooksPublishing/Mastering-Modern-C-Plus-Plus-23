@@ -1,0 +1,7 @@
+#include <concepts>
+
+template <class T>
+concept Incrementable = std::movable<T> &&
+                        requires(T t) {
+                            { ++t } -> std::same_as<T&>;
+                        };

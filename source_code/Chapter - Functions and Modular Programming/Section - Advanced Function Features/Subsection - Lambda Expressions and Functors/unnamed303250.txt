@@ -1,0 +1,23 @@
+#include <string>
+#include <type_traits>
+
+template <typename T>
+struct Adder {
+    // SFINAE ensures operator() is only enabled for types supporting +
+    template <typename U = T>
+    auto operator()(const T& a, const T& b) const
+        -> decltype(a + b) {
+        return a + b;
+    }
+};
+
+// Explicit instantiation for common types
+template struct Adder<int>;
+template struct Adder<std::string>;
+
+// Usage
+Adder<int> int_adder;
+int result = int_adder(3, 4); // 7
+
+Adder<std::string> str_adder;
+std::string str_result = str_adder("Hello, ", "world!"); // "Hello, world!"

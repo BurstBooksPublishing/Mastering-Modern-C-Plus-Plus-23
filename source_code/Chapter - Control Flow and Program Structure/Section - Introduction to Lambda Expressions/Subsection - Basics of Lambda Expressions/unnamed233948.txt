@@ -1,0 +1,37 @@
+#include <utility>
+#include <type_traits>
+
+// Demonstrates safe, idiomatic lambda captures in C++17+.
+// Each lambda is wrapped in a factory to ensure lifetime correctness.
+
+// 1) Capture everything by value (copy).
+auto makeLambdaByValue = [](auto... args) {
+    return [=](auto&&... callArgs) mutable {
+        // Forward arguments to avoid unnecessary copies.
+        return (args + ... + std::forward<decltype(callArgs)>(callArgs));
+    };
+};
+
+// 2) Capture everything by reference.
+auto makeLambdaByRef = [](auto&... args) {
+    return [&](auto&&... callArgs) {
+        // Ensure all references remain valid during invocation.
+        return (args + ... + std::forward<decltype(callArgs)>(callArgs));
+    };
+};
+
+// 3) Mixed capture: value for x, reference for y.
+auto makeLambdaMixed = [](auto x, auto& y) {
+    return [x, &y](auto&&... callArgs) mutable {
+        x += y; // x is mutable copy; y is reference.
+        return (x + ... + std::forward<decltype(callArgs)>(callArgs));
+    };
+};
+
+// 4) Generalized capture: move-only type into lambda.
+auto makeLambdaMove = [](auto y) {
+    return [x = std::move(y)](auto&&... callArgs) mutable {
+        // x is now owned by the lambda; safe to move again if needed.
+        return (x + ... + std::forward<decltype(callArgs)>(callArgs));
+    };
+};

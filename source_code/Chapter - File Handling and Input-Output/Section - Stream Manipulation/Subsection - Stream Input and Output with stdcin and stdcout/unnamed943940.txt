@@ -1,0 +1,17 @@
+#include <iostream>
+#include <limits>
+
+int main() {
+    int number{};
+
+    std::cout << "Enter a number: ";
+
+    while (!(std::cin >> number)) {
+        std::cin.clear();                                         // reset error flags
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // discard bad input
+        std::cerr << "Invalid input! Please enter an integer: ";
+    }
+
+    std::cout << "You entered: " << number << '\n';
+    return 0;
+}

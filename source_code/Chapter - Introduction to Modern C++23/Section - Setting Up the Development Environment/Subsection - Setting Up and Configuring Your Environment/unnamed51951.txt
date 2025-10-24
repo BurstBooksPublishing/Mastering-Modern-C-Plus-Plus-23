@@ -1,0 +1,18 @@
+cmake
+cmake_minimum_required(VERSION 3.25)
+project(MyProject LANGUAGES CXX)
+
+# Require C++23 everywhere and propagate the requirement transitively
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+# Global compile options for all targets
+add_compile_options(
+    $<$<CONFIG:Release>:-O3>
+    $<$<CONFIG:Debug>:-g -Wall -Wextra -Wpedantic>
+)
+
+# Convenience alias for future targets
+add_library(cxx23 INTERFACE)
+target_compile_features(cxx23 INTERFACE cxx_std_23)

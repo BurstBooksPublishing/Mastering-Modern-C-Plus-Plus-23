@@ -1,0 +1,28 @@
+#include <memory>
+#include <stdexcept>
+
+class Command {
+public:
+    virtual ~Command() = default;
+    virtual void execute() = 0;
+};
+
+class ConcreteCommand : public Command {
+public:
+    void execute() override {
+        // Actual command logic goes here
+    }
+};
+
+class Invoker {
+    std::unique_ptr<Command> command_;
+public:
+    explicit Invoker(std::unique_ptr<Command> cmd)
+        : command_(std::move(cmd)) {
+        if (!command_) throw std::invalid_argument("null command");
+    }
+
+    void executeCommand() {
+        command_->execute();
+    }
+};

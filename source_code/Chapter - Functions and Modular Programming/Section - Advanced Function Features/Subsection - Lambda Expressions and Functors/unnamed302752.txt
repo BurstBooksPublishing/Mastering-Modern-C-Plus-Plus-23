@@ -1,0 +1,10 @@
+#include <numeric>
+#include <vector>
+
+int main() {
+    const std::vector<int> v{1, 2, 3, 4};
+
+    const int result = std::accumulate(v.begin(), v.end(), 0,
+                                       [](int acc, int x) { return acc + x * x; });
+    // result == 30
+}

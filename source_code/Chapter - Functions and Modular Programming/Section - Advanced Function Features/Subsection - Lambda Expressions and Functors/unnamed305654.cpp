@@ -1,0 +1,1 @@
+std::vector words = {"Apple", "banana", "Cherry", "date"};

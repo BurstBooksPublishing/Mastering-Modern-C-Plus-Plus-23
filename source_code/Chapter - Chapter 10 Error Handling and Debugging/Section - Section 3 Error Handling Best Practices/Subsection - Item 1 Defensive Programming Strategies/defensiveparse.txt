@@ -1,0 +1,52 @@
+#include <array>
+#include <cstdint>
+#include <fstream>
+#include <iostream>
+#include <stdexcept>
+#include <string>
+
+struct Header {
+    std::array<char, 4> magic{};
+    std::uint32_t length = 0;   // payload length in bytes (network order)
+};
+
+// Convert big-endian u32 to host order
+static std::uint32_t be32_to_host(std::uint32_t v) noexcept {
+    return ((v & 0xFFu) << 24) | ((v & 0xFF00u) << 8) |
+           ((v & 0xFF0000u) >> 8) | ((v & 0xFF000000u) >> 24);
+}
+
+Header parse_header(const std::string& path) {
+    std::ifstream in(path, std::ios::binary);
+    if (!in) throw std::runtime_error("open failed: " + path);
+
+    Header h;
+    in.read(h.magic.data(), h.magic.size());
+    if (!in) throw std::runtime_error("truncated magic");
+
+    std::uint32_t raw = 0;
+    in.read(reinterpret_cast<char*>(&raw), sizeof(raw));
+    if (!in) throw std::runtime_error("truncated length");
+    h.length = be32_to_host(raw);
+
+    if (h.magic != std::array<char,4>{'M','Y','F','M'})
+        throw std::runtime_error("bad magic");
+    if (h.length == 0 || h.length > 10'000'000u)
+        throw std::runtime_error("invalid payload length");
+
+    return h;
+}
+
+int main(int argc, char* argv[]) {
+    if (argc != 2) {
+        std::cerr << "usage: " << argv[0] << " <file>\n";
+        return 2;
+    }
+    try {
+        Header h = parse_header(argv[1]);
+        std::cout << "OK: length=" << h.length << '\n';
+    } catch (const std::exception& ex) {
+        std::cerr << "error: " << ex.what() << '\n';
+        return 1;
+    }
+}

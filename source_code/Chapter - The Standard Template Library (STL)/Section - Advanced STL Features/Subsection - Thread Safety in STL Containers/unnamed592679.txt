@@ -1,0 +1,7 @@
+#include <vector>
+
+thread_local std::vector<int> vec = {1, 2, 3, 4};
+
+void thread_specific_access() {
+    vec[0] = 42; // Each thread has its own copy of vec
+}

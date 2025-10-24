@@ -1,0 +1,12 @@
+#include <iostream>
+#include <map>
+#include <string>
+
+int main() {
+    std::map<std::string, int> m{{"apple", 1}, {"banana", 2}, {"cherry", 3}};
+    m.emplace("date", 4);                       // insert only if key absent
+    for (const auto& [key, value] : m) {
+        std::cout << key << ": " << value << '\n';
+    }
+    return 0;
+}

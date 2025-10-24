@@ -1,0 +1,22 @@
+#include <stdexcept>
+#include <cassert>
+
+// Throws if input is negative; otherwise returns silently.
+void validate_input(int input) {
+    if (input < 0) {
+        throw std::invalid_argument("Input must be non-negative");
+    }
+}
+
+// Basic sanity checks for validate_input.
+void test_validate_input() {
+    validate_input(0);   // Should not throw
+    validate_input(10);  // Should not throw
+
+    try {
+        validate_input(-1);
+        assert(false);   // Unreachable if exception is thrown
+    } catch (const std::invalid_argument&) {
+        // Expected path
+    }
+}

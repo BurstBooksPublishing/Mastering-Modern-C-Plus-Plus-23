@@ -1,0 +1,50 @@
+#include <iostream>
+#include <thread>
+#include <chrono>
+#include <coroutine>
+#include <future>
+
+// Awaitable wrapper around std::future
+struct AwaitableFuture {
+    std::future<void>& fut;
+    bool await_ready() const noexcept { return fut.wait_for(std::chrono::seconds(0)) == std::future_status::ready; }
+    void await_suspend(std::coroutine_handle<> h) const {
+        std::thread([this, h] {
+            fut.wait();
+            h.resume();
+        }).detach();
+    }
+    void await_resume() const noexcept {}
+};
+
+// Coroutine task type
+struct Task {
+    struct promise_type {
+        Task get_return_object() { return {}; }
+        std::suspend_never initial_suspend() noexcept { return {}; }
+        std::suspend_never final_suspend() noexcept { return {}; }
+        void return_void() {}
+        void unhandled_exception() { std::terminate(); }
+    };
+};
+
+// Launch async work and await its completion
+Task performTask() {
+    std::cout << "Task started...\n";
+
+    std::packaged_task<void()> pt([] {
+        std::this_thread::sleep_for(std::chrono::seconds(2));
+        std::cout << "Task completed!\n";
+    });
+    std::future<void> fut = pt.get_future();
+    std::thread(std::move(pt)).detach();
+
+    co_await AwaitableFuture{fut};
+
+    std::cout << "Task finished!\n";
+}
+
+int main() {
+    performTask();
+    std::this_thread::sleep_for(std::chrono::seconds(3));
+}

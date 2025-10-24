@@ -1,0 +1,26 @@
+#include <utility>
+
+class IntegerRAII {
+public:
+    explicit IntegerRAII(int value) : ptr_(new int(value)) {}
+
+    ~IntegerRAII() { delete ptr_; }
+
+    // Rule-of-five: disable copy, enable move
+    IntegerRAII(const IntegerRAII&)            = delete;
+    IntegerRAII& operator=(const IntegerRAII&) = delete;
+    IntegerRAII(IntegerRAII&& other) noexcept : ptr_(std::exchange(other.ptr_, nullptr)) {}
+    IntegerRAII& operator=(IntegerRAII&& other) noexcept {
+        if (this != &other) {
+            delete ptr_;
+            ptr_ = std::exchange(other.ptr_, nullptr);
+        }
+        return *this;
+    }
+
+    int& operator*() & { return *ptr_; }
+    const int& operator*() const& { return *ptr_; }
+
+private:
+    int* ptr_;
+};

@@ -1,0 +1,26 @@
+#include <iostream>
+#include <string>
+#include <type_traits>
+#include <experimental/reflect>
+
+using std::experimental::reflect::get_public_data_members_v;
+using std::experimental::reflect::get_name;
+using std::experimental::reflect::get_pointer;
+
+struct Person {
+    std::string name;
+    int age;
+};
+
+template <typename T>
+void serialize(const T& obj) {
+    using meta = reflexpr(T);
+    for_each(get_public_data_members_v<meta>, [&](auto member) {
+        std::cout << get_name(member) << ": " << obj.*get_pointer(member) << '\n';
+    });
+}
+
+int main() {
+    Person p{"Alice", 30};
+    serialize(p);
+}

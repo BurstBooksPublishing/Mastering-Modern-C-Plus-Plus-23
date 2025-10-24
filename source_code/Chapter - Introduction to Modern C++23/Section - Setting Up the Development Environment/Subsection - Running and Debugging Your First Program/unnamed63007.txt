@@ -1,0 +1,9 @@
+#include <stdexcept>
+#include <string>
+
+int compute(int x) {
+    if (x < 0) {
+        throw std::invalid_argument("x must be non-negative");
+    }
+    return x * 2;
+}

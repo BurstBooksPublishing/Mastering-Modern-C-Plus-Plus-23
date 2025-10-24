@@ -1,0 +1,50 @@
+#include <iostream>
+#include <string>
+#include <utility>
+
+struct Big {
+    std::string data;
+    inline static std::size_t copies = 0;
+    inline static std::size_t moves  = 0;
+
+    explicit Big(std::string s) : data(std::move(s)) {}
+    Big(const Big&  other)            : data(other.data) { ++copies; }
+    Big(Big&& other) noexcept         : data(std::move(other.data)) { ++moves; }
+    Big& operator=(const Big&)        = default;
+    Big& operator=(Big&&) noexcept    = default;
+    ~Big()                            = default;
+};
+
+[[nodiscard]] Big make_big_by_value(std::string s) noexcept {
+    return Big{std::move(s)};               // NRVO or move
+}
+
+void process_by_const_ref(const Big& b) noexcept {
+    std::cout << "size = " << b.data.size() << '\n';
+}
+
+void consume_by_value(Big b) noexcept {
+    std::cout << "consume length = " << b.data.size() << '\n';
+}
+
+extern "C" void c_api_process(const char* s) {
+    Big temp{std::string{s ? s : ""}};      // guard against nullptr
+    process_by_const_ref(temp);
+}
+
+int main() {
+    Big::copies = Big::moves = 0;
+
+    auto b = make_big_by_value("initial payload");
+    process_by_const_ref(b);
+    consume_by_value(Big{"ephemeral"});     // move
+    consume_by_value(b);                    // copy
+
+    std::cout << "copies: " << Big::copies
+              << " moves: " << Big::moves << '\n';
+
+    auto fp = &process_by_const_ref;
+    fp(b);
+
+    c_api_process("from c_api");
+}

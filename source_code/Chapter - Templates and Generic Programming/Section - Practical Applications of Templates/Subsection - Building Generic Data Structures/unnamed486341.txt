@@ -1,0 +1,70 @@
+#include <cstddef>
+#include <stdexcept>
+
+template <typename T>
+class LinkedList {
+private:
+    struct Node {
+        T data;
+        Node* next;
+        explicit Node(const T& data) : data(data), next(nullptr) {}
+    };
+
+    Node* head;
+    std::size_t sz;
+
+public:
+    LinkedList() : head(nullptr), sz(0) {}
+
+    // Rule of Five: disable copy semantics, enable move semantics
+    LinkedList(const LinkedList&) = delete;
+    LinkedList& operator=(const LinkedList&) = delete;
+    LinkedList(LinkedList&& other) noexcept : head(other.head), sz(other.sz) {
+        other.head = nullptr;
+        other.sz = 0;
+    }
+    LinkedList& operator=(LinkedList&& other) noexcept {
+        if (this != &other) {
+            clear();
+            head = other.head;
+            sz = other.sz;
+            other.head = nullptr;
+            other.sz = 0;
+        }
+        return *this;
+    }
+
+    void push_front(const T& value) {
+        Node* newNode = new Node(value);
+        newNode->next = head;
+        head = newNode;
+        ++sz;
+    }
+
+    void pop_front() {
+        if (!head) throw std::out_of_range("pop_front on empty list");
+        Node* temp = head;
+        head = head->next;
+        delete temp;
+        --sz;
+    }
+
+    const T& front() const {
+        if (!head) throw std::out_of_range("front on empty list");
+        return head->data;
+    }
+
+    std::size_t size() const noexcept { return sz; }
+    bool empty() const noexcept { return sz == 0; }
+
+    void clear() noexcept {
+        while (head) {
+            Node* tmp = head;
+            head = head->next;
+            delete tmp;
+        }
+        sz = 0;
+    }
+
+    ~LinkedList() { clear(); }
+};

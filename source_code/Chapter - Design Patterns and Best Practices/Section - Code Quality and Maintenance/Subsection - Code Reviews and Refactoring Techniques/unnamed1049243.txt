@@ -1,0 +1,9 @@
+#include <algorithm>
+#include <iterator>
+#include <vector>
+
+std::vector<int> squares;
+squares.reserve(values.size());               // prevent reallocations
+std::transform(values.begin(), values.end(),
+               std::back_inserter(squares),
+               [](int v) { return v * v; }); // square each element

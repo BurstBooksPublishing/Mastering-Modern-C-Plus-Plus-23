@@ -1,0 +1,12 @@
+#include <memory>
+#include <stdexcept>
+#include <vector>
+
+void process_data() {
+    auto data = std::make_unique<std::vector<std::byte>>(1024);   // allocate buffer
+    // Perform operations on data
+    if (error_condition) {
+        throw std::runtime_error("Error processing data");
+    }
+    // unique_ptr frees memory automatically
+}

@@ -1,0 +1,7 @@
+#include <iostream>
+#include <iomanip>
+
+int main() {
+    std::cout << 1 << ' ' << std::fixed << std::setprecision(1) << 2.3 << " Hello C\n";
+    return 0;
+}

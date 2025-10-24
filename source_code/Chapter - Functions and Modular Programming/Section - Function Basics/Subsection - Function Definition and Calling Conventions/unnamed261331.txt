@@ -1,0 +1,11 @@
+#include <vector>
+#include <string>
+#include <stdexcept>
+
+// Returns the first non-empty string in the vector; throws if none found.
+std::string function_name(const std::vector<std::string>& parameter_list) {
+    for (const auto& s : parameter_list) {
+        if (!s.empty()) return s;
+    }
+    throw std::invalid_argument("no non-empty string provided");
+}

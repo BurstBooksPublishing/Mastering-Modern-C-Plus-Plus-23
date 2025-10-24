@@ -1,0 +1,24 @@
+#include <chrono>
+#include <thread>
+#include <stdexcept>
+
+void performNetworkRequest();          // declared elsewhere
+class NetworkException : public std::runtime_error {
+public:
+    explicit NetworkException(const std::string& msg) : std::runtime_error(msg) {}
+};
+
+bool performRequestWithRetry(int maxRetries = 3,
+                             std::chrono::milliseconds delay = std::chrono::seconds(1))
+{
+    for (int attempt = 0; attempt < maxRetries; ++attempt) {
+        try {
+            performNetworkRequest();
+            return true;             // success
+        } catch (const NetworkException&) {
+            if (attempt + 1 == maxRetries) return false;
+            std::this_thread::sleep_for(delay);
+        }
+    }
+    return false;                    // unreachable
+}

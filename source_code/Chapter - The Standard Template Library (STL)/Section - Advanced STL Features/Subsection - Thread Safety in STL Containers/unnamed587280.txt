@@ -1,0 +1,29 @@
+#include <iostream>
+#include <vector>
+#include <thread>
+#include <mutex>
+#include <algorithm>
+
+std::mutex mtx;                       // Protects sharedVec
+std::vector<int> sharedVec;           // Shared container
+
+void addToVector(std::vector<int>& vec, int value) {
+    std::lock_guard<std::mutex> lock(mtx);
+    vec.push_back(value);
+}
+
+int main() {
+    std::thread t1(addToVector, std::ref(sharedVec), 1);
+    std::thread t2(addToVector, std::ref(sharedVec), 2);
+
+    t1.join();
+    t2.join();
+
+    {
+        std::lock_guard<std::mutex> lock(mtx);
+        std::copy(sharedVec.begin(), sharedVec.end(),
+                  std::ostream_iterator<int>(std::cout, " "));
+    }
+    std::cout << '\n';
+    return 0;
+}

@@ -1,0 +1,22 @@
+#include <string>
+#include <algorithm>
+#include <cctype>
+
+std::string process_text(const std::string& text) {
+    if (text.empty()) return text;
+
+    std::string out;
+    out.reserve(text.size());
+
+    bool in_word = false;
+    for (char c : text) {
+        if (std::isalpha(static_cast<unsigned char>(c))) {
+            out.push_back(in_word ? std::tolower(c) : std::toupper(c));
+            in_word = true;
+        } else {
+            out.push_back(c);
+            in_word = false;
+        }
+    }
+    return out;
+}

@@ -1,0 +1,17 @@
+#include <iostream>
+#include <string>
+#include <variant>
+#include <type_traits>
+
+using IntOrString = std::variant<int, std::string>;
+
+void print(const IntOrString& value) {
+    std::visit([](const auto& arg) {
+        using T = std::decay_t<decltype(arg)>;
+        if constexpr (std::is_same_v<T, int>) {
+            std::cout << "Integer: " << arg << '\n';
+        } else if constexpr (std::is_same_v<T, std::string>) {
+            std::cout << "String: " << arg << '\n';
+        }
+    }, value);
+}

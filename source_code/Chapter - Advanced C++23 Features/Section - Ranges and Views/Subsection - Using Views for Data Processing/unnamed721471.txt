@@ -1,0 +1,12 @@
+#include <algorithm>
+#include <iostream>
+#include <iterator>
+#include <vector>
+
+int main() {
+    const std::vector<int> values{1, 2, 3, 4, 5};
+
+    std::copy(values.rbegin(), values.rend(),
+              std::ostream_iterator<int>(std::cout, " "));
+    std::cout << '\n';
+}

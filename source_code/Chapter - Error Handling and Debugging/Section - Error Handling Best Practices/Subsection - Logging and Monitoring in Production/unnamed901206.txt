@@ -1,0 +1,31 @@
+#include <chrono>
+#include <format>
+#include <iostream>
+#include <source_location>
+#include <string>
+
+struct LogEntry {
+    std::string timestamp;
+    std::string level;
+    std::string message;
+    std::source_location location;
+};
+
+void log(const std::string& level,
+         const std::string& message,
+         const std::source_location& loc = std::source_location::current())
+{
+    const auto now = std::chrono::system_clock::now();
+    LogEntry entry{
+        std::format("{:%Y-%m-%d %H:%M:%S}", now),
+        level,
+        message,
+        loc
+    };
+
+    std::cout << std::format(
+        R"({{"timestamp":"{}","level":"{}","message":"{}","file":"{}","line":{}}})",
+        entry.timestamp, entry.level, entry.message,
+        entry.location.file_name(), entry.location.line()
+    ) << '\n';
+}

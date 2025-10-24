@@ -1,0 +1,11 @@
+#include <vector>
+#include <cmath>
+#include <numeric>
+
+std::vector<double> v{3.0, 4.0};
+
+auto norm = [](const std::vector<double>& vec) -> double {
+    return std::sqrt(std::inner_product(vec.begin(), vec.end(), vec.begin(), 0.0));
+};
+
+double result = norm(v); // 5.0

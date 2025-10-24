@@ -1,0 +1,39 @@
+#include <coroutine>
+#include <iostream>
+#include <stdexcept>
+
+struct MyAwaitable {
+    bool ready = false;
+
+    [[nodiscard]] bool await_ready() const noexcept { return ready; }
+
+    void await_suspend(std::coroutine_handle<> handle) const noexcept {
+        std::cout << "Suspending...\n";
+        // In real code we would schedule handle.resume() on an executor.
+    }
+
+    void await_resume() const noexcept {
+        std::cout << "Resuming...\n";
+    }
+};
+
+struct Task {
+    struct promise_type {
+        Task get_return_object() noexcept { return {}; }
+        std::suspend_never initial_suspend() noexcept { return {}; }
+        std::suspend_never final_suspend() noexcept { return {}; }
+        void return_void() noexcept {}
+        void unhandled_exception() { std::terminate(); }
+    };
+};
+
+Task myCoroutine() {
+    std::cout << "Before co_await\n";
+    co_await MyAwaitable{};
+    std::cout << "After co_await\n";
+}
+
+int main() {
+    myCoroutine(); // coroutine starts and runs to completion synchronously
+    return 0;
+}

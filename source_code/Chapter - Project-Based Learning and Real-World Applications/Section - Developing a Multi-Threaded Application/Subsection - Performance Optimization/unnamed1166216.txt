@@ -1,0 +1,30 @@
+#include <atomic>
+#include <thread>
+#include <vector>
+
+namespace {
+    std::atomic<int> counter{0};          // Shared counter, lock-free
+    constexpr int kIterations = 1000;     // Work per thread
+    constexpr int kThreads    = 10;       // Total threads
+}
+
+void increment_counter() {
+    for (int i = 0; i < kIterations; ++i) {
+        counter.fetch_add(1, std::memory_order_relaxed);
+    }
+}
+
+int main() {
+    std::vector<std::thread> threads;
+    threads.reserve(kThreads);
+
+    for (int i = 0; i < kThreads; ++i) {
+        threads.emplace_back(increment_counter);
+    }
+
+    for (auto& t : threads) {
+        t.join();
+    }
+
+    return counter.load(std::memory_order_relaxed);
+}

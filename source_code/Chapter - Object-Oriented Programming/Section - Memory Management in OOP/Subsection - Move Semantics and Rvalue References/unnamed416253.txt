@@ -1,0 +1,8 @@
+#include <utility>   // std::move
+#include <iostream>  // std::cout
+
+int main() {
+    int&& rvalue_ref = 42;          // binds to temporary
+    int target = std::move(rvalue_ref); // prolongs lifetime, transfers value
+    std::cout << target << '\n';    // 42
+}

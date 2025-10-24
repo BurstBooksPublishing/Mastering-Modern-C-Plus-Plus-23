@@ -1,0 +1,18 @@
+#include <chrono>
+#include <iostream>
+
+void expensive_function() {
+    // CPU-bound dummy workload
+    volatile std::uint64_t sum = 0;
+    for (std::uint64_t i = 0; i < 1'000'000; ++i) sum += i;
+}
+
+int main() {
+    const auto start = std::chrono::steady_clock::now();
+    expensive_function();
+    const auto end = std::chrono::steady_clock::now();
+
+    const std::chrono::duration<double> elapsed = end - start;
+    std::cout << "Elapsed time: " << elapsed.count() << " s\n";
+    return 0;
+}

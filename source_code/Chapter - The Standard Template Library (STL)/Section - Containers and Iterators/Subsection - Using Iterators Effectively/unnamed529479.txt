@@ -1,0 +1,8 @@
+#include <list>
+#include <algorithm>
+
+std::list<int> lst{1, 2, 4, 5};
+auto it = std::find(lst.begin(), lst.end(), 4);
+if (it != lst.end()) {
+    lst.insert(it, 3);          // insert 3 before the found element
+}

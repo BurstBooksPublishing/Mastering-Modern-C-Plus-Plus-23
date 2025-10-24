@@ -1,0 +1,14 @@
+#include <type_traits>
+#include <iostream>
+
+int main() {
+    int x = 10;
+    int& ref = x;               // alias to x
+    auto y = ref;               // y is a copy of x
+    decltype(ref) z = x;        // z is an alias to x (int&)
+
+    static_assert(std::is_same_v<decltype(y), int>, "y must be int");
+    static_assert(std::is_same_v<decltype(z), int&>, "z must be int&");
+
+    std::cout << x << ' ' << y << ' ' << z << '\n';
+}

@@ -1,0 +1,22 @@
+#include <iostream>
+#include <limits>
+
+// Returns the sum of two integers with overflow detection.
+inline int add(int a, int b) {
+    if ((b > 0 && a > std::numeric_limits<int>::max() - b) ||
+        (b < 0 && a < std::numeric_limits<int>::min() - b)) {
+        throw std::overflow_error("Integer overflow");
+    }
+    return a + b;
+}
+
+int main() {
+    try {
+        int result = add(5, 10);
+        std::cout << "Result: " << result << '\n';
+    } catch (const std::exception& ex) {
+        std::cerr << "Error: " << ex.what() << '\n';
+        return 1;
+    }
+    return 0;
+}

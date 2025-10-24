@@ -1,0 +1,19 @@
+#include <string>
+#include <iostream>
+
+// Generic implementation for any type T
+template<typename T>
+void process(const T& value) {
+    std::cout << "Generic: " << value << '\n';
+}
+
+// Specialized implementation for std::string
+template<>
+void process(const std::string& value) {
+    std::cout << "String: " << value << '\n';
+}
+
+int main() {
+    process(42);                 // Generic
+    process(std::string("Hello")); // Specialized
+}

@@ -1,0 +1,17 @@
+#include <format>
+#include <stdexcept>
+#include <string>
+
+extern void log(const std::string& level, const std::string& message);
+extern struct {
+    void increment(const std::string& key);
+} global_metrics;
+
+void handle_request() {
+    try {
+        // Process request
+    } catch (const std::exception& e) {
+        global_metrics.increment("error_count");
+        log("ERROR", std::format("Request failed: {}", e.what()));
+    }
+}

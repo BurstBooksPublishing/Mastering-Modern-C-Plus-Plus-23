@@ -1,0 +1,46 @@
+#include <iostream>
+#include <memory>
+#include <vector>
+
+class Animal {
+public:
+    explicit Animal(std::string name) : name_(std::move(name)) {}
+    virtual ~Animal() = default;
+
+    const std::string& name() const noexcept { return name_; }
+
+    virtual void speak() const {
+        std::cout << "Animal sound\n";
+    }
+
+private:
+    std::string name_;
+};
+
+class Dog : public Animal {
+public:
+    using Animal::Animal;
+
+    void speak() const override {
+        std::cout << "Woof! My name is " << name() << '\n';
+    }
+};
+
+class Cat : public Animal {
+public:
+    using Animal::Animal;
+
+    void speak() const override {
+        std::cout << "Meow! My name is " << name() << '\n';
+    }
+};
+
+int main() {
+    std::vector<std::unique_ptr<Animal>> zoo;
+    zoo.emplace_back(std::make_unique<Dog>("Buddy"));
+    zoo.emplace_back(std::make_unique<Cat>("Whiskers"));
+
+    for (const auto& animal : zoo) {
+        animal->speak();
+    }
+}

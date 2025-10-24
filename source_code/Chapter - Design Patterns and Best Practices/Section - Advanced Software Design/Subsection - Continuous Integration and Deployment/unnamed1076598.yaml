@@ -1,0 +1,18 @@
+name: C++ CI  
+
+on:  
+  push:  
+    branches: [main]  
+  pull_request:  
+
+jobs:  
+  build:  
+    runs-on: ubuntu-latest  
+    steps:  
+      - uses: actions/checkout@v3  
+      - name: Install dependencies  
+        run: sudo apt-get update && sudo apt-get install -y g++ cmake  
+      - name: Build  
+        run: cmake -B build -DCMAKE_CXX_STANDARD=23 && cmake --build build  
+      - name: Run tests  
+        run: cd build && ctest

@@ -1,0 +1,29 @@
+#include <optional>
+#include <memory>
+#include <stdexcept>
+
+// High-level data source abstraction
+class DataSource {
+public:
+    virtual ~DataSource() = default;
+    virtual std::optional<std::string> fetch() = 0;
+};
+
+// Production-ready implementation with graceful degradation
+class ResilientDataSource : public DataSource {
+public:
+    explicit ResilientDataSource(std::unique_ptr<DataSource> primary,
+                                 std::unique_ptr<DataSource> fallback)
+        : primary_(std::move(primary)), fallback_(std::move(fallback)) {
+        if (!primary_ || !fallback_) throw std::invalid_argument("sources required");
+    }
+
+    std::optional<std::string> fetch() override {
+        if (auto data = primary_->fetch()) return data;   // Try primary first
+        return fallback_->fetch();                        // Degrade to fallback
+    }
+
+private:
+    std::unique_ptr<DataSource> primary_;
+    std::unique_ptr<DataSource> fallback_;
+};

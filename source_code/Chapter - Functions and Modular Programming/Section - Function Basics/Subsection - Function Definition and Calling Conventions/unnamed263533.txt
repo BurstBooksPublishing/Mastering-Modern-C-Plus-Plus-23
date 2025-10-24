@@ -1,0 +1,7 @@
+#include <type_traits>
+
+static_assert(std::is_integral_v<int>, "square requires integral type");
+
+consteval int square(int x) noexcept {
+    return x * x;
+}

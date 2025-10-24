@@ -1,0 +1,120 @@
+#include <array>
+#include <bit>
+#include <cstddef>
+#include <cstdint>
+#include <cstring>
+#include <fstream>
+#include <ios>
+#include <iostream>
+#include <iterator>
+#include <span>
+#include <string>
+#include <type_traits>
+#include <vector>
+
+// FNV-1a 64-bit checksum
+static std::uint64_t fnv1a64(std::span<const std::byte> data) noexcept {
+    std::uint64_t h = 0xcbf29ce484222325ULL;
+    for (std::byte b : data) {
+        h ^= static_cast<std::uint8_t>(b);
+        h *= 0x100000001b3ULL;
+    }
+    return h;
+}
+
+struct Record {
+    std::uint32_t id{};
+    double value{};
+    std::string tag;
+};
+
+// Append little-endian value to buffer
+template <typename T>
+requires std::is_trivially_copyable_v<T>
+static void write_le(std::vector<std::byte>& out, T v) {
+    if constexpr (std::endian::native == std::endian::big) {
+        std::array<std::byte, sizeof(T>> tmp;
+        std::memcpy(tmp.data(), &v, sizeof(T));
+        std::reverse(tmp.begin(), tmp.end());
+        out.insert(out.end(), tmp.begin(), tmp.end());
+    } else {
+        const std::byte* p = reinterpret_cast<const std::byte*>(&v);
+        out.insert(out.end(), p, p + sizeof(T));
+    }
+}
+
+// Serialize Record to little-endian binary with checksum
+std::vector<std::byte> serialize_record(const Record& r) {
+    std::vector<std::byte> buf;
+    constexpr std::uint16_t version = 1;
+    write_le(buf, version);
+    write_le(buf, std::uint16_t{0}); // reserved
+
+    write_le(buf, r.id);
+    write_le(buf, r.value);
+
+    const std::uint32_t len = static_cast<std::uint32_t>(r.tag.size());
+    write_le(buf, len);
+    buf.insert(buf.end(),
+               reinterpret_cast<const std::byte*>(r.tag.data()),
+               reinterpret_cast<const std::byte*>(r.tag.data() + r.tag.size()));
+
+    const std::uint64_t ch = fnv1a64(buf);
+    write_le(buf, ch);
+    return buf;
+}
+
+// Deserialize buffer into Record; returns false on failure
+bool deserialize_record(std::span<const std::byte> src, Record& out) {
+    auto read = [&src](std::size_t& off, auto& dst) -> bool {
+        if (off + sizeof(dst) > src.size()) return false;
+        std::memcpy(&dst, src.data() + off, sizeof(dst));
+        if constexpr (std::endian::native == std::endian::big) {
+            auto* p = reinterpret_cast<std::byte*>(&dst);
+            std::reverse(p, p + sizeof(dst));
+        }
+        off += sizeof(dst);
+        return true;
+    };
+
+    std::size_t off = 0;
+    std::uint16_t version;
+    if (!read(off, version) || version != 1) return false;
+    off += sizeof(std::uint16_t); // skip reserved
+
+    if (!read(off, out.id)) return false;
+    if (!read(off, out.value)) return false;
+
+    std::uint32_t len;
+    if (!read(off, len)) return false;
+    if (off + len > src.size()) return false;
+    out.tag.assign(reinterpret_cast<const char*>(src.data() + off), len);
+    off += len;
+
+    std::uint64_t stored_ch;
+    if (!read(off, stored_ch)) return false;
+    return stored_ch == fnv1a64(src.first(off - sizeof(std::uint64_t)));
+}
+
+int main() {
+    Record r{42, 3.14159, "gpu_checkpoint"};
+    const auto bytes = serialize_record(r);
+
+    {
+        std::ofstream ofs("record.bin", std::ios::binary);
+        ofs.write(reinterpret_cast<const char*>(bytes.data()),
+                  static_cast<std::streamsize>(bytes.size()));
+    }
+
+    std::ifstream ifs("record.bin", std::ios::binary | std::ios::ate);
+    const auto size = ifs.tellg();
+    ifs.seekg(0);
+    std::vector<std::byte> inbuf(static_cast<std::size_t>(size));
+    ifs.read(reinterpret_cast<char*>(inbuf.data()),
+             static_cast<std::streamsize>(size));
+
+    Record r2;
+    if (deserialize_record(inbuf, r2)) {
+        std::cout << "Deserialized id=" << r2.id << " tag=" << r2.tag << '\n';
+    }
+}

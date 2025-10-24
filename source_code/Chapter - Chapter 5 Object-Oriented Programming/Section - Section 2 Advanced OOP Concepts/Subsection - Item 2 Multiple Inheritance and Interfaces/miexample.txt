@@ -1,0 +1,69 @@
+#include <iostream>
+#include <memory>
+#include <vector>
+#include <type_traits>
+
+// Pure interfaces
+struct IRenderable {
+    virtual void render() const noexcept = 0;
+    virtual ~IRenderable() = default;
+};
+
+struct IUpdatable {
+    virtual void update(double dt) noexcept = 0;
+    virtual ~IUpdatable() = default;
+};
+
+// Value-type transform
+struct Transform {
+    float x{}, y{}, z{};
+    Transform() = default;
+    Transform(float X, float Y, float Z) : x(X), y(Y), z(Z) {}
+};
+
+// Entity implements both interfaces
+class Entity : public Transform, public IRenderable, public IUpdatable {
+public:
+    explicit Entity(float X, float Y, float Z) : Transform(X, Y, Z) {}
+    void render() const noexcept override {
+        std::cout << "Entity::render at (" << x << ',' << y << ',' << z << ")\n";
+    }
+    void update(double dt) noexcept override {
+        x += static_cast<float>(dt);
+    }
+};
+
+// Diamond example
+struct IBase {
+    virtual void id() const noexcept = 0;
+    virtual ~IBase() = default;
+};
+
+struct Left : virtual IBase {
+    void id() const noexcept override { std::cout << "Left::id\n"; }
+};
+
+struct Right : virtual IBase {
+    void id() const noexcept override { std::cout << "Right::id\n"; }
+};
+
+struct Final : Left, Right {
+    void id() const noexcept override { std::cout << "Final::id\n"; }
+};
+
+int main() {
+    std::vector<std::unique_ptr<IRenderable>> renderables;
+    renderables.emplace_back(std::make_unique<Entity>(1.0f, 2.0f, 3.0f));
+
+    for (const auto& r : renderables) {
+        r->render();
+        if (auto* u = dynamic_cast<IUpdatable*>(r.get())) {
+            u->update(0.5);
+            r->render();
+        }
+    }
+
+    Final f;
+    IBase* b = &f;
+    b->id();
+}

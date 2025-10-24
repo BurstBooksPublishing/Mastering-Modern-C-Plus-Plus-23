@@ -1,0 +1,4 @@
+#include <cstdint>
+#include <type_traits>
+
+static_assert(sizeof(std::int32_t) == 4, "std::int32_t must be 4 bytes");

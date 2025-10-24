@@ -1,0 +1,5 @@
+#include <bit>
+#include <cstdint>
+
+float f = 3.14f;
+std::uint32_t i = std::bit_cast<std::uint32_t>(f);   // reinterpret IEEE-754 bits as 32-bit unsigned integer

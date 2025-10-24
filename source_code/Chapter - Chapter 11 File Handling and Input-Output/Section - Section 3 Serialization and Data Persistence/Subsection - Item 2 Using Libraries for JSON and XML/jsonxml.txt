@@ -1,0 +1,63 @@
+#include <fstream>
+#include <iostream>
+#include <stdexcept>
+#include <string>
+#include <vector>
+
+#include <nlohmann/json.hpp>
+#include <pugixml.hpp>
+
+struct Person {
+    std::string name;
+    int age{};
+    std::vector<std::string> tags;
+};
+
+// JSON conversions (ADL-based)
+void to_json(nlohmann::json& j, const Person& p) {
+    j = {{"name", p.name}, {"age", p.age}, {"tags", p.tags}};
+}
+void from_json(const nlohmann::json& j, Person& p) {
+    j.at("name").get_to(p.name);
+    j.at("age").get_to(p.age);
+    j.at("tags").get_to(p.tags);
+}
+
+int main() {
+    try {
+        const Person p{"Ada Lovelace", 36, {"engineer", "mathematician"}};
+
+        // JSON round-trip
+        {
+            std::ofstream("person.json") << nlohmann::json(p).dump(2);
+            std::ifstream ifs("person.json");
+            if (!ifs) throw std::runtime_error("Cannot open person.json");
+            const Person loaded = nlohmann::json::parse(ifs).get<Person>();
+            std::cout << "JSON loaded: " << loaded.name << '\n';
+        }
+
+        // XML round-trip
+        {
+            pugi::xml_document doc;
+            auto root = doc.append_child("person");
+            root.append_child("name").text().set(p.name.c_str());
+            root.append_child("age").text().set(p.age);
+            auto tags = root.append_child("tags");
+            for (const auto& t : p.tags) tags.append_child("tag").text().set(t.c_str());
+            if (!doc.save_file("person.xml", "  ")) throw std::runtime_error("Cannot save person.xml");
+
+            pugi::xml_document in;
+            if (!in.load_file("person.xml")) throw std::runtime_error("Cannot load person.xml");
+            Person loaded;
+            const auto rootIn = in.child("person");
+            loaded.name = rootIn.child("name").text().as_string();
+            loaded.age  = rootIn.child("age").text().as_int();
+            for (auto tag : rootIn.child("tags").children("tag"))
+                loaded.tags.emplace_back(tag.text().as_string());
+            std::cout << "XML loaded: " << loaded.name << '\n';
+        }
+    } catch (const std::exception& ex) {
+        std::cerr << "Error: " << ex.what() << '\n';
+        return 1;
+    }
+}

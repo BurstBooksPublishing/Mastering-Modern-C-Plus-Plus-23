@@ -1,0 +1,62 @@
+#include <filesystem>
+#include <fstream>
+#include <iostream>
+#include <string>
+#include <system_error>
+
+bool read_file_contents(const std::filesystem::path& path,
+                        std::string& out,
+                        std::error_code& ec) noexcept {
+    ec.clear();
+    out.clear();
+
+    std::error_code tmp_ec;
+    if (!std::filesystem::exists(path, tmp_ec)) {
+        ec = tmp_ec ? tmp_ec
+                    : std::make_error_code(std::errc::no_such_file_or_directory);
+        return false;
+    }
+
+    const auto sz = std::filesystem::file_size(path, tmp_ec);
+    if (tmp_ec) {
+        ec = tmp_ec;
+        return false;
+    }
+    if (sz == 0) return true;
+
+    std::ifstream ifs(path, std::ios::binary);
+    if (!ifs) {
+        ec = std::make_error_code(std::errc::io_error);
+        return false;
+    }
+
+    try {
+        out.resize(static_cast<std::size_t>(sz));
+        ifs.read(out.data(), static_cast<std::streamsize>(sz));
+        if (ifs.gcount() != static_cast<std::streamsize>(sz)) {
+            ec = std::make_error_code(std::errc::io_error);
+            return false;
+        }
+        return true;
+    } catch (...) {
+        ec = std::make_error_code(std::errc::not_enough_memory);
+        return false;
+    }
+}
+
+int main(int argc, char* argv[]) {
+    if (argc != 2) {
+        std::cerr << "Usage: " << argv[0] << " <file>\n";
+        return 1;
+    }
+
+    std::string content;
+    std::error_code ec;
+    if (!read_file_contents(argv[1], content, ec)) {
+        std::cerr << "Failed to read: " << ec.message() << '\n';
+        return 2;
+    }
+
+    std::cout << "Read " << content.size() << " bytes\n";
+    return 0;
+}

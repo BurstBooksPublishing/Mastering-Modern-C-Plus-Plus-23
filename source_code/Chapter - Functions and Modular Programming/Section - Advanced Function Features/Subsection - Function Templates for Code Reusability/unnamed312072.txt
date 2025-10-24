@@ -1,0 +1,7 @@
+#include <type_traits>
+
+template<typename T, int N>
+constexpr std::enable_if_t<std::is_arithmetic_v<T>, T>
+multiply(T value) noexcept {
+    return value * N;
+}

@@ -1,0 +1,30 @@
+#include <functional>
+#include <iostream>
+#include <stdexcept>
+#include <string>
+#include <string_view>
+#include <vector>
+
+// Return owning string; caller decides whether to create a view.
+std::string make_string() {
+    return "persistent"; // NRVO / move eliminates copy
+}
+
+// Capture loop variable by value; each closure owns its copy.
+std::vector<std::function<void()>> make_closures() {
+    std::vector<std::function<void()>> v;
+    v.reserve(3); // avoid reallocations
+    for (int i = 0; i < 3; ++i) {
+        v.emplace_back([i] { std::cout << "good: " << i << '\n'; });
+    }
+    return v;
+}
+
+int main() {
+    const auto s = make_string();
+    const std::string_view sv = s; // safe: view refers to owning 's'
+    std::cout << sv << '\n';
+
+    const auto closures = make_closures();
+    for (const auto& f : closures) f(); // prints 0, 1, 2
+}

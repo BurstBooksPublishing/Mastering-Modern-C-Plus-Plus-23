@@ -1,0 +1,16 @@
+#include <iostream>
+#include <tbb/task_group.h>
+
+void parallelWork() {
+    tbb::task_group tg;
+
+    tg.run([] {
+        std::cout << "Task 1 executed\n";
+    });
+
+    tg.run([] {
+        std::cout << "Task 2 executed\n";
+    });
+
+    tg.wait(); // Wait for all tasks to complete
+}

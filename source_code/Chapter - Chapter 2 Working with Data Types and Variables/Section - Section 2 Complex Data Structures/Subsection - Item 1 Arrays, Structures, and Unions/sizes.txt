@@ -1,0 +1,37 @@
+#include <array>
+#include <cstdint>
+#include <cstring>
+#include <iostream>
+#include <type_traits>
+
+struct PacketHeader {
+    std::uint16_t src_port;
+    std::uint16_t dst_port;
+    std::uint32_t seq;
+    std::uint8_t  flags;
+};
+
+union FourBytes {
+    std::uint32_t u;
+    float         f;
+};
+
+int main() {
+    static_assert(std::is_standard_layout_v<PacketHeader>);
+    std::cout << "sizeof(PacketHeader): "  << sizeof(PacketHeader)  << '\n';
+    std::cout << "alignof(PacketHeader): " << alignof(PacketHeader) << '\n';
+
+    constexpr std::size_t kRingSize = 1024;
+    std::array<PacketHeader, kRingSize> ring{};
+
+    std::uint64_t sum = 0;
+    for (const auto& hdr : ring) {
+        sum += hdr.src_port + hdr.dst_port + hdr.seq + hdr.flags;
+    }
+    std::cout << "sum: " << sum << '\n';
+
+    FourBytes fb;
+    std::uint32_t raw = 0x3f800000u;          // IEEE-754 bit pattern for 1.0f
+    std::memcpy(&fb.u, &raw, sizeof(raw));    // safe aliasing-free conversion
+    std::cout << "interpreted float: " << fb.f << '\n';
+}

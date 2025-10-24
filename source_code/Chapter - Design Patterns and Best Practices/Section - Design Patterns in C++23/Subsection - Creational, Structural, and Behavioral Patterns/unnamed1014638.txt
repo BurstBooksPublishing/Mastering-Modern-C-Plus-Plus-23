@@ -1,0 +1,27 @@
+#include <memory>
+#include <stdexcept>
+
+class Strategy {
+public:
+    virtual ~Strategy() = default;
+    virtual void execute() = 0;
+};
+
+class ConcreteStrategyA : public Strategy {
+public:
+    void execute() override {
+        // Strategy A implementation
+    }
+};
+
+class Context {
+    std::unique_ptr<Strategy> strategy;
+public:
+    explicit Context(std::unique_ptr<Strategy> s)
+        : strategy(std::move(s)) {
+        if (!strategy) throw std::invalid_argument("Strategy cannot be null");
+    }
+    void executeStrategy() {
+        strategy->execute();
+    }
+};

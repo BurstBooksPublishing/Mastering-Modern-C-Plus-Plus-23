@@ -1,0 +1,16 @@
+#include <iostream>
+#include <memory>
+
+struct Widget {
+    Widget()  { std::cout << "Widget constructed\n"; }
+    ~Widget() { std::cout << "Widget destroyed\n"; }
+
+    // Prevent copying to enforce unique ownership
+    Widget(const Widget&)            = delete;
+    Widget& operator=(const Widget&) = delete;
+};
+
+int main() {
+    auto ptr = std::make_unique<Widget>(); // RAII: automatic cleanup
+    return 0;
+}

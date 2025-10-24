@@ -1,0 +1,19 @@
+#include <iostream>
+#include <memory>
+
+class Base {
+public:
+    Base()  { std::cout << "Base Constructor\n"; }
+    virtual ~Base() = default;          // Ensure polymorphic deletion
+};
+
+class Derived : public Base {
+public:
+    Derived() { std::cout << "Derived Constructor\n"; }
+    ~Derived() override { std::cout << "Derived Destructor\n"; }
+};
+
+int main() {
+    std::unique_ptr<Base> obj = std::make_unique<Derived>();
+    return 0;
+}

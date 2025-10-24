@@ -1,0 +1,16 @@
+#include <iostream>
+#include <string>
+
+int main() {
+    int age = 25;
+    double height = 5.9;
+    char gender = 'M';
+    bool isStudent = true;
+    std::string name = "John Doe";
+
+    std::cout << "Name: " << name << '\n'
+              << "Age: " << age << '\n'
+              << "Height: " << height << '\n'
+              << "Gender: " << gender << '\n'
+              << "Is Student: " << std::boolalpha << isStudent << '\n';
+}

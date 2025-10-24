@@ -1,0 +1,18 @@
+#include <algorithm>
+#include <iostream>
+#include <vector>
+
+int main() {
+    const std::vector<int> numbers{1, 2, 3, 4, 5};
+
+    std::for_each(numbers.begin(), numbers.end(),
+                  [](int n) { std::cout << n << ' '; });
+    std::cout << '\n';
+
+    const std::size_t even_count =
+        std::count_if(numbers.begin(), numbers.end(),
+                      [](int n) { return n % 2 == 0; });
+
+    std::cout << "Number of even numbers: " << even_count << '\n';
+    return 0;
+}

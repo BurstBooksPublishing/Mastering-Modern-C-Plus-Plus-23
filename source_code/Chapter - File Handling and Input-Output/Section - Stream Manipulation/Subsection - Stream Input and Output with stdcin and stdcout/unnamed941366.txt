@@ -1,0 +1,9 @@
+#include <iostream>
+
+int main() {
+    std::cout << "Hello, World!\n";
+
+    const int x = 42;               // constant value used for demonstration
+    std::cout << "The value of x is: " << x << '\n';
+    return 0;
+}

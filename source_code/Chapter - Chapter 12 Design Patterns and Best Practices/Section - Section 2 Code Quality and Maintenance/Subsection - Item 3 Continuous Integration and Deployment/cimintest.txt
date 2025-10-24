@@ -1,0 +1,23 @@
+#include <cstdlib>
+#include <iostream>
+#include <string_view>
+
+int main() {
+    // Verify that x * 0 == 0 for a small range of integers.
+    for (int x = -10; x <= 10; ++x) {
+        if (x * 0 != 0) {
+            std::cerr << "Property check failed: multiplication by zero\n";
+            return EXIT_FAILURE;
+        }
+    }
+
+    // Emit concise context information.
+    if (const char* ci = std::getenv("CI"); ci && std::string_view(ci) == "true") {
+        std::cout << "Running under CI environment\n";
+    } else {
+        std::cout << "Local run\n";
+    }
+
+    std::cout << "All checks passed\n";
+    return EXIT_SUCCESS;
+}

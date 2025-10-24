@@ -1,0 +1,51 @@
+#include <chrono>
+#include <iostream>
+#include <string>
+
+static std::string make_payload(std::size_t n) {
+    return std::string(n, 'x');
+}
+
+void consume_by_const_ref(const std::string& s) noexcept {
+    volatile char c = s.front();
+    (void)c;
+}
+
+void consume_by_value(std::string s) noexcept {
+    volatile char c = s.front();
+    (void)c;
+}
+
+int main() {
+    constexpr std::size_t N = 200'000;
+    constexpr std::size_t SIZE = 256;
+
+    const std::string payload = make_payload(SIZE);
+
+    {
+        const auto start = std::chrono::steady_clock::now();
+        for (std::size_t i = 0; i < N; ++i) consume_by_const_ref(payload);
+        const auto end = std::chrono::steady_clock::now();
+        std::cout << "const_ref: "
+                  << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
+                  << " ms\n";
+    }
+
+    {
+        const auto start = std::chrono::steady_clock::now();
+        for (std::size_t i = 0; i < N; ++i) consume_by_value(payload);
+        const auto end = std::chrono::steady_clock::now();
+        std::cout << "by_value_copy: "
+                  << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
+                  << " ms\n";
+    }
+
+    {
+        const auto start = std::chrono::steady_clock::now();
+        for (std::size_t i = 0; i < N; ++i) consume_by_value(std::string(payload));
+        const auto end = std::chrono::steady_clock::now();
+        std::cout << "by_value_moveable_temporary: "
+                  << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
+                  << " ms\n";
+    }
+}

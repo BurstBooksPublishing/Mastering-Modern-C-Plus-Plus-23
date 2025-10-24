@@ -1,0 +1,28 @@
+#include <memory>
+#include <stdexcept>
+#include <string>
+
+class Product {
+public:
+    std::string partA;
+    std::string partB;
+    std::string partC;
+};
+
+class Builder {
+public:
+    virtual ~Builder() = default;
+    virtual void buildPartA() = 0;
+    virtual void buildPartB() = 0;
+    virtual void buildPartC() = 0;
+    virtual std::unique_ptr<Product> getResult() = 0;
+};
+
+class ConcreteBuilder : public Builder {
+    std::unique_ptr<Product> product = std::make_unique<Product>();
+public:
+    void buildPartA() override { product->partA = "PartA"; }
+    void buildPartB() override { product->partB = "PartB"; }
+    void buildPartC() override { product->partC = "PartC"; }
+    std::unique_ptr<Product> getResult() override { return std::move(product); }
+};

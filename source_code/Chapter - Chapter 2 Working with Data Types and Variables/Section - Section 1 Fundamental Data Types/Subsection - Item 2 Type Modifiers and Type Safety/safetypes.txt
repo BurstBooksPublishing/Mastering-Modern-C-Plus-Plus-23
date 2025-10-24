@@ -1,0 +1,30 @@
+#include <cstddef>
+#include <cstdint>
+#include <iostream>
+#include <limits>
+#include <type_traits>
+
+int main() {
+    // Prevent signed/unsigned mismatch: use std::ssize when available
+    std::ptrdiff_t delta = -1;
+    std::size_t n = 10;
+
+    if (delta < static_cast<std::ptrdiff_t>(n)) {
+        std::cout << "delta is negative\n";
+    }
+
+    // Fixed-width integer for exact bit-width requirements
+    std::int32_t counter{0};
+    ++counter;
+
+    // Narrowing protection via list-initialization
+    std::int16_t bigger{128};
+
+    // Demonstrate unsigned wrap-around behavior
+    std::uint8_t u{255};
+    ++u;  // wraps to 0
+    std::cout << "uint8_t wrap: " << +u << '\n';
+
+    // Compile-time check for signedness
+    static_assert(std::is_signed_v<std::int32_t>, "int32_t must be signed");
+}

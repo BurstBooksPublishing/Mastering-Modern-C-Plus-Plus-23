@@ -1,0 +1,20 @@
+#include <algorithm>
+#include <cstdint>
+#include <iostream>
+#include <numeric>
+#include <ranges>
+
+int main() {
+    constexpr std::size_t N = 1'000'000;
+
+    auto pipeline = std::views::iota(1ULL, 1ULL + N)          // 1..N
+                  | std::views::filter([](auto x){ return (x & 1) == 0; })
+                  | std::views::transform([](auto x){ return x * x; });
+
+    std::uint64_t sum = std::reduce(std::ranges::begin(pipeline),
+                                    std::ranges::end(pipeline),
+                                    0ULL);
+
+    std::cout << "Sum of squares of even numbers from 1 to " << N << " is " << sum << '\n';
+    return 0;
+}

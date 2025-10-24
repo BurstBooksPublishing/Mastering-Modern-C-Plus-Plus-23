@@ -1,0 +1,29 @@
+#include <vector>
+#include <iostream>
+#include <algorithm>
+
+// Apply a unary operation to every element in a const vector.
+template <typename T, typename Func>
+void processVector(const std::vector<T>& vec, Func&& func) {
+    std::for_each(vec.begin(), vec.end(), std::forward<Func>(func));
+}
+
+// Apply a mutating unary operation to every element in a vector.
+template <typename T, typename Func>
+void processVector(std::vector<T>& vec, Func&& func) {
+    std::for_each(vec.begin(), vec.end(), std::forward<Func>(func));
+}
+
+int main() {
+    std::vector<int> numbers{1, 2, 3, 4, 5};
+
+    auto print = [](int n) { std::cout << n << ' '; };
+
+    processVector(numbers, print);
+    std::cout << '\n';
+
+    processVector(numbers, [](int& n) { n *= n; });
+
+    processVector(numbers, print);
+    std::cout << '\n';
+}

@@ -1,0 +1,11 @@
+#include <string>
+#include <compare>
+
+struct Person {
+    std::string name;
+    int age{};
+    float height{};
+
+    // Enable default comparisons (C++20)
+    auto operator<=>(const Person&) const = default;
+};

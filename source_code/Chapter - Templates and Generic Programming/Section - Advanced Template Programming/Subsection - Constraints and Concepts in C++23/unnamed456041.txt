@@ -1,0 +1,9 @@
+#include <iostream>
+#include <type_traits>
+
+template <typename T>
+void increment_and_print(T& value) {
+    static_assert(std::is_arithmetic_v<T>, "T must be an arithmetic type");
+    ++value;
+    std::cout << value << '\n';
+}

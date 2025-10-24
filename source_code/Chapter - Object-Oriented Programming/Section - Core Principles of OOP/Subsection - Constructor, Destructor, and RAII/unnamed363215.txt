@@ -1,0 +1,37 @@
+#include <iostream>
+#include <memory>
+
+class Resource {
+public:
+    Resource()  { std::cout << "Resource acquired\n"; }
+    ~Resource() { std::cout << "Resource released\n"; }
+
+    void use() const { std::cout << "Resource in use\n"; }
+};
+
+class RAIIWrapper {
+public:
+    RAIIWrapper() : resource_(std::make_unique<Resource>()) {
+        std::cout << "RAIIWrapper created\n";
+    }
+
+    ~RAIIWrapper() { std::cout << "RAIIWrapper destroyed\n"; }
+
+    // Non-copyable but movable
+    RAIIWrapper(const RAIIWrapper&)            = delete;
+    RAIIWrapper& operator=(const RAIIWrapper&) = delete;
+    RAIIWrapper(RAIIWrapper&&)                 = default;
+    RAIIWrapper& operator=(RAIIWrapper&&)      = default;
+
+    void useResource() const {
+        if (resource_) resource_->use();
+    }
+
+private:
+    std::unique_ptr<Resource> resource_;
+};
+
+int main() {
+    RAIIWrapper wrapper;
+    wrapper.useResource();
+}

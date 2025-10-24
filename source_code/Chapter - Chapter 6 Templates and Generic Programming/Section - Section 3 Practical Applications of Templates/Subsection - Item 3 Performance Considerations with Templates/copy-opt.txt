@@ -1,0 +1,40 @@
+#include <algorithm>
+#include <chrono>
+#include <cstddef>
+#include <cstring>
+#include <iostream>
+#include <span>
+#include <stdexcept>
+#include <string>
+#include <type_traits>
+#include <vector>
+
+template <typename T>
+void copy_n_optimized(std::span<T> dst, std::span<const T> src) {
+    if (dst.size() < src.size()) [[unlikely]]
+        throw std::length_error("destination too small");
+
+    if constexpr (std::is_trivially_copyable_v<T>) {
+        std::memmove(dst.data(), src.data(), src.size() * sizeof(T));
+    } else {
+        std::copy_n(src.begin(), src.size(), dst.begin());
+    }
+}
+
+int main() {
+    constexpr std::size_t N = 1'000'000;
+
+    std::vector<int> a(N, 42), b(N);
+    auto t0 = std::chrono::high_resolution_clock::now();
+    copy_n_optimized(std::span(b), std::span(a));
+    auto t1 = std::chrono::high_resolution_clock::now();
+
+    std::vector<std::string> s1(N, std::string(16, 'x')), s2(N);
+    auto t2 = std::chrono::high_resolution_clock::now();
+    copy_n_optimized(std::span(s2), std::span(s1));
+    auto t3 = std::chrono::high_resolution_clock::now();
+
+    using ms = std::chrono::duration<double, std::milli>;
+    std::cout << "ints copy (ms): " << ms(t1 - t0).count() << '\n';
+    std::cout << "strings copy (ms): " << ms(t3 - t2).count() << '\n';
+}

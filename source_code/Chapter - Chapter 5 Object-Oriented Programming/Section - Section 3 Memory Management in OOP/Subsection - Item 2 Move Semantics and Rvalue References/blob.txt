@@ -1,0 +1,48 @@
+#include <cstddef>
+#include <cstring>
+#include <iostream>
+#include <memory>
+#include <vector>
+
+class Blob {
+public:
+    explicit Blob(std::size_t n = 0)
+        : size_(n), data_(n ? std::make_unique<char[]>(n) : nullptr) {
+        if (data_) std::memset(data_.get(), 0, size_);
+    }
+
+    ~Blob() = default;
+
+    Blob(const Blob&)            = delete;
+    Blob& operator=(const Blob&) = delete;
+
+    Blob(Blob&& other) noexcept
+        : size_(std::exchange(other.size_, 0)),
+          data_(std::move(other.data_)) {}
+
+    Blob& operator=(Blob&& other) noexcept {
+        if (this != &other) {
+            data_ = std::move(other.data_);
+            size_ = std::exchange(other.size_, 0);
+        }
+        return *this;
+    }
+
+    [[nodiscard]] std::size_t size() const noexcept { return size_; }
+    [[nodiscard]] char*       data() const noexcept { return data_.get(); }
+
+private:
+    std::size_t               size_;
+    std::unique_ptr<char[]>   data_;
+};
+
+int main() {
+    std::vector<Blob> v;
+    v.reserve(4);
+    v.emplace_back(1024);
+    v.push_back(Blob(2048));
+    v.push_back(Blob(4096));
+
+    std::cout << "vector has " << v.size() << " blobs\n";
+    for (const auto& b : v) std::cout << b.size() << " bytes\n";
+}

@@ -1,0 +1,15 @@
+#include <iostream>
+#include <stdexcept>
+
+int main() {
+    try {
+        bool someCondition = true;
+        if (someCondition) {
+            throw std::runtime_error("An error occurred");
+        }
+    } catch (const std::exception& e) {
+        std::cerr << "Caught exception: " << e.what() << '\n';
+        return EXIT_FAILURE;
+    }
+    return EXIT_SUCCESS;
+}

@@ -1,0 +1,8 @@
+#include <iostream>
+#include <vector>
+
+void printVector(const std::vector<int>& arr) {
+    for (const auto& elem : arr) {
+        std::cout << elem << '\n';
+    }
+}

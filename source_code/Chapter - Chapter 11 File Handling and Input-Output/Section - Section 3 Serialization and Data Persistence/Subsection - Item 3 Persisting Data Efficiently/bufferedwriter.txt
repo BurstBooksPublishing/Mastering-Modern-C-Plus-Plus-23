@@ -1,0 +1,104 @@
+#include <algorithm>
+#include <cerrno>
+#include <cstddef>
+#include <cstdio>
+#include <cstring>
+#include <stdexcept>
+#include <string>
+#include <system_error>
+#include <type_traits>
+#include <vector>
+
+#if defined(_WIN32)
+#  include <windows.h>
+#  include <io.h>
+#else
+#  include <unistd.h>
+#endif
+
+class BufferedBinaryWriter {
+public:
+    explicit BufferedBinaryWriter(const std::string& path,
+                                  std::size_t buffer_size = 1 << 20)
+        : file_(std::fopen(path.c_str(), "wb")),
+          buf_(buffer_size),
+          pos_(0) {
+        if (!file_)
+            throw std::system_error(errno, std::generic_category(),
+                                    "fopen failed for " + path);
+    }
+
+    ~BufferedBinaryWriter() noexcept {
+        if (file_) {
+            try { flush(false); } catch (...) {}
+            std::fclose(file_);
+        }
+    }
+
+    BufferedBinaryWriter(const BufferedBinaryWriter&) = delete;
+    BufferedBinaryWriter& operator=(const BufferedBinaryWriter&) = delete;
+    BufferedBinaryWriter(BufferedBinaryWriter&&) = delete;
+    BufferedBinaryWriter& operator=(BufferedBinaryWriter&&) = delete;
+
+    template <typename T>
+    void write(const T* data, std::size_t count) {
+        static_assert(std::is_trivially_copyable_v<T>);
+        const std::byte* bytes = reinterpret_cast<const std::byte*>(data);
+        std::size_t total = count * sizeof(T);
+        std::size_t offset = 0;
+
+        while (offset < total) {
+            std::size_t space = buf_.size() - pos_;
+            std::size_t to_copy = std::min(space, total - offset);
+            std::memcpy(buf_.data() + pos_, bytes + offset, to_copy);
+            pos_ += to_copy;
+            offset += to_copy;
+            if (pos_ == buf_.size())
+                flush(false);
+        }
+    }
+
+    void flush(bool durable = true) {
+        if (pos_ == 0) {
+            if (durable)
+                sync_file();
+            return;
+        }
+        std::size_t written = std::fwrite(buf_.data(), 1, pos_, file_);
+        if (written != pos_)
+            throw std::runtime_error("fwrite short write");
+        pos_ = 0;
+
+        if (std::fflush(file_) != 0)
+            throw std::system_error(errno, std::generic_category(), "fflush failed");
+
+        if (durable)
+            sync_file();
+    }
+
+private:
+    void sync_file() {
+#if defined(_WIN32)
+        int fd = _fileno(file_);
+        if (fd == -1)
+            throw std::system_error(errno, std::generic_category(), "_fileno failed");
+        HANDLE h = reinterpret_cast<HANDLE>(_get_osfhandle(fd));
+        if (h == INVALID_HANDLE_VALUE)
+            throw std::system_error(ERROR_INVALID_HANDLE, std::system_category(),
+                                    "invalid handle");
+        if (!FlushFileBuffers(h))
+            throw std::system_error(GetLastError(), std::system_category(),
+                                    "FlushFileBuffers failed");
+#else
+        int fd = fileno(file_);
+        if (fd == -1)
+            throw std::system_error(errno, std::generic_category(), "fileno failed");
+        if (::fsync(fd) != 0)
+            throw std::system_error(errno, std::generic_category(), "fsync failed");
+#endif
+    }
+
+    FILE* file_;
+    std::vector<std::byte> buf_;
+    std::size_t pos_;
+};

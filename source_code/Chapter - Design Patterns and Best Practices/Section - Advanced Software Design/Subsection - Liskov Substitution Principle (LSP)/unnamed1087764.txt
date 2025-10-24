@@ -1,0 +1,26 @@
+#include <iostream>
+#include <memory>
+
+class Bird {
+public:
+    virtual ~Bird() = default;
+    virtual void fly() const = 0;
+};
+
+class Sparrow : public Bird {
+public:
+    void fly() const override { std::cout << "Sparrow is flying\n"; }
+};
+
+class Ostrich : public Bird {
+public:
+    void fly() const override { std::cout << "Ostrich cannot fly\n"; }
+};
+
+int main() {
+    std::unique_ptr<Bird> sparrow = std::make_unique<Sparrow>();
+    std::unique_ptr<Bird> ostrich = std::make_unique<Ostrich>();
+
+    sparrow->fly();
+    ostrich->fly();
+}

@@ -1,0 +1,14 @@
+#include <iostream>
+#include <type_traits>
+
+int main() {
+    auto x = 42;        // int
+    auto y = 3.14;      // double
+    decltype(x) z = x + 10;
+
+    static_assert(std::is_same_v<decltype(x), int>);
+    static_assert(std::is_same_v<decltype(y), double>);
+    static_assert(std::is_same_v<decltype(z), int>);
+
+    std::cout << "x: " << x << ", y: " << y << ", z: " << z << '\n';
+}

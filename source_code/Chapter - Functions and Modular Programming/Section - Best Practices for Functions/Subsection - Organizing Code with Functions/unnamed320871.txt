@@ -1,0 +1,25 @@
+#include <stdexcept>
+#include <limits>
+
+namespace math {
+
+// Returns a + b, throwing if the result overflows.
+inline int add(int a, int b) {
+    if ((b > 0 && a > std::numeric_limits<int>::max() - b) ||
+        (b < 0 && a < std::numeric_limits<int>::min() - b)) {
+        throw std::overflow_error("addition overflow");
+    }
+    return a + b;
+}
+
+// Returns a * b, throwing if the result overflows.
+inline int multiply(int a, int b) {
+    if (a != 0 && (b > 0 ? (a > std::numeric_limits<int>::max() / b || a < std::numeric_limits<int>::min() / b)
+                         : (b < -1 ? (a > std::numeric_limits<int>::min() / b || a < std::numeric_limits<int>::max() / b)
+                                   : (b == -1 && a == std::numeric_limits<int>::min())))) {
+        throw std::overflow_error("multiplication overflow");
+    }
+    return a * b;
+}
+
+} // namespace math

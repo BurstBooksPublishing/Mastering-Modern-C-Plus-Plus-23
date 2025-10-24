@@ -1,0 +1,40 @@
+#include <iostream>
+#include <string>
+#include <stdexcept>
+
+class Car {
+public:
+    Car(const std::string& brand, int year)
+        : brand_(brand), year_(year) {
+        validate();
+    }
+
+    const std::string& brand() const noexcept { return brand_; }
+    int year() const noexcept { return year_; }
+
+    void setYear(int year) {
+        year_ = year;
+        validate();
+    }
+
+    void print(std::ostream& os = std::cout) const {
+        os << "Brand: " << brand_ << ", Year: " << year_ << '\n';
+    }
+
+private:
+    void validate() const {
+        if (brand_.empty()) throw std::invalid_argument("Brand cannot be empty");
+        if (year_ < 1886 || year_ > 2100) throw std::out_of_range("Invalid year");
+    }
+
+    std::string brand_;
+    int year_;
+};
+
+int main() {
+    Car myCar("Toyota", 2020);
+    myCar.print();
+
+    myCar.setYear(2023);
+    myCar.print();
+}

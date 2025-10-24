@@ -1,0 +1,52 @@
+#include <cstddef>
+#include <cstdlib>
+#include <new>
+#include <memory>
+
+class MemoryPool {
+public:
+    void* allocate(std::size_t size) {
+        void* p = std::malloc(size);
+        if (!p) throw std::bad_alloc{};
+        return p;
+    }
+
+    void deallocate(void* p) noexcept {
+        std::free(p);
+    }
+};
+
+template <typename T>
+class PoolAllocator {
+public:
+    using value_type = T;
+
+    explicit PoolAllocator(MemoryPool& pool) noexcept : pool_(pool) {}
+    PoolAllocator(const PoolAllocator&) noexcept = default;
+
+    template <typename U>
+    PoolAllocator(const PoolAllocator<U>& other) noexcept : pool_(other.pool_) {}
+
+    T* allocate(std::size_t n) {
+        return static_cast<T*>(pool_.allocate(n * sizeof(T)));
+    }
+
+    void deallocate(T* p, std::size_t) noexcept {
+        pool_.deallocate(p);
+    }
+
+private:
+    MemoryPool& pool_;
+
+    template <typename U> friend class PoolAllocator;
+};
+
+template <typename T, typename U>
+bool operator==(const PoolAllocator<T>& lhs, const PoolAllocator<U>& rhs) noexcept {
+    return &lhs.pool_ == &rhs.pool_;
+}
+
+template <typename T, typename U>
+bool operator!=(const PoolAllocator<T>& lhs, const PoolAllocator<U>& rhs) noexcept {
+    return !(lhs == rhs);
+}

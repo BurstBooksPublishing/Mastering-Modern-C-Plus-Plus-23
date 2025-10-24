@@ -1,0 +1,173 @@
+#include <algorithm>
+#include <cstddef>
+#include <initializer_list>
+#include <iterator>
+#include <memory>
+#include <new>
+#include <type_traits>
+#include <utility>
+
+template <typename T, std::size_t N, typename Alloc = std::allocator<T>>
+    requires std::is_nothrow_move_constructible_v<T>
+class small_vector {
+public:
+    using value_type      = T;
+    using allocator_type  = Alloc;
+    using size_type       = std::size_t;
+    using difference_type = std::ptrdiff_t;
+    using reference       = T&;
+    using const_reference = const T&;
+    using pointer         = T*;
+    using const_pointer   = const T*;
+    using iterator        = T*;
+    using const_iterator  = const T*;
+
+    small_vector() noexcept(std::is_nothrow_default_constructible_v<Alloc>)
+        : small_vector(Alloc{}) {}
+
+    explicit small_vector(const Alloc& alloc) noexcept(std::is_nothrow_copy_constructible_v<Alloc>)
+        : alloc_(alloc), begin_(buffer()), end_(buffer()), cap_(buffer() + N) {}
+
+    small_vector(std::initializer_list<T> il, const Alloc& alloc = Alloc{})
+        : small_vector(alloc) {
+        reserve(il.size());
+        for (auto&& v : il) emplace_back(std::move(v));
+    }
+
+    small_vector(const small_vector& rhs)
+        : small_vector(std::allocator_traits<Alloc>::select_on_container_copy_construction(rhs.alloc_)) {
+        reserve(rhs.size());
+        std::uninitialized_copy(rhs.begin_, rhs.end_, begin_);
+        end_ = begin_ + rhs.size();
+    }
+
+    small_vector(small_vector&& rhs) noexcept
+        : alloc_(std::move(rhs.alloc_)) {
+        if (rhs.on_heap()) {
+            begin_ = rhs.begin_;
+            end_   = rhs.end_;
+            cap_   = rhs.cap_;
+            rhs.reset_to_buffer();
+        } else {
+            begin_ = buffer();
+            end_   = begin_ + rhs.size();
+            cap_   = begin_ + N;
+            std::uninitialized_move(rhs.begin_, rhs.end_, begin_);
+            rhs.clear();
+        }
+    }
+
+    small_vector& operator=(const small_vector& rhs) {
+        if (this != &rhs) {
+            clear();
+            reserve(rhs.size());
+            std::uninitialized_copy(rhs.begin_, rhs.end_, begin_);
+            end_ = begin_ + rhs.size();
+        }
+        return *this;
+    }
+
+    small_vector& operator=(small_vector&& rhs) noexcept {
+        if (this != &rhs) {
+            clear();
+            if (on_heap()) deallocate(begin_, capacity());
+            if (rhs.on_heap()) {
+                begin_ = rhs.begin_;
+                end_   = rhs.end_;
+                cap_   = rhs.cap_;
+                rhs.reset_to_buffer();
+            } else {
+                begin_ = buffer();
+                end_   = begin_ + rhs.size();
+                cap_   = begin_ + N;
+                std::uninitialized_move(rhs.begin_, rhs.end_, begin_);
+                rhs.clear();
+            }
+        }
+        return *this;
+    }
+
+    ~small_vector() {
+        clear();
+        if (on_heap()) deallocate(begin_, capacity());
+    }
+
+    // capacity
+    size_type size()     const noexcept { return static_cast<size_type>(end_ - begin_); }
+    size_type capacity() const noexcept { return static_cast<size_type>(cap_ - begin_); }
+    bool      empty()    const noexcept { return begin_ == end_; }
+
+    // element access
+    reference       operator[](size_type i)       noexcept { return begin_[i]; }
+    const_reference operator[](size_type i) const noexcept { return begin_[i]; }
+
+    // iterators
+    iterator       begin() noexcept { return begin_; }
+    iterator       end()   noexcept { return end_; }
+    const_iterator begin() const noexcept { return begin_; }
+    const_iterator end()   const noexcept { return end_; }
+
+    // modifiers
+    template <typename... Args>
+    reference emplace_back(Args&&... args) {
+        if (end_ == cap_) reserve(grow());
+        ::new (static_cast<void*>(end_)) T(std::forward<Args>(args)...);
+        return *end_++;
+    }
+
+    void push_back(const T& value) { emplace_back(value); }
+    void push_back(T&& value)      { emplace_back(std::move(value)); }
+
+    void pop_back() {
+        if (!empty()) {
+            --end_;
+            end_->~T();
+        }
+    }
+
+    void clear() noexcept {
+        std::destroy(begin_, end_);
+        end_ = begin_;
+    }
+
+    void reserve(size_type new_cap) {
+        if (new_cap <= capacity()) return;
+        T* new_buf = allocate(new_cap);
+        T* new_end = std::uninitialized_move(begin_, end_, new_buf);
+        clear();
+        if (on_heap()) deallocate(begin_, capacity());
+        begin_ = new_buf;
+        end_   = new_end;
+        cap_   = new_buf + new_cap;
+    }
+
+private:
+    alignas(T) unsigned char storage_[N * sizeof(T)];
+    Alloc alloc_;
+    T*    begin_;
+    T*    end_;
+    T*    cap_;
+
+    T* buffer() noexcept { return reinterpret_cast<T*>(&storage_); }
+
+    bool on_heap() const noexcept { return begin_ != buffer(); }
+
+    void reset_to_buffer() noexcept {
+        begin_ = buffer();
+        end_   = begin_;
+        cap_   = begin_ + N;
+    }
+
+    size_type grow() const noexcept {
+        size_type c = capacity();
+        return c ? c * 2 : 1;
+    }
+
+    T* allocate(size_type n) {
+        return std::allocator_traits<Alloc>::allocate(alloc_, n);
+    }
+
+    void deallocate(T* p, size_type n) noexcept {
+        std::allocator_traits<Alloc>::deallocate(alloc_, p, n);
+    }
+};

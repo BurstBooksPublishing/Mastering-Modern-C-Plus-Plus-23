@@ -1,0 +1,10 @@
+#include <limits>
+#include <stdexcept>
+
+short safeNarrow(long long largeNumber) {
+    if (largeNumber < std::numeric_limits<short>::min() ||
+        largeNumber > std::numeric_limits<short>::max()) {
+        throw std::out_of_range("Value out of range for short");
+    }
+    return static_cast<short>(largeNumber);
+}

@@ -1,0 +1,11 @@
+#include <memory>
+#include <vector>
+#include <boost/pool/pool_alloc.hpp>
+
+int main() {
+    boost::singleton_pool<boost::pool_allocator_tag, sizeof(int)> pool;
+    std::vector<int, boost::pool_allocator<int>> vec;
+    vec.reserve(1);          // prevent reallocation
+    vec.push_back(42);
+    pool.purge_memory();     // release pool memory
+}

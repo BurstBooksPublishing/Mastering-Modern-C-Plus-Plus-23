@@ -1,0 +1,20 @@
+#include <iostream>
+#include <iomanip>
+#include <locale>
+#include <stdexcept>
+
+int main() {
+    try {
+        std::locale loc("de_DE.UTF-8");          // Request German locale
+        std::cout.imbue(loc);                    // Apply to std::cout
+    } catch (const std::runtime_error&) {
+        std::cerr << "Locale de_DE.UTF-8 not available; falling back to classic.\n";
+    }
+
+    const long double amount = 1234.56L;         // Use exact currency value
+    std::cout << "Amount: "
+              << std::showbase
+              << std::put_money(static_cast<long long>(amount * 100))  // Cents as integer
+              << '\n';
+    return 0;
+}

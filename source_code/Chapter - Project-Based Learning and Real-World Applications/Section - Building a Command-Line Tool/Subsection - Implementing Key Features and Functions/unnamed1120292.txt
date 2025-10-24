@@ -1,0 +1,42 @@
+#include <algorithm>
+#include <iostream>
+#include <string>
+#include <vector>
+
+void processArguments(const std::vector<std::string>& args) {
+    std::cout << "Processing arguments...\n";
+    for (const auto& arg : args) {
+        std::cout << "Argument: " << arg << '\n';
+    }
+}
+
+void displayHelp() {
+    std::cout << "Usage: command-tool [options] [arguments]\n"
+              << "Options:\n"
+              << "  -h, --help    Display this help message\n"
+              << "  -v, --version Display version information\n";
+}
+
+int main(int argc, char* argv[]) {
+    std::vector<std::string> args(argv + 1, argv + argc);
+
+    if (args.empty()) {
+        std::cerr << "No arguments provided. Use -h for help.\n";
+        return 1;
+    }
+
+    if (std::any_of(args.begin(), args.end(),
+                    [](const std::string& s) { return s == "-h" || s == "--help"; })) {
+        displayHelp();
+        return 0;
+    }
+
+    if (std::any_of(args.begin(), args.end(),
+                    [](const std::string& s) { return s == "-v" || s == "--version"; })) {
+        std::cout << "Command-Tool Version 1.0\n";
+        return 0;
+    }
+
+    processArguments(args);
+    return 0;
+}

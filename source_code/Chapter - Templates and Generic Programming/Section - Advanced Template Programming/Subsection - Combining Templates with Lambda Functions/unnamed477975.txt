@@ -1,0 +1,11 @@
+#include <type_traits>
+
+template <unsigned N>
+constexpr unsigned long long factorial() noexcept {
+    static_assert(N <= 20, "Overflow: 21! exceeds 64-bit range");
+    unsigned long long result = 1;
+    for (unsigned i = 2; i <= N; ++i) {
+        result *= i;
+    }
+    return result;
+}

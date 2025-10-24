@@ -1,0 +1,90 @@
+#include <coroutine>
+#include <iostream>
+#include <iterator>
+#include <optional>
+#include <stdexcept>
+#include <utility>
+
+template <typename T>
+class generator {
+public:
+    struct promise_type {
+        T const* current = nullptr;
+
+        generator get_return_object() noexcept {
+            return generator{std::coroutine_handle<promise_type>::from_promise(*this)};
+        }
+        std::suspend_always initial_suspend() noexcept { return {}; }
+        std::suspend_always final_suspend() noexcept { return {}; }
+        std::suspend_always yield_value(T const& value) noexcept {
+            current = std::addressof(value);
+            return {};
+        }
+        std::suspend_always yield_value(T&& value) noexcept {
+            current = std::addressof(value);
+            return {};
+        }
+        void return_void() noexcept {}
+        void unhandled_exception() { throw; }
+    };
+
+    using handle_type = std::coroutine_handle<promise_type>;
+
+    class iterator {
+    public:
+        using iterator_category = std::input_iterator_tag;
+        using value_type        = T;
+        using difference_type   = std::ptrdiff_t;
+        using pointer           = T const*;
+        using reference         = T const&;
+
+        iterator() noexcept = default;
+        explicit iterator(handle_type h) : h_(h) { ++*this; }
+
+        iterator& operator++() {
+            h_.resume();
+            if (h_.done()) h_ = nullptr;
+            return *this;
+        }
+        iterator operator++(int) {
+            iterator tmp = *this;
+            ++*this;
+            return tmp;
+        }
+        reference operator*() const { return *h_.promise().current; }
+        pointer   operator->() const { return h_.promise().current; }
+        bool operator==(iterator const& rhs) const noexcept { return h_ == rhs.h_; }
+        bool operator!=(iterator const& rhs) const noexcept { return !(*this == rhs); }
+
+    private:
+        handle_type h_{};
+    };
+
+    generator() noexcept = default;
+    explicit generator(handle_type h) noexcept : h_(h) {}
+    generator(generator&& rhs) noexcept : h_(std::exchange(rhs.h_, {})) {}
+    generator& operator=(generator rhs) noexcept {
+        swap(rhs);
+        return *this;
+    }
+    ~generator() { if (h_) h_.destroy(); }
+
+    iterator begin() {
+        if (h_) h_.resume();
+        return h_.done() ? iterator{} : iterator{h_};
+    }
+    iterator end() noexcept { return {}; }
+
+    void swap(generator& rhs) noexcept { std::swap(h_, rhs.h_); }
+
+private:
+    handle_type h_{};
+};
+
+generator<int> ints(int start, int count) {
+    for (int i = 0; i < count; ++i) co_yield start + i;
+}
+
+int main() {
+    for (int v : ints(10, 5)) std::cout << v << '\n';
+}

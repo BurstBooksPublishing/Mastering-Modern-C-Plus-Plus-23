@@ -1,0 +1,13 @@
+#include <vector>
+#include <iostream>
+#include <stdexcept>
+
+void processVector(const std::vector<int>& vec) {
+    if (vec.empty()) {
+        throw std::invalid_argument("Input vector must not be empty");
+    }
+
+    for (const int& value : vec) {
+        std::cout << value << '\n';
+    }
+}

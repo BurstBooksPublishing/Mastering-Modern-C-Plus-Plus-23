@@ -1,0 +1,18 @@
+#include <iostream>
+#include <numeric>   // std::midpoint
+#include <limits>    // std::numeric_limits
+#include <stdexcept> // std::invalid_argument
+
+int main() {
+    int a = 10;
+    int b = 20;
+
+    // Ensure no overflow occurs before computing midpoint
+    if ((b > 0 && a > std::numeric_limits<int>::max() - b) ||
+        (b < 0 && a < std::numeric_limits<int>::min() - b)) {
+        throw std::invalid_argument("Integer overflow in midpoint calculation");
+    }
+
+    std::cout << "Midpoint: " << std::midpoint(a, b) << '\n';
+    return 0;
+}

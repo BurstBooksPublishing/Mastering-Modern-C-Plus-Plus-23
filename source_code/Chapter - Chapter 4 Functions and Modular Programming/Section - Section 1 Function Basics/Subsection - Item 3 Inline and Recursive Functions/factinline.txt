@@ -1,0 +1,33 @@
+#include <iostream>
+#include <chrono>
+#include <limits>
+#include <stdexcept>
+
+// constexpr factorial with overflow check
+inline constexpr unsigned long long factorial(unsigned n) {
+    unsigned long long res = 1;
+    for (unsigned i = 2; i <= n; ++i) {
+        if (res > std::numeric_limits<unsigned long long>::max() / i)
+            throw std::overflow_error("factorial overflow");
+        res *= i;
+    }
+    return res;
+}
+
+int main() {
+    constexpr unsigned n = 20;
+    static_assert(factorial(n) == 2'432'902'008'176'640'000ULL);
+
+    auto bench = [](auto fn, unsigned val) {
+        using namespace std::chrono;
+        const auto t0 = high_resolution_clock::now();
+        volatile unsigned long long sink = 0;
+        for (int i = 0; i < 100'000; ++i) sink = fn(val);
+        const auto t1 = high_resolution_clock::now();
+        return duration_cast<nanoseconds>(t1 - t0).count();
+    };
+
+    std::cout << "factorial(" << n << ") took "
+              << bench(factorial, n) << " ns\n";
+    return 0;
+}

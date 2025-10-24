@@ -1,0 +1,79 @@
+#include <fstream>
+#include <iostream>
+#include <memory>
+#include <string>
+#include <string_view>
+#include <utility>
+
+// Role-specific small interfaces (ISP).
+struct ILogger {
+    virtual ~ILogger() = default;
+    virtual void log(std::string_view msg) = 0;
+};
+
+struct IStorage {
+    virtual ~IStorage() = default;
+    virtual bool save(std::string_view key, std::string_view payload) = 0;
+};
+
+// Concrete implementations (SRP).
+class ConsoleLogger final : public ILogger {
+public:
+    void log(std::string_view msg) override {
+        std::cout << msg << '\n';
+    }
+};
+
+class FileStorage final : public IStorage {
+    std::ofstream out_;
+public:
+    explicit FileStorage(std::string_view path) : out_(path.data(), std::ios::app) {}
+    bool save(std::string_view key, std::string_view payload) override {
+        if (!out_) return false;
+        out_ << key << ':' << payload << '\n';
+        return true;
+    }
+};
+
+// High-level service depends on abstractions (DIP).
+class TelemetryService {
+    std::unique_ptr<ILogger> logger_;
+    std::unique_ptr<IStorage> storage_;
+public:
+    TelemetryService(std::unique_ptr<ILogger> lg, std::unique_ptr<IStorage> st)
+        : logger_(std::move(lg)), storage_(std::move(st)) {}
+    bool record(std::string_view key, std::string_view payload) {
+        if (!storage_->save(key, payload)) return false;
+        logger_->log("saved " + std::string(key));
+        return true;
+    }
+};
+
+// Zero-cost alternative using concepts (compile-time DIP).
+template<typename L, typename S>
+class TelemetryInline {
+    L logger_;
+    S storage_;
+public:
+    TelemetryInline(L lg, S st) : logger_(std::move(lg)), storage_(std::move(st)) {}
+    void record(std::string_view key, std::string_view payload) {
+        storage_(key, payload);
+        logger_(std::string("saved ") + std::string(key));
+    }
+};
+
+int main() {
+    // Runtime-polymorphic usage.
+    auto svc = TelemetryService{
+        std::make_unique<ConsoleLogger>(),
+        std::make_unique<FileStorage>("data.txt")
+    };
+    svc.record("frame", "1024");
+
+    // Compile-time, inline usage.
+    auto inlineSvc = TelemetryInline{
+        [](std::string_view s) { std::cout << s << '\n'; },
+        [](std::string_view k, std::string_view p) { /* inline storage */ }
+    };
+    inlineSvc.record("gpu", "ok");
+}

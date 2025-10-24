@@ -1,0 +1,9 @@
+#include <stdexcept>
+#include <limits>
+
+double safe_divide(double numerator, double denominator) {
+    if (denominator == 0.0) {
+        throw std::invalid_argument("Division by zero");
+    }
+    return numerator / denominator;
+}

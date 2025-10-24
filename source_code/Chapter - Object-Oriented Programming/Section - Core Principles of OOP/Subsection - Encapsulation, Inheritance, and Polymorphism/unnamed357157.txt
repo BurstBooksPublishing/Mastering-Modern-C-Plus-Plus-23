@@ -1,0 +1,29 @@
+#include <iostream>
+#include <memory>
+
+class Animal {
+public:
+    virtual ~Animal() = default;
+
+    virtual void eat() const {
+        std::cout << "Eating...\n";
+    }
+};
+
+class Dog : public Animal {
+public:
+    void bark() const {
+        std::cout << "Barking...\n";
+    }
+
+    void eat() const override {
+        std::cout << "Dog is eating...\n";
+    }
+};
+
+int main() {
+    std::unique_ptr<Animal> pet = std::make_unique<Dog>();
+    pet->eat();
+    static_cast<Dog*>(pet.get())->bark();
+    return 0;
+}

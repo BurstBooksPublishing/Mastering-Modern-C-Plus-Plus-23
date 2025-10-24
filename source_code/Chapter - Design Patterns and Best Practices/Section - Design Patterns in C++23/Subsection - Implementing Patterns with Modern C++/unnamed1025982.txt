@@ -1,0 +1,50 @@
+#include <iostream>
+#include <memory>
+
+class Component {
+public:
+    virtual void operation() = 0;
+    virtual ~Component() = default;
+};
+
+class ConcreteComponent : public Component {
+public:
+    void operation() override {
+        std::cout << "ConcreteComponent operation\n";
+    }
+};
+
+class Decorator : public Component {
+public:
+    explicit Decorator(std::unique_ptr<Component> component)
+        : component_(std::move(component)) {}
+
+    void operation() override {
+        component_->operation();
+    }
+
+private:
+    std::unique_ptr<Component> component_;
+};
+
+class ConcreteDecoratorA : public Decorator {
+public:
+    explicit ConcreteDecoratorA(std::unique_ptr<Component> component)
+        : Decorator(std::move(component)) {}
+
+    void operation() override {
+        Decorator::operation();
+        std::cout << "ConcreteDecoratorA operation\n";
+    }
+};
+
+class ConcreteDecoratorB : public Decorator {
+public:
+    explicit ConcreteDecoratorB(std::unique_ptr<Component> component)
+        : Decorator(std::move(component)) {}
+
+    void operation() override {
+        Decorator::operation();
+        std::cout << "ConcreteDecoratorB operation\n";
+    }
+};

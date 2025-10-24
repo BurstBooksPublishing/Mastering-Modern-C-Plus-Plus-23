@@ -1,0 +1,60 @@
+#include <algorithm>
+#include <cstddef>
+#include <iomanip>
+#include <iostream>
+#include <numeric>
+#include <random>
+#include <string>
+#include <vector>
+
+struct Record {
+    int         id{};
+    double      value{};
+    std::string tag;
+};
+
+int main() {
+    constexpr std::size_t kCount = 1000;
+
+    std::mt19937_64 rng{42};
+    std::uniform_real_distribution<double> val_dist(0.0, 100.0);
+
+    std::vector<Record> items;
+    items.reserve(kCount);
+    for (std::size_t i = 0; i < kCount; ++i)
+        items.emplace_back(static_cast<int>(i), val_dist(rng), (i % 3 == 0) ? "A" : "B");
+
+    const double threshold      = 30.0;
+    const bool   sort_descending = true;
+
+    // Filter
+    items.erase(std::remove_if(items.begin(), items.end(),
+                               [threshold](const Record& r) { return r.value < threshold; }),
+                items.end());
+
+    // Mutate
+    std::size_t modified = 0;
+    for (Record& r : items) {
+        r.value *= 1.10;
+        if (r.tag == "A") ++modified;
+    }
+
+    // Aggregate
+    const double average = items.empty()
+                               ? 0.0
+                               : std::accumulate(items.begin(), items.end(), 0.0,
+                                                 [](double acc, const Record& r) { return acc + r.value; }) /
+                                     static_cast<double>(items.size());
+
+    // Sort
+    std::sort(items.begin(), items.end(),
+              [sort_descending](const Record& a, const Record& b) {
+                  return sort_descending ? a.value > b.value : a.value < b.value;
+              });
+
+    std::cout << std::fixed << std::setprecision(2)
+              << "Kept: " << items.size()
+              << "  modified tag A: " << modified
+              << "  avg: " << average << '\n';
+    return 0;
+}

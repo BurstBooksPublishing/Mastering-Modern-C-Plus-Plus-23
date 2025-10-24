@@ -1,0 +1,8 @@
+#include <mutex>
+
+std::mutex myMutex;
+
+void safeFunction() {
+    std::lock_guard<std::mutex> lock(myMutex); // RAII: unlocks on any exit path
+    // Critical section
+}

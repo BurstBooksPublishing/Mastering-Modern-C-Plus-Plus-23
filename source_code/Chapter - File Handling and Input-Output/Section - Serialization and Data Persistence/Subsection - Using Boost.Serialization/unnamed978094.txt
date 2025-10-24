@@ -1,0 +1,29 @@
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/serialization/serialization.hpp>
+#include <fstream>
+#include <stdexcept>
+
+struct Data {
+    int    id{};
+    double value{};
+
+    template <typename Archive>
+    void serialize(Archive& ar, const unsigned int /*version*/) {
+        ar & id & value;
+    }
+};
+
+void save(const Data& data, const std::string& filename) {
+    std::ofstream ofs(filename, std::ios::binary);
+    if (!ofs) throw std::runtime_error("Cannot open file for writing");
+    boost::archive::text_oarchive oa(ofs);
+    oa << data;
+}
+
+void load(Data& data, const std::string& filename) {
+    std::ifstream ifs(filename, std::ios::binary);
+    if (!ifs) throw std::runtime_error("Cannot open file for reading");
+    boost::archive::text_iarchive ia(ifs);
+    ia >> data;
+}

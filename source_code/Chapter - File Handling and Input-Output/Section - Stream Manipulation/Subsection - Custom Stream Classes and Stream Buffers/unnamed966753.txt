@@ -1,0 +1,34 @@
+#include <iostream>
+#include <string>
+#include <sstream>
+
+class LinePrefixer {
+public:
+    explicit LinePrefixer(std::string prefix) : prefix_(std::move(prefix)) {}
+
+    // Stream insertion operator: prefixes every newline-terminated segment
+    friend std::ostream& operator<<(std::ostream& os, const LinePrefixer& lp) {
+        struct Sentry {
+            std::ostream& os;
+            bool needs_prefix = true;
+            explicit Sentry(std::ostream& o) : os(o) {}
+            ~Sentry() { if (needs_prefix) os << '\n'; }
+        } s(os);
+
+        std::string line;
+        while (std::getline(std::cin, line)) {
+            if (s.needs_prefix) { os << lp.prefix_; s.needs_prefix = false; }
+            os << line;
+            if (std::cin.peek() != EOF) os << '\n' << lp.prefix_;
+        }
+        return os;
+    }
+
+private:
+    std::string prefix_;
+};
+
+int main() {
+    std::cout << LinePrefixer(">> ") << "Line 1\n";
+    std::cout << LinePrefixer(">> ") << "Line 2\n";
+}

@@ -1,0 +1,11 @@
+#include <algorithm>
+#include <iterator>
+#include <type_traits>
+
+template <typename Container, typename Compare>
+void custom_sort(Container& container, Compare comp) {
+    static_assert(std::is_same_v<
+        typename std::iterator_traits<decltype(std::begin(container))>::iterator_category,
+        std::random_access_iterator_tag>, "Container must provide random-access iterators");
+    std::sort(std::begin(container), std::end(container), comp);
+}

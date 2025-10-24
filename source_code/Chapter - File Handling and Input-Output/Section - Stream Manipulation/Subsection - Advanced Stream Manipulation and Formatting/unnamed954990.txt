@@ -1,0 +1,9 @@
+#include <iostream>
+#include <iomanip>
+
+int main() {
+    std::cout << std::left   << std::setw(10) << "Hello"
+              << std::right  << std::setw(10) << "World" << '\n'
+              << std::internal << std::setw(10) << -123 << '\n';
+    return 0;
+}

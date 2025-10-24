@@ -1,0 +1,58 @@
+#include <algorithm>
+#include <iostream>
+#include <memory>
+#include <ranges>
+#include <thread>
+#include <unordered_map>
+#include <vector>
+
+// RAII helper that runs a callable on scope exit
+template <typename F>
+class scope_guard {
+    F f_;
+    bool active_ = true;
+public:
+    explicit scope_guard(F&& f) : f_(std::forward<F>(f)) {}
+    scope_guard(scope_guard&& other) noexcept
+        : f_(std::move(other.f_)), active_(std::exchange(other.active_, false)) {}
+    ~scope_guard() { if (active_) f_(); }
+    void dismiss() noexcept { active_ = false; }
+};
+
+template <typename F>
+scope_guard(F&&) -> scope_guard<F>;
+
+int main() {
+    // Sort descending
+    std::vector<int> data{5, 1, 4, 2, 3};
+    std::ranges::sort(data, std::greater<>());
+    for (int v : data) std::cout << v << ' ';
+    std::cout << '\n';
+
+    // Transform in-place
+    auto doubled = data | std::views::transform([](auto x) { return x * 2; });
+    for (int v : doubled) std::cout << v << ' ';
+    std::cout << '\n';
+
+    // Move-only resource into thread
+    auto ptr = std::make_unique<int>(42);
+    std::jthread t([p = std::move(ptr)] {
+        std::cout << "From thread: " << *p << '\n';
+    });
+
+    // RAII cleanup
+    auto resource = std::make_unique<int>(7);
+    auto guard = scope_guard([r = std::move(resource)] {
+        std::cout << "Cleaning up resource with value " << *r << '\n';
+    });
+
+    // Memoized Fibonacci
+    std::unordered_map<int, int> cache;
+    auto fib = [&](auto&& self, int n) -> int {
+        if (n <= 1) return 1;
+        if (auto it = cache.find(n); it != cache.end()) return it->second;
+        return cache[n] = self(self, n - 1) + self(self, n - 2);
+    };
+    constexpr int n = 10;
+    std::cout << "fib(" << n << ") = " << fib(fib, n) << '\n';
+}

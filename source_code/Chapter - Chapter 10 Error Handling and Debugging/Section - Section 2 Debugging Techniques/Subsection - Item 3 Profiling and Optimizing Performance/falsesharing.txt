@@ -1,0 +1,41 @@
+#include <atomic>
+#include <chrono>
+#include <iostream>
+#include <thread>
+#include <vector>
+
+struct alignas(64) Counter {
+    std::atomic<std::uint64_t> value{0};
+};
+
+template <typename CounterType>
+double run_benchmark(std::size_t nthreads, std::size_t iters) {
+    std::vector<CounterType> counters(nthreads);
+    for (auto& c : counters) c.value.store(0, std::memory_order_relaxed);
+
+    auto start = std::chrono::steady_clock::now();
+    std::vector<std::jthread> threads;
+    for (std::size_t t = 0; t < nthreads; ++t) {
+        threads.emplace_back([&, t] {
+            for (std::size_t i = 0; i < iters; ++i) {
+                counters[t].value.fetch_add(1, std::memory_order_relaxed);
+            }
+        });
+    } // std::jthread joins automatically
+
+    auto end = std::chrono::steady_clock::now();
+    return std::chrono::duration<double>(end - start).count();
+}
+
+int main() {
+    const std::size_t threads = std::thread::hardware_concurrency();
+    const std::size_t iters = 10'000'000;
+
+    double t_bad = run_benchmark<std::atomic<std::uint64_t>>(threads, iters);
+    double t_good = run_benchmark<Counter>(threads, iters);
+
+    std::cout << "threads=" << threads << " iters=" << iters << '\n';
+    std::cout << "bad (no padding) time:  " << t_bad << " s\n";
+    std::cout << "good (padded) time:     " << t_good << " s\n";
+    std::cout << "speedup: " << (t_bad / t_good) << "x\n";
+}

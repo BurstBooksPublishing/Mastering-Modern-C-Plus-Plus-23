@@ -1,0 +1,13 @@
+#include <numbers>
+#include <stdexcept>
+#include <limits>
+
+double circle_area(double radius) {
+    if (radius < 0.0) [[unlikely]]
+        throw std::invalid_argument("radius must be non-negative");
+
+    if (radius > std::numeric_limits<double>::max() / std::numbers::pi) [[unlikely]]
+        throw std::overflow_error("radius too large");
+
+    return std::numbers::pi * radius * radius;
+}

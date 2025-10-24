@@ -1,0 +1,10 @@
+#include <array>
+#include <cstddef>
+
+void stack_based_array() {
+    constexpr std::size_t N = 1000;
+    std::array<int, N> arr{};               // Fixed-size stack array, zero-initialised
+    for (std::size_t i = 0; i < N; ++i) {
+        arr[i] = static_cast<int>(i * i);   // Prevent narrowing warnings
+    }
+}

@@ -1,0 +1,31 @@
+#include <iostream>
+#include <stdexcept>
+#include <nlohmann/json.hpp>
+#include <pugixml.hpp>
+
+int main() {
+    try {
+        // Build JSON object
+        nlohmann::json jsonData = {
+            {"name", "John Doe"},
+            {"age", 30},
+            {"is_student", false}
+        };
+
+        std::cout << "JSON Data:\n" << jsonData.dump(4) << '\n';
+
+        // Build XML document
+        pugi::xml_document xmlDoc;
+        auto root = xmlDoc.append_child("Person");
+        root.append_child("Name").text().set("John Doe");
+        root.append_child("Age").text().set(30);
+        root.append_child("IsStudent").text().set(false);
+
+        std::cout << "\nXML Data:\n";
+        xmlDoc.save(std::cout, "  ");
+    } catch (const std::exception& ex) {
+        std::cerr << "Error: " << ex.what() << '\n';
+        return EXIT_FAILURE;
+    }
+    return EXIT_SUCCESS;
+}

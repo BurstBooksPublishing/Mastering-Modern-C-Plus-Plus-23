@@ -1,0 +1,21 @@
+#include <algorithm>
+#include <iostream>
+#include <iterator>
+#include <vector>
+
+int main() {
+    const std::vector<int> numbers{1, 2, 3, 4, 5};
+    const int threshold = 3;
+
+    std::vector<int> filtered;
+    filtered.reserve(numbers.size());                       // avoid reallocations
+
+    std::copy_if(numbers.begin(), numbers.end(),
+                 std::back_inserter(filtered),
+                 [threshold](int n) { return n > threshold; });
+
+    std::copy(filtered.begin(), filtered.end(),
+              std::ostream_iterator<int>(std::cout, " "));
+    std::cout << '\n';
+    return 0;
+}

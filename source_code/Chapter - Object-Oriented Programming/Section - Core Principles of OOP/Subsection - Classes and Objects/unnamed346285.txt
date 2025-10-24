@@ -1,0 +1,35 @@
+#include <iostream>
+#include <string>
+
+class Car {
+public:
+    Car(const std::string& make, const std::string& model, int year)
+        : make_(make), model_(model), year_(year) {}
+
+    void displayInfo() const {
+        std::cout << year_ << ' ' << make_ << ' ' << model_ << '\n';
+    }
+
+private:
+    std::string make_;
+    std::string model_;
+    int year_;
+};
+
+class SUV : public Car {
+public:
+    SUV(const std::string& make,
+        const std::string& model,
+        int year,
+        bool hasFourWheelDrive)
+        : Car(make, model, year),
+          hasFourWheelDrive_(hasFourWheelDrive) {}
+
+    void displaySUVInfo() const {
+        displayInfo();
+        std::cout << "4WD: " << (hasFourWheelDrive_ ? "Yes" : "No") << '\n';
+    }
+
+private:
+    bool hasFourWheelDrive_;
+};

@@ -1,0 +1,8 @@
+#include <cstddef>   // std::size_t
+#include <limits>    // std::numeric_limits
+#include <stdexcept> // std::out_of_range
+
+using Index = std::size_t;
+
+// Sentinel value indicating “no index” or “invalid”
+inline constexpr Index kNoIndex = std::numeric_limits<Index>::max();

@@ -1,0 +1,12 @@
+#include <iostream>
+#include <stdexcept>
+
+int read_integer() {
+    int value{};
+    if (!(std::cin >> value) || value < 0 || value > 100) {
+        std::cin.clear();                       // reset error flags
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // discard bad input
+        throw std::invalid_argument("Input must be an integer between 0 and 100");
+    }
+    return value;
+}

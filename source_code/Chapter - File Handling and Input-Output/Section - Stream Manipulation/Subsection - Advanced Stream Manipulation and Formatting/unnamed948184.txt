@@ -1,0 +1,25 @@
+#include <iomanip>
+#include <iostream>
+#include <sstream>
+
+int main() {
+    double value = 12345.6789;
+
+    std::cout << std::fixed << std::setprecision(2)
+              << "Fixed notation: " << value << '\n';
+
+    std::cout << std::scientific
+              << "Scientific notation: " << value << '\n';
+
+    std::cout << std::defaultfloat
+              << "Default notation: " << value << '\n';
+
+    std::ostringstream oss;
+    oss << std::left << std::setw(15) << std::setfill('*') << "Formatted";
+    std::cout << "StringStream output: " << oss.str() << '\n';
+
+    int num = 255;
+    std::cout << "Hexadecimal: " << std::hex << num << '\n'
+              << "Octal: " << std::oct << num << '\n'
+              << std::dec << "Decimal: " << num << '\n';
+}

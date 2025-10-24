@@ -1,0 +1,7 @@
+#include <numeric>   // std::accumulate
+#include <vector>    // std::vector
+#include <cstddef>   // std::size_t
+
+std::size_t sumArray(const std::vector<int>& arr) {
+    return std::accumulate(arr.begin(), arr.end(), 0);
+}

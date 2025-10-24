@@ -1,0 +1,17 @@
+#include <fstream>
+#include <iostream>
+#include <string>
+
+int main() {
+    const std::string path = "example.txt";
+    std::ifstream in(path, std::ios::binary);
+    if (!in) {
+        std::cerr << "Error: cannot open '" << path << "'\n";
+        return 1;
+    }
+
+    // Example: stream entire file to std::cout
+    std::cout << in.rdbuf();
+
+    return 0;  // file closed automatically by destructor
+}

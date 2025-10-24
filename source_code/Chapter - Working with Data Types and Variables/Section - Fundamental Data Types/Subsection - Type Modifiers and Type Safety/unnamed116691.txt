@@ -1,0 +1,5 @@
+#include <type_traits>
+
+constexpr int square(int x) noexcept {
+    return x * x;               // std::is_constant_evaluated() is redundant here
+}

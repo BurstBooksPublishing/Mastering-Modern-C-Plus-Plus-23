@@ -1,0 +1,9 @@
+#include <stdexcept>
+#include <limits>
+
+// Compile-time factorial with overflow detection
+constexpr unsigned long long factorial(unsigned int n) {
+    return (n <= 1) ? 1ULL
+                    : (n > 20ULL) ? throw std::overflow_error("factorial overflow")
+                                  : n * factorial(n - 1);
+}

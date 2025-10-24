@@ -1,0 +1,38 @@
+#include <iostream>
+#include <string>
+#include <type_traits>
+#include <utility>
+
+namespace printer {
+
+// Overload for integral types (excluding bool and char)
+template <typename T>
+std::enable_if_t<std::is_integral_v<T> && !std::is_same_v<T, bool> && !std::is_same_v<T, char>, void>
+print(T value) {
+    std::cout << "Integer: " << value << '\n';
+}
+
+// Overload for floating-point types
+template <typename T>
+std::enable_if_t<std::is_floating_point_v<T>, void>
+print(T value) {
+    std::cout << "Double: " << value << '\n';
+}
+
+// Overload for std::string and string literals
+void print(const std::string& value) {
+    std::cout << "String: " << value << '\n';
+}
+
+// Variadic template to print any number of arguments
+template <typename... Args>
+void print(Args&&... args) {
+    (print(std::forward<Args>(args)), ...); // Perfect-forward each argument
+}
+
+} // namespace printer
+
+int main() {
+    printer::print(1, 2.5, std::string("Hello"), 42);
+    return 0;
+}

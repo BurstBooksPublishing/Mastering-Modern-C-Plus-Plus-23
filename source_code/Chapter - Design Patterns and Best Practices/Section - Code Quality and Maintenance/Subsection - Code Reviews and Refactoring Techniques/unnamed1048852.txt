@@ -1,0 +1,5 @@
+#include <memory>
+
+void processResource(std::unique_ptr<Resource> res) {
+    // res is automatically released when it goes out of scope
+}

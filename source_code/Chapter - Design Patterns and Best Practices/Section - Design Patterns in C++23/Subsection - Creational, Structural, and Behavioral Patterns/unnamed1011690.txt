@@ -1,0 +1,24 @@
+#include <memory>
+
+class Component {
+public:
+    virtual ~Component() = default;
+    virtual void operation() = 0;
+};
+
+class ConcreteComponent : public Component {
+public:
+    void operation() override {
+        // Base behavior
+    }
+};
+
+class Decorator : public Component {
+public:
+    explicit Decorator(std::unique_ptr<Component> c) : component_(std::move(c)) {}
+    void operation() override {
+        if (component_) component_->operation();
+    }
+private:
+    std::unique_ptr<Component> component_;
+};

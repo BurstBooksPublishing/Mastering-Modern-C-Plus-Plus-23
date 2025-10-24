@@ -1,0 +1,7 @@
+#include <stdexcept>
+
+// Returns n! for 0 ≤ n ≤ 12; throws std::invalid_argument otherwise.
+int factorial(int n) {
+    if (n < 0 || n > 12) throw std::invalid_argument("factorial out of range");
+    return n <= 1 ? 1 : n * factorial(n - 1);
+}

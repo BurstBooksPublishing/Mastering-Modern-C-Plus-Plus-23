@@ -1,0 +1,19 @@
+#include <vector>
+#include <fstream>
+#include <stdexcept>
+
+std::vector<int> deserializeVector(const std::string& filename) {
+    std::ifstream inFile(filename, std::ios::binary);
+    if (!inFile)
+        throw std::runtime_error("Cannot open file: " + filename);
+
+    size_t size;
+    if (!inFile.read(reinterpret_cast<char*>(&size), sizeof(size)))
+        throw std::runtime_error("Failed to read size");
+
+    std::vector<int> vec(size);
+    if (size && !inFile.read(reinterpret_cast<char*>(vec.data()), size * sizeof(int)))
+        throw std::runtime_error("Failed to read vector data");
+
+    return vec;
+}

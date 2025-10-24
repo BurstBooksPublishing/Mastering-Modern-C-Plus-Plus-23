@@ -1,0 +1,143 @@
+#include <chrono>
+#include <condition_variable>
+#include <filesystem>
+#include <fstream>
+#include <format>
+#include <functional>
+#include <mutex>
+#include <queue>
+#include <stop_token>
+#include <string>
+#include <string_view>
+#include <thread>
+#include <atomic>
+
+enum class LogLevel { Debug, Info, Warn, Error };
+
+struct LogRecord {
+    std::chrono::system_clock::time_point ts;
+    LogLevel level;
+    std::string correlation_id;
+    std::string msg;
+};
+
+class AsyncLogger {
+public:
+    AsyncLogger(std::string file,
+                std::size_t max_queue = 1'000,
+                std::size_t rotate_bytes = 10'000'000)
+        : filename_(std::move(file)),
+          max_queue_(max_queue),
+          rotate_bytes_(rotate_bytes),
+          running_(true),
+          dropped_(0),
+          worker_([this](std::stop_token st) { worker_loop(st); }) {}
+
+    ~AsyncLogger() {
+        running_ = false;
+        cv_.notify_all();
+        flush();
+    }
+
+    void log(LogLevel level,
+             std::string_view correlation_id,
+             std::string_view msg) {
+        auto now = std::chrono::system_clock::now();
+        std::unique_lock lk(mutex_);
+        if (queue_.size() >= max_queue_) {
+            ++dropped_;
+            return;
+        }
+        queue_.emplace(LogRecord{now, level,
+                                 std::string(correlation_id),
+                                 std::string(msg)});
+        lk.unlock();
+        cv_.notify_one();
+    }
+
+    void flush() {
+        std::unique_lock lk(mutex_);
+        done_cv_.wait(lk, [this] { return queue_.empty(); });
+    }
+
+private:
+    void worker_loop(std::stop_token st) {
+        std::ofstream ofs(filename_, std::ios::app);
+        std::size_t written = std::filesystem::exists(filename_)
+                                  ? std::filesystem::file_size(filename_)
+                                  : 0;
+
+        while (!st.stop_requested() || !queue_.empty()) {
+            std::unique_lock lk(mutex_);
+            cv_.wait(lk, st, [this] { return !queue_.empty() || !running_; });
+
+            while (!queue_.empty()) {
+                auto rec = std::move(queue_.front());
+                queue_.pop();
+                lk.unlock();
+
+                std::string line = format_record(rec);
+                ofs << line << '\n';
+                written += line.size() + 1;
+
+                if (written >= rotate_bytes_) {
+                    ofs.close();
+                    rotate_file();
+                    ofs.open(filename_, std::ios::app);
+                    written = 0;
+                }
+
+                lk.lock();
+            }
+            done_cv_.notify_all();
+
+            auto drops = dropped_.exchange(0);
+            if (drops) {
+                ofs << std::format(
+                           R"({{"ts":"{}","level":"warn","msg":"dropped_logs","count":{}}})",
+                           timestamp_now(), drops)
+                    << '\n';
+                ofs.flush();
+            }
+        }
+    }
+
+    static std::string timestamp_now() {
+        return std::format("{:%FT%T}",
+                           std::chrono::floor<std::chrono::seconds>(
+                               std::chrono::system_clock::now()));
+    }
+
+    static std::string format_record(const LogRecord& r) {
+        return std::format(
+            R"({{"ts":"{}","level":"{}","cid":"{}","msg":"{}"}})",
+            timestamp_now(), to_string(r.level), r.correlation_id, r.msg);
+    }
+
+    static std::string_view to_string(LogLevel l) noexcept {
+        switch (l) {
+            case LogLevel::Debug: return "debug";
+            case LogLevel::Info:  return "info";
+            case LogLevel::Warn:  return "warn";
+            case LogLevel::Error: return "error";
+        }
+        return "unknown";
+    }
+
+    void rotate_file() {
+        std::error_code ec;
+        std::filesystem::rename(filename_, filename_ + ".1", ec);
+    }
+
+    const std::string filename_;
+    const std::size_t max_queue_;
+    const std::size_t rotate_bytes_;
+
+    std::queue<LogRecord> queue_;
+    std::mutex mutex_;
+    std::condition_variable cv_;
+    std::condition_variable done_cv_;
+    std::atomic<bool> running_;
+    std::atomic<std::size_t> dropped_;
+    std::jthread worker_;
+};

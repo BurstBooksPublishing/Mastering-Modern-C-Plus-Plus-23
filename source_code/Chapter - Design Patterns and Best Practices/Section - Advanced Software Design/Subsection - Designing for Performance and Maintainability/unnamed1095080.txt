@@ -1,0 +1,8 @@
+#include <vector>
+#include <iostream>
+
+int main() {
+    std::vector<int> data{1, 2, 3, 4, 5};
+    data.push_back(6);          // Append element in amortized O(1)
+    return 0;
+}

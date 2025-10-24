@@ -1,0 +1,11 @@
+#include <string>
+#include <utility>
+
+std::string create_large_string() {
+    return "This is a large string";  // NRVO / move elision
+}
+
+int main() {
+    std::string moved_str = create_large_string();  // move-construct (elided)
+    return 0;
+}

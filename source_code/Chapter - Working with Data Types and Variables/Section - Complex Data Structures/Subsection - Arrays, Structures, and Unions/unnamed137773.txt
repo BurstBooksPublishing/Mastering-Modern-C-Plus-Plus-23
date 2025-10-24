@@ -1,0 +1,13 @@
+#include <iostream>
+#include <variant>
+
+// Safe, well-defined union replacement
+using Data = std::variant<int, double>;
+
+int main() {
+    Data d{10};                       // holds int
+    std::cout << std::get<int>(d);    // 10
+
+    d = 3.14;                         // now holds double
+    std::cout << std::get<double>(d); // 3.14
+}

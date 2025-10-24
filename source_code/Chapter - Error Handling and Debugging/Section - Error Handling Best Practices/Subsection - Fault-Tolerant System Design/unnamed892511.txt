@@ -1,0 +1,8 @@
+#include <stdexcept>
+
+double safeDivide(double numerator, double denominator) {
+    if (denominator == 0.0) {
+        throw std::invalid_argument("Denominator must not be zero");
+    }
+    return numerator / denominator;
+}

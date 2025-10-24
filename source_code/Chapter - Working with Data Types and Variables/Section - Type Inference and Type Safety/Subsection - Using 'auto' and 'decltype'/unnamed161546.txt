@@ -1,0 +1,7 @@
+#include <vector>
+#include <stdexcept>
+
+const int& get_first(const std::vector<int>& vec) {
+    if (vec.empty()) throw std::out_of_range("vector is empty");
+    return vec.front();          // returns const reference to first element
+}

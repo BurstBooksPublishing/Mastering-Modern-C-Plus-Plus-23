@@ -1,0 +1,25 @@
+#include <iostream>
+#include <type_traits>
+
+// Compile-time factorial via template recursion
+template <unsigned N>
+struct Factorial {
+    static constexpr unsigned long long value = N * Factorial<N - 1>::value;
+};
+
+template <>
+struct Factorial<0> {
+    static constexpr unsigned long long value = 1;
+};
+
+// Re-use the standard library’s is_integral instead of rolling our own
+template <typename T>
+constexpr bool IsIntegral_v = std::is_integral_v<T>;
+
+int main() {
+    constexpr auto fact = Factorial<5>::value;          // 120
+    std::cout << "Factorial of 5: " << fact << '\n';
+
+    constexpr bool isInt = IsIntegral_v<int>;           // true
+    std::cout << std::boolalpha << "Is int integral? " << isInt << '\n';
+}

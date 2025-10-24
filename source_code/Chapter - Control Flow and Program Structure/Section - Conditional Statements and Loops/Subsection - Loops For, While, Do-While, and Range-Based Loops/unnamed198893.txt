@@ -1,0 +1,10 @@
+#include <vector>
+#include <iostream>
+
+int main() {
+    const std::vector<int> nums{1, 2, 3, 4, 5};
+
+    for (const int num : nums) {
+        std::cout << "Number: " << num << '\n';
+    }
+}

@@ -1,0 +1,27 @@
+#include <fstream>
+#include <iostream>
+#include <string>
+
+int main() {
+    constexpr std::string_view filename = "example.txt";
+
+    {
+        std::ofstream out{filename.data()};
+        if (!out) {
+            std::cerr << "Failed to open " << filename << " for writing\n";
+            return 1;
+        }
+        out << "Hello, File I/O in Modern C++23!\n";
+    } // RAII closes the file
+
+    std::ifstream in{filename.data()};
+    if (!in) {
+        std::cerr << "Failed to open " << filename << " for reading\n";
+        return 1;
+    }
+
+    std::string line;
+    while (std::getline(in, line)) {
+        std::cout << line << '\n';
+    }
+}

@@ -1,0 +1,24 @@
+#include <iostream>
+#include <vector>
+#include <stdexcept>
+
+// Performs integer division and prints the result.
+// Throws std::invalid_argument if the divisor is zero.
+void divide(int dividend, int divisor) {
+    if (divisor == 0) {
+        throw std::invalid_argument("Division by zero is not allowed.");
+    }
+    std::cout << "Result: " << dividend / divisor << '\n';
+}
+
+int main() {
+    const std::vector<int> numbers{10, 2, 0, 5};
+
+    for (int num : numbers) {
+        try {
+            divide(20, num);
+        } catch (const std::invalid_argument& e) {
+            std::cerr << "Error: " << e.what() << '\n';
+        }
+    }
+}

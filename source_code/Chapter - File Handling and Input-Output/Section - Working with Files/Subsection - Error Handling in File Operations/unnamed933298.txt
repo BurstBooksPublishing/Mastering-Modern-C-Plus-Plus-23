@@ -1,0 +1,23 @@
+#include <fstream>
+#include <iostream>
+#include <string>
+
+int main() {
+    const std::string filename = "example.txt";
+    std::ifstream input_file;
+
+    try {
+        input_file.exceptions(std::ios::failbit | std::ios::badbit);
+        input_file.open(filename);
+
+        int value;
+        while (input_file >> value) {
+            // TODO: process value
+        }
+    } catch (const std::ios_base::failure& e) {
+        std::cerr << "I/O error: " << e.what() << '\n';
+        return 1;
+    }
+
+    return 0;
+}

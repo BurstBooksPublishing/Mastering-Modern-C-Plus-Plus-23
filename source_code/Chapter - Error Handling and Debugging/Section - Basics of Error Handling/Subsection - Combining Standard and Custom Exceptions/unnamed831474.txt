@@ -1,0 +1,24 @@
+#include <iostream>
+#include <stdexcept>
+#include <string>
+
+class NegativeValueException : public std::runtime_error {
+public:
+    explicit NegativeValueException(const std::string& msg) : std::runtime_error(msg) {}
+};
+
+void process_value(int value) {
+    if (value < 0) throw NegativeValueException("Negative value not allowed");
+    if (value > 100) throw std::out_of_range("Value exceeds maximum limit");
+    std::cout << "Processing value: " << value << '\n';
+}
+
+int main() {
+    try {
+        process_value(-10);
+    } catch (const NegativeValueException& e) {
+        std::cerr << "Custom Error: " << e.what() << '\n';
+    } catch (const std::out_of_range& e) {
+        std::cerr << "Standard Error: " << e.what() << '\n';
+    }
+}

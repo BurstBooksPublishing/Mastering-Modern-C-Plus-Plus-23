@@ -1,0 +1,18 @@
+#include <type_traits>
+#include <utility>
+
+template <typename T>
+class Box {
+    static_assert(std::is_object_v<T>, "Box<T>: T must be an object type");
+
+    T value_;
+
+public:
+    template <typename U,
+              typename = std::enable_if_t<!std::is_same_v<std::decay_t<U>, Box>>>
+    explicit Box(U&& v) : value_(std::forward<U>(v)) {}
+
+    const T& get() const& noexcept { return value_; }
+    T&       get() & noexcept       { return value_; }
+    T&&      get() && noexcept      { return std::move(value_); }
+};

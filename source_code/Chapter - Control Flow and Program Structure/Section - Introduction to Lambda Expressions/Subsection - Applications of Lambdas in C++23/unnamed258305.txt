@@ -1,0 +1,12 @@
+#include <optional>
+#include <iostream>
+
+int main() {
+    std::optional<int> maybe_value = 42;
+
+    auto transformed = maybe_value.transform([](int value) { return value * 2; });
+
+    if (transformed) {
+        std::cout << "Transformed value: " << *transformed << '\n';
+    }
+}

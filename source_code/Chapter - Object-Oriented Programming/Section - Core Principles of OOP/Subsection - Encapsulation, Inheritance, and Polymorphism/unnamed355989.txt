@@ -1,0 +1,24 @@
+#include <stdexcept>
+#include <limits>
+
+class BankAccount {
+public:
+    explicit BankAccount(double initialBalance) {
+        if (initialBalance < 0.0)
+            throw std::invalid_argument("Initial balance must be non-negative");
+        balance_ = initialBalance;
+    }
+
+    void deposit(double amount) {
+        if (amount <= 0.0)
+            throw std::invalid_argument("Deposit amount must be positive");
+        if (amount > std::numeric_limits<double>::max() - balance_)
+            throw std::overflow_error("Deposit would overflow balance");
+        balance_ += amount;
+    }
+
+    double balance() const noexcept { return balance_; }
+
+private:
+    double balance_;
+};

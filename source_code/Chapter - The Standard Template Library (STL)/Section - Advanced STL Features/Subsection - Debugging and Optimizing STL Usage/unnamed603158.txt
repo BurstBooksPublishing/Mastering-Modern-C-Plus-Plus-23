@@ -1,0 +1,4 @@
+#include <vector>
+#include <memory>
+
+std::vector<std::unique_ptr<int>> vec;   // owns heap-allocated ints; no manual delete needed

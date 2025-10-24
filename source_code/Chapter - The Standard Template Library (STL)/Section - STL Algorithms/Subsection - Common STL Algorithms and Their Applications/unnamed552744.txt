@@ -1,0 +1,8 @@
+#include <vector>
+#include <algorithm>
+
+std::vector<int> v{1, 2, 3, 4, 5};
+std::vector<int> result;
+result.reserve(v.size());                       // avoid reallocations
+std::transform(v.begin(), v.end(), std::back_inserter(result),
+               [](int x) { return x * x; });    // square each element

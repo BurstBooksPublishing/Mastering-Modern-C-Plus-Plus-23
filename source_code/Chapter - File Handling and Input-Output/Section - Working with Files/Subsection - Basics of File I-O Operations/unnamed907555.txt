@@ -1,0 +1,16 @@
+#include <fstream>
+#include <iostream>
+#include <string>
+
+int main() {
+    const std::string fileName = "example.txt";
+    std::ifstream inputFile(fileName, std::ios::in);
+    if (!inputFile) {
+        std::cerr << "Error: unable to open '" << fileName << "'\n";
+        return EXIT_FAILURE;
+    }
+
+    // Process file contents here...
+
+    return EXIT_SUCCESS;
+}

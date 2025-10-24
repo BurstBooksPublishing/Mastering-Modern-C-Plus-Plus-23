@@ -1,0 +1,17 @@
+#include <iostream>
+#include <memory>
+
+struct Node {
+    std::shared_ptr<Node> next;
+    std::weak_ptr<Node> prev;          // breaks ownership cycle
+};
+
+int main() {
+    auto node1 = std::make_shared<Node>();
+    auto node2 = std::make_shared<Node>();
+
+    node1->next = node2;
+    node2->prev = node1;               // safe: weak_ptr does not own node1
+
+    return 0;
+}

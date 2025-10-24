@@ -1,0 +1,21 @@
+#include <fstream>
+#include <iostream>
+#include <string>
+
+int main() {
+    std::ifstream file("example.txt");
+    if (!file) {
+        std::cerr << "Error opening file: " << strerror(errno) << '\n';
+        return EXIT_FAILURE;
+    }
+
+    std::string line;
+    while (std::getline(file, line)) {
+        std::cout << line << '\n';
+    }
+
+    if (file.bad()) {
+        std::cerr << "I/O error while reading\n";
+        return EXIT_FAILURE;
+    }
+}

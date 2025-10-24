@@ -1,0 +1,19 @@
+#include <cstdint>
+#include <fstream>
+#include <iostream>
+
+int main() {
+    constexpr std::int32_t value = 100;
+
+    std::ofstream outFile("fixed_size.bin", std::ios::binary);
+    if (!outFile) {
+        std::cerr << "Failed to open file for writing\n";
+        return 1;
+    }
+
+    outFile.write(reinterpret_cast<const char*>(&value), sizeof(value));
+    if (!outFile) {
+        std::cerr << "Write failed\n";
+        return 1;
+    }
+}

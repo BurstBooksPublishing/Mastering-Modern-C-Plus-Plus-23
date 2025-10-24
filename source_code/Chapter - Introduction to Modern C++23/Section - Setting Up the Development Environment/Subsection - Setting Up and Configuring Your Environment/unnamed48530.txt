@@ -1,0 +1,18 @@
+// main.cpp
+#include <iostream>
+#include <string>
+#include <stdexcept>
+
+int main() {
+    try {
+        const std::string cmd = "clang++ --version";
+        const int ret = std::system(cmd.c_str());
+        if (ret != 0) {
+            throw std::runtime_error("Command failed with exit code " + std::to_string(ret));
+        }
+    } catch (const std::exception& ex) {
+        std::cerr << "Error: " << ex.what() << '\n';
+        return EXIT_FAILURE;
+    }
+    return EXIT_SUCCESS;
+}

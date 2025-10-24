@@ -1,0 +1,17 @@
+#include <stdexcept>
+#include <limits>
+
+// Returns numerator / denominator; throws if denominator is zero or the result overflows.
+double divide(double numerator, double denominator) {
+    if (denominator == 0.0) {
+        throw std::invalid_argument("Denominator cannot be zero");
+    }
+
+    double result = numerator / denominator;
+
+    if (!std::isfinite(result)) {
+        throw std::overflow_error("Division produced non-finite value");
+    }
+
+    return result;
+}

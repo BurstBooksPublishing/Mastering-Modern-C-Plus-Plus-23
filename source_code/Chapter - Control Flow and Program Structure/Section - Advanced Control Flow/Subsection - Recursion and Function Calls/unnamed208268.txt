@@ -1,0 +1,12 @@
+#include <functional>
+#include <iostream>
+
+// Executes the given callable once.
+void execute_function(const std::function<void()>& func) {
+    if (func) func();          // Guard against empty target
+}
+
+int main() {
+    execute_function([] { std::cout << "Lambda function executed!\n"; });
+    return 0;
+}

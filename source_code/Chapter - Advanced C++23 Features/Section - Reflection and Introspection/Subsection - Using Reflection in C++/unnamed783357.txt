@@ -1,0 +1,22 @@
+#include <iostream>
+#include <experimental/meta>
+#include <string_view>
+
+struct MyAttribute {};
+
+struct MyStruct {
+    [[MyAttribute]]
+    int x;
+    double y;
+};
+
+int main() {
+    constexpr auto meta = reflexpr(MyStruct);               // reflect on the type
+    using Meta = std::meta::info<meta>;                     // meta-object wrapper
+
+    std::meta::for_each<std::meta::get_data_members_t<Meta>>([](auto m) {
+        if constexpr (std::meta::has_attribute<MyAttribute>(m)) {
+            std::cout << std::meta::name_of(m) << " has MyAttribute\n";
+        }
+    });
+}

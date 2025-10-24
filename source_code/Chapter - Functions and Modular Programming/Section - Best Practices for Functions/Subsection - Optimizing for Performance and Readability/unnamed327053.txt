@@ -1,0 +1,10 @@
+#include <stdexcept>
+#include <limits>
+
+// Computes n! for 0 ≤ n ≤ 20 (fits in 64-bit).
+// Throws std::invalid_argument for out-of-range input.
+constexpr unsigned long long factorial(int n) {
+    if (n < 0 || n > 20)
+        throw std::invalid_argument("factorial: n must be in [0,20]");
+    return n <= 1 ? 1ULL : static_cast<unsigned long long>(n) * factorial(n - 1);
+}

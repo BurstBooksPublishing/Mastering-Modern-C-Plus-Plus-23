@@ -1,0 +1,13 @@
+#include <chrono>
+#include <iostream>
+#include <thread>
+
+void task() {
+    using namespace std::chrono_literals;
+    std::this_thread::sleep_for(1s);
+    std::cout << "Task completed!\n";
+}
+
+int main() {
+    std::jthread t(task);  // RAII: joins on destruction
+}

@@ -1,0 +1,27 @@
+#include <atomic>
+#include <iostream>
+#include <thread>
+#include <vector>
+
+std::atomic<int> shared_value{0};
+
+void increment_shared_value(int iterations) {
+    for (int i = 0; i < iterations; ++i)
+        shared_value.fetch_add(1, std::memory_order_relaxed);
+}
+
+int main() {
+    constexpr int threads = 2;
+    constexpr int iterations = 1000;
+
+    std::vector<std::thread> workers;
+    workers.reserve(threads);
+
+    for (int i = 0; i < threads; ++i)
+        workers.emplace_back(increment_shared_value, iterations);
+
+    for (auto& t : workers) t.join();
+
+    std::cout << "Final value: " << shared_value.load(std::memory_order_relaxed) << '\n';
+    return 0;
+}

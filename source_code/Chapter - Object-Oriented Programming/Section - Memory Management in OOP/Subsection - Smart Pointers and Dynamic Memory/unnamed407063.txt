@@ -1,0 +1,20 @@
+#include <iostream>
+#include <memory>
+
+class MyClass {
+public:
+    MyClass()  { std::cout << "MyClass constructed\n"; }
+    ~MyClass() { std::cout << "MyClass destroyed\n"; }
+};
+
+int main() {
+    auto ptr1 = std::make_shared<MyClass>();
+
+    {
+        auto ptr2 = ptr1;               // Shared ownership; ref-count +1
+        std::cout << "Inside inner scope\n";
+    }                                   // ptr2 destroyed; ref-count -1
+
+    std::cout << "Outside inner scope\n";
+    return 0;
+}

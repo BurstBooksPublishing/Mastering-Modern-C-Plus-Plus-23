@@ -1,0 +1,16 @@
+#include <vector>
+#include <ranges>
+#include <iostream>
+
+int main() {
+    const std::vector<int> numbers{1, 2, 3, 4, 5};
+
+    // Collect even numbers into a new container to avoid dangling view
+    std::vector<int> even_numbers;
+    for (int n : numbers | std::views::filter([](int n) { return n % 2 == 0; })) {
+        even_numbers.push_back(n);
+    }
+
+    // Example usage
+    for (int n : even_numbers) std::cout << n << ' ';
+}

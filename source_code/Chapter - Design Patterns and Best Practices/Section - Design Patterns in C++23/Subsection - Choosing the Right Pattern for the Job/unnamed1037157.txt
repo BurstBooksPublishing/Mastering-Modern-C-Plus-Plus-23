@@ -1,0 +1,25 @@
+#include <iostream>
+#include <mutex>
+
+class Singleton {
+public:
+    static Singleton& instance() {
+        static Singleton inst;          // C++11 guarantees thread-safe initialization
+        return inst;
+    }
+
+    void doSomething() const {
+        std::cout << "Singleton instance is doing something.\n";
+    }
+
+    Singleton(const Singleton&)            = delete;
+    Singleton& operator=(const Singleton&) = delete;
+
+private:
+    Singleton() = default;
+};
+
+int main() {
+    Singleton::instance().doSomething();
+    return 0;
+}

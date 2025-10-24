@@ -1,0 +1,23 @@
+#include <iostream>
+#include <vector>
+#include <stdexcept>
+#include <algorithm>
+
+void processData(const std::vector<int>& data) {
+    if (data.empty()) throw std::invalid_argument("Data vector is empty");
+
+    std::for_each(data.begin(), data.end(), [](int v) {
+        if (v < 0) std::cerr << "Warning: Negative value " << v << '\n';
+        // TODO: actual processing
+    });
+}
+
+int main() {
+    const std::vector<int> data{1, -2, 3, 0, -4};
+
+    try {
+        processData(data);
+    } catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << '\n';
+    }
+}

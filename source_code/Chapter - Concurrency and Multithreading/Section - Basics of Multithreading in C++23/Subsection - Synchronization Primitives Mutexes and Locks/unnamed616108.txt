@@ -1,0 +1,33 @@
+#include <iostream>
+#include <thread>
+#include <mutex>
+#include <vector>
+#include <atomic>
+
+std::mutex mtx;
+std::atomic<int> shared_data{0};          // atomic avoids torn reads in logging
+
+void increment_shared_data(int iterations) {
+    for (int i = 0; i < iterations; ++i) {
+        std::lock_guard<std::mutex> lock(mtx);
+        ++shared_data;
+        std::cout << "Thread " << std::this_thread::get_id()
+                  << " -> " << shared_data << '\n';
+    }
+}
+
+int main() {
+    constexpr int num_threads = 4;
+    constexpr int iterations_per_thread = 1000;
+
+    std::vector<std::thread> pool;
+    pool.reserve(num_threads);
+
+    for (int i = 0; i < num_threads; ++i)
+        pool.emplace_back(increment_shared_data, iterations_per_thread);
+
+    for (auto& t : pool) t.join();
+
+    std::cout << "Final value: " << shared_data << '\n';
+    return 0;
+}

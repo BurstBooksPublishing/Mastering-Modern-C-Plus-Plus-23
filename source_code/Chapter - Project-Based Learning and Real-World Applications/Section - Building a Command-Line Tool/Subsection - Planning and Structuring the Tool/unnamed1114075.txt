@@ -1,0 +1,33 @@
+#include <CLI/CLI.hpp>
+#include <fstream>
+#include <iostream>
+#include <stdexcept>
+
+int main(int argc, char* argv[]) {
+    CLI::App app{"A command-line tool for text processing"};
+
+    std::string input_file;
+    app.add_option("-i,--input", input_file, "Input file path")
+        ->required()
+        ->check(CLI::ExistingFile);
+
+    std::string output_file;
+    app.add_option("-o,--output", output_file, "Output file path")->required();
+
+    CLI11_PARSE(app, argc, argv);
+
+    try {
+        std::ifstream in(input_file, std::ios::binary);
+        if (!in) throw std::runtime_error("Cannot open input file");
+
+        std::ofstream out(output_file, std::ios::binary);
+        if (!out) throw std::runtime_error("Cannot open output file");
+
+        out << in.rdbuf();          // copy entire file
+    } catch (const std::exception& ex) {
+        std::cerr << "Error: " << ex.what() << '\n';
+        return EXIT_FAILURE;
+    }
+
+    return EXIT_SUCCESS;
+}

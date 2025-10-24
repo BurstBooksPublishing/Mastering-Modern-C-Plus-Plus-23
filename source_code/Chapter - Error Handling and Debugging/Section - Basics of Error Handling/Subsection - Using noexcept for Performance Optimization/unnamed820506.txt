@@ -1,0 +1,13 @@
+#include <memory>
+#include <stdexcept>
+
+class Resource {
+public:
+    Resource() { /* Acquire resource */ }
+    ~Resource() { /* Release resource */ }
+};
+
+void useResource() {
+    std::unique_ptr<Resource> res = std::make_unique<Resource>();
+    // RAII guarantees release even on exception
+}

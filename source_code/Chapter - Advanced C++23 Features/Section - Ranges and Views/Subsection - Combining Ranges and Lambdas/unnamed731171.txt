@@ -1,0 +1,13 @@
+#include <iostream>
+#include <numeric>
+#include <ranges>
+
+int main() {
+    auto numbers = std::views::iota(1, 21);                       // 1..20
+    auto result  = numbers
+                 | std::views::filter([](int n){ return n % 3 == 0; }) // keep multiples of 3
+                 | std::views::transform([](int n){ return n * n; })   // square them
+                 | std::ranges::fold_left(0, std::plus<>{});           // sum the squares
+
+    std::cout << "Sum of squares of numbers divisible by 3: " << result << '\n';
+}

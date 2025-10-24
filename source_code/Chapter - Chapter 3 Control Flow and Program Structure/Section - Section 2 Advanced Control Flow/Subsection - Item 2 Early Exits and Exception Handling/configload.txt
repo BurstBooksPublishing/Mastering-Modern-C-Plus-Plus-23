@@ -1,0 +1,63 @@
+#include <fstream>
+#include <iostream>
+#include <optional>
+#include <stdexcept>
+#include <string>
+#include <system_error>
+
+struct Config {
+    std::string host;
+    int port;
+};
+
+std::optional<Config> load_config_early_exit(const std::string& path) {
+    std::ifstream ifs(path);
+    if (!ifs) return std::nullopt;
+
+    std::string host;
+    int port{};
+    if (!(ifs >> host >> port)) return std::nullopt;
+    if (port <= 0 || port > 65535) return std::nullopt;
+
+    return Config{std::move(host), port};
+}
+
+Config load_config_exception(const std::string& path) {
+    std::ifstream ifs(path);
+    if (!ifs)
+        throw std::system_error(std::make_error_code(std::errc::no_such_file_or_directory));
+
+    std::string host;
+    int port{};
+    if (!(ifs >> host >> port))
+        throw std::runtime_error("malformed config");
+    if (port <= 0 || port > 65535)
+        throw std::invalid_argument("port out of range");
+
+    return Config{std::move(host), port};
+}
+
+void start_service_noexcept(const std::string& path) noexcept {
+    try {
+        Config cfg = load_config_exception(path);
+        (void)cfg; // use cfg
+    } catch (const std::exception& e) {
+        std::cerr << "start_service failed: " << e.what() << '\n';
+    }
+}
+
+int main() {
+    if (auto cfg = load_config_early_exit("server.conf"))
+        std::cout << "host: " << cfg->host << " port: " << cfg->port << '\n';
+    else
+        std::cout << "early-exit: failed to load config\n";
+
+    try {
+        Config cfg = load_config_exception("server.conf");
+        std::cout << "exception: host " << cfg.host << '\n';
+    } catch (const std::exception& e) {
+        std::cout << "exception: caught " << e.what() << '\n';
+    }
+
+    start_service_noexcept("server.conf");
+}

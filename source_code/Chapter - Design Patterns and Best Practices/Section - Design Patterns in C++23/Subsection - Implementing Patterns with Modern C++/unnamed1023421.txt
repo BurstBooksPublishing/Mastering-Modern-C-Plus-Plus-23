@@ -1,0 +1,29 @@
+#include <memory>
+#include <functional>
+#include <stdexcept>
+
+class Product {
+public:
+    virtual ~Product() = default;
+    virtual void use() = 0;
+};
+
+class ConcreteProductA : public Product {
+public:
+    void use() override { /* ConcreteProductA functionality */ }
+};
+
+class ConcreteProductB : public Product {
+public:
+    void use() override { /* ConcreteProductB functionality */ }
+};
+
+using ProductFactory = std::function<std::unique_ptr<Product>()>;
+
+ProductFactory createFactory(char type) {
+    switch (type) {
+        case 'A': return [] { return std::make_unique<ConcreteProductA>(); };
+        case 'B': return [] { return std::make_unique<ConcreteProductB>(); };
+        default:  throw std::invalid_argument("Unsupported product type");
+    }
+}

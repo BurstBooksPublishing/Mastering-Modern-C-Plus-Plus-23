@@ -1,0 +1,10 @@
+#include <optional>
+
+std::optional<int> divide(int a, int b) {
+    return b == 0 ? std::nullopt : std::optional<int>{a / b};
+}
+
+int main() {
+    auto result = divide(10, 0).and_then([](int x) { return divide(x, 2); });
+    return 0;
+}

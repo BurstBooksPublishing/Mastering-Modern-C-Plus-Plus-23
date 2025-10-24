@@ -1,0 +1,12 @@
+#include <iostream>
+#include <optional>
+
+std::optional<int> compute_value();  // Forward declaration assumed.
+
+int main() {
+    if (auto maybe_value = compute_value(); maybe_value) {
+        // Value present; use *maybe_value directly.
+    } else {
+        std::cerr << "Value is missing!\n";
+    }
+}

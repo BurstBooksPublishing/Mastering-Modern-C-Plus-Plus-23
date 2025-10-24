@@ -1,0 +1,9 @@
+#include <generator>
+#include <ranges>
+#include <vector>
+
+std::generator<int> generate_values() {
+    for (int i : std::views::iota(0, 1000)) {
+        co_yield i * i;
+    }
+}

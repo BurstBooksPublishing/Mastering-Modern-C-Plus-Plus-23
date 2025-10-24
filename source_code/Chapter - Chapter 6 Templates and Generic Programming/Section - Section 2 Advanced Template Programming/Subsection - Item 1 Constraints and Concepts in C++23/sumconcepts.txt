@@ -1,0 +1,37 @@
+#include <algorithm>
+#include <concepts>
+#include <iostream>
+#include <iterator>
+#include <numeric>
+#include <ranges>
+#include <string>
+#include <vector>
+
+// Concept: element type must be addable and the result convertible back to the type
+template<typename T>
+concept Addable = requires(T a, T b) {
+    { a + b } -> std::convertible_to<T>;
+};
+
+// Concept: range whose value type satisfies Addable
+template<typename R>
+concept SummableRange = std::ranges::range<R> && Addable<std::ranges::range_value_t<R>>;
+
+// Single constrained overload; std::accumulate already handles arithmetic types optimally
+template<SummableRange R>
+auto sum(const R& r)
+{
+    using V = std::ranges::range_value_t<R>;
+    return std::accumulate(std::ranges::begin(r), std::ranges::end(r), V{});
+}
+
+int main()
+{
+    const std::vector<int>    vi{1, 2, 3};
+    const std::vector<double> vd{0.5, 1.5};
+    const std::vector<std::string> vs{"a", "b", "c"};
+
+    std::cout << sum(vi) << '\n';
+    std::cout << sum(vd) << '\n';
+    std::cout << sum(vs) << '\n';
+}

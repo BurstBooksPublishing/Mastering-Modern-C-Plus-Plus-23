@@ -1,0 +1,35 @@
+#include <algorithm>
+#include <array>
+#include <cmath>
+#include <cstddef>
+#include <iostream>
+#include <numeric>
+#include <span>
+#include <stdexcept>
+#include <vector>
+
+// Kahan summation for squared values; noexcept for use in noexcept contexts
+inline double kahan_accumulate_squares(std::span<const double> s) noexcept {
+    double sum = 0.0;
+    double c   = 0.0;               // compensation term
+    for (double x : s) {
+        double y = x * x - c;       // subtract previous compensation
+        double t = sum + y;
+        c        = (t - sum) - y;   // new compensation
+        sum      = t;
+    }
+    return sum;
+}
+
+// Compute RMS; returns 0 for empty span; never throws
+[[nodiscard]] inline double compute_rms(std::span<const double> data) noexcept {
+    if (data.empty()) return 0.0;
+    const double ss = kahan_accumulate_squares(data);
+    return std::sqrt(ss / static_cast<double>(data.size()));
+}
+
+int main() {
+    const std::vector<double> v{1.0, 2.0, 3.0};
+    std::cout << compute_rms(v) << '\n';
+    return 0;
+}

@@ -1,0 +1,36 @@
+#include <cmath>
+#include <ostream>
+
+class Complex {
+public:
+    Complex(double r = 0.0, double i = 0.0) noexcept : real_(r), imag_(i) {}
+
+    double real() const noexcept { return real_; }
+    double imag() const noexcept { return imag_; }
+
+    double norm() const noexcept {
+        return std::sqrt(real_ * real_ + imag_ * imag_);
+    }
+
+    Complex& operator+=(const Complex& rhs) noexcept {
+        real_ += rhs.real_;
+        imag_ += rhs.imag_;
+        return *this;
+    }
+
+    Complex operator+(const Complex& rhs) const noexcept {
+        return Complex(*this) += rhs;
+    }
+
+    bool operator==(const Complex& rhs) const noexcept {
+        return real_ == rhs.real_ && imag_ == rhs.imag_;
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, const Complex& c) {
+        return os << '(' << c.real_ << ',' << c.imag_ << ')';
+    }
+
+private:
+    double real_;
+    double imag_;
+};

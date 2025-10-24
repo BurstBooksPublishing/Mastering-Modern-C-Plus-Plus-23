@@ -1,0 +1,30 @@
+#include <atomic>
+#include <mutex>
+
+class Incrementer {
+public:
+    explicit Incrementer(int initial = 0) noexcept : value_{initial} {}
+
+    // Thread-safe increment
+    void operator()(int x) noexcept {
+        std::lock_guard<std::mutex> lock{mutex_};
+        value_ += x;
+    }
+
+    // Thread-safe read
+    [[nodiscard]] int value() const noexcept {
+        std::lock_guard<std::mutex> lock{mutex_};
+        return value_;
+    }
+
+private:
+    int value_;
+    mutable std::mutex mutex_;
+};
+
+// Usage example
+/*
+Incrementer inc;
+inc(5);          // value == 5
+inc(10);         // value == 15
+*/

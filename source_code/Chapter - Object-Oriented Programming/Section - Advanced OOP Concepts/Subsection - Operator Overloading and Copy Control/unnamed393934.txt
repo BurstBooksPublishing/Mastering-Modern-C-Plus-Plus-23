@@ -1,0 +1,41 @@
+#include <string>
+#include <iostream>
+#include <utility>
+
+class MyString {
+public:
+    MyString() = default;
+    explicit MyString(std::string str) : data_(std::move(str)) {}
+
+    MyString(const MyString&)            = default;
+    MyString& operator=(const MyString&) = default;
+    MyString(MyString&&) noexcept        = default;
+    MyString& operator=(MyString&&) noexcept = default;
+    ~MyString() noexcept                 = default;
+
+    MyString operator+(const MyString& rhs) const {
+        return MyString(data_ + rhs.data_);
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, const MyString& s) {
+        return os << s.data_;
+    }
+
+private:
+    std::string data_;
+};
+
+int main() {
+    MyString str1("Hello, ");
+    MyString str2("World!");
+
+    MyString str3 = str1 + str2;
+    std::cout << str3 << '\n';
+
+    MyString str4;
+    str4 = str3;
+    std::cout << str4 << '\n';
+
+    MyString str5 = std::move(str4);
+    std::cout << str5 << '\n';
+}

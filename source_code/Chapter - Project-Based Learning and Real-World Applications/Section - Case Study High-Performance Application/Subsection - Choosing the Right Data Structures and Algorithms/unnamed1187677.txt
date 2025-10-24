@@ -1,0 +1,9 @@
+#include <memory_resource>
+#include <vector>
+
+int main() {
+    std::byte stack_buf[1024];                                   // fixed-size backing store
+    std::pmr::monotonic_buffer_resource buffer{stack_buf, sizeof(stack_buf)};
+    std::pmr::vector<int> vec{&buffer};                          // uses the resource
+    vec.push_back(42);
+}

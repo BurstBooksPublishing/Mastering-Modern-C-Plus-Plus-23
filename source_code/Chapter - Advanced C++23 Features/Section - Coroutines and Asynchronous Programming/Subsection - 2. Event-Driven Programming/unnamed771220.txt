@@ -1,0 +1,50 @@
+#include <iostream>
+#include <queue>
+#include <mutex>
+#include <condition_variable>
+#include <thread>
+#include <atomic>
+#include <chrono>
+
+struct Event {
+    std::string message;
+};
+
+std::queue<Event> event_queue;
+std::mutex queue_mutex;
+std::condition_variable cv;
+std::atomic<bool> done{false};
+
+void event_handler() {
+    while (!done.load(std::memory_order_acquire)) {
+        std::unique_lock<std::mutex> lock(queue_mutex);
+        cv.wait(lock, [] { return !event_queue.empty() || done.load(std::memory_order_acquire); });
+
+        while (!event_queue.empty()) {
+            Event event = std::move(event_queue.front());
+            event_queue.pop();
+            lock.unlock(); // unlock while processing to allow concurrent pushes
+            std::cout << "Handling event: " << event.message << std::endl;
+            lock.lock();
+        }
+    }
+}
+
+int main() {
+    {
+        std::lock_guard<std::mutex> lock(queue_mutex);
+        event_queue.push({"Button Clicked"});
+        event_queue.push({"Key Pressed"});
+    }
+    cv.notify_one();
+
+    std::thread handler_thread(event_handler);
+
+    // Simulate application lifetime
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+    done.store(true, std::memory_order_release);
+    cv.notify_all();
+    handler_thread.join();
+    return 0;
+}

@@ -1,0 +1,71 @@
+#include <iomanip>
+#include <iostream>
+#include <locale>
+#include <sstream>
+#include <string>
+#include <tuple>
+#include <vector>
+
+class FormatGuard {
+    std::ios& os_;
+    std::ios::fmtflags flags_;
+    std::streamsize precision_;
+    char fill_;
+public:
+    explicit FormatGuard(std::ios& os)
+        : os_(os), flags_(os.flags()), precision_(os.precision()), fill_(os.fill()) {}
+    ~FormatGuard() noexcept {
+        os_.flags(flags_);
+        os_.precision(precision_);
+        os_.fill(fill_);
+    }
+};
+
+class comma_numpunct : public std::numpunct<char> {
+protected:
+    char do_thousands_sep() const override { return ','; }
+    std::string do_grouping() const override { return "\3"; }
+};
+
+std::ostream& red(std::ostream& os)   { return os << "\033[31m"; }
+std::ostream& reset(std::ostream& os) { return os << "\033[0m"; }
+
+int main() {
+    const std::vector<std::tuple<std::string, long long, double, bool>> rows{
+        {"alloc", 1024LL * 1024 * 12, 0.00012345, true},
+        {"draw",  64000,              12345.6789, false},
+        {"update",9876543210LL,       3.14159,    true}
+    };
+
+    const std::locale comma_loc(std::locale::classic(), new comma_numpunct);
+
+    {
+        FormatGuard g(std::cout);
+        std::cout << std::left  << std::setw(10) << "op"
+                  << std::right << std::setw(15) << "bytes"
+                  << std::setw(15) << "value"
+                  << std::setw(8)  << "ok" << '\n'
+                  << std::string(48, '-') << '\n';
+    }
+
+    for (const auto& [name, bytes, value, ok] : rows) {
+        FormatGuard g(std::cout);
+
+        std::cout << std::left  << std::setw(10) << name;
+
+        {
+            std::ostringstream os;
+            os.imbue(comma_loc);
+            os << std::fixed << std::setprecision(0) << bytes;
+            std::cout << std::right << std::setw(15) << os.str();
+        }
+
+        if (std::abs(value) >= 1000.0 || std::abs(value) < 0.001)
+            std::cout << std::scientific << std::setprecision(6);
+        else
+            std::cout << std::fixed << std::setprecision(4);
+        std::cout << std::setw(15) << value;
+
+        std::cout << (ok ? red : reset) << std::boolalpha << std::setw(8) << ok << reset << '\n';
+    }
+}

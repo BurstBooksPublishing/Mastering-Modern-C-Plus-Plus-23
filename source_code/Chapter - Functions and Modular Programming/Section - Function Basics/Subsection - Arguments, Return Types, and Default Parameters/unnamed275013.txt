@@ -1,0 +1,6 @@
+python
+from typing import Optional
+
+def print_message(msg: Optional[str] = None) -> None:
+    """Prints the provided message or 'Hello, World!' if none is given."""
+    print(msg if msg is not None else "Hello, World!")

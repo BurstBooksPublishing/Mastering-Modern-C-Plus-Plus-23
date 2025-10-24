@@ -1,0 +1,27 @@
+#include <memory_resource>
+#include <vector>
+#include <iostream>
+#include <memory>
+
+int main() {
+    alignas(std::max_align_t) std::byte buffer[4096];
+    std::pmr::monotonic_buffer_resource arena{buffer, sizeof(buffer)};
+    std::pmr::polymorphic_allocator<int> alloc{&arena};
+
+    std::pmr::vector<int> data{alloc};
+    data.reserve(100);
+
+    for (int i = 0; i < 100; ++i) data.push_back(i);
+
+    std::cout << "Stored " << data.size()
+              << " ints; capacity: " << data.capacity() << '\n';
+
+    arena.release();
+
+    std::allocator<int> std_alloc;
+    int* p = std::allocator_traits<std::allocator<int>>::allocate(std_alloc, 1);
+    std::allocator_traits<std::allocator<int>>::construct(std_alloc, p, 42);
+    std::cout << "Constructed value via allocator_traits: " << *p << '\n';
+    std::allocator_traits<std::allocator<int>>::destroy(std_alloc, p);
+    std::allocator_traits<std::allocator<int>>::deallocate(std_alloc, p, 1);
+}

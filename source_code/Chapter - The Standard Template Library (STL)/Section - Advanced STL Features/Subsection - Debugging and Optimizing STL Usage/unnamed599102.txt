@@ -1,0 +1,13 @@
+#include <vector>
+#include <algorithm>
+
+int main() {
+    std::vector<int> vec{1, 2, 3, 4, 5};
+
+    // Erase-remove idiom: stable, iterator-safe, O(n)
+    vec.erase(std::remove_if(vec.begin(), vec.end(),
+                             [](int v) { return v % 2 == 0; }),
+              vec.end());
+
+    return 0;
+}

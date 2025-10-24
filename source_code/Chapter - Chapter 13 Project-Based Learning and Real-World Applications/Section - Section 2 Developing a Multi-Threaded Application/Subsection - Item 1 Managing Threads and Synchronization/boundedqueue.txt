@@ -1,0 +1,91 @@
+#include <atomic>
+#include <chrono>
+#include <condition_variable>
+#include <iostream>
+#include <mutex>
+#include <optional>
+#include <queue>
+#include <stop_token>
+#include <thread>
+#include <vector>
+
+template <typename T>
+class BlockingQueue {
+public:
+    explicit BlockingQueue(std::size_t capacity) : capacity_(capacity) {}
+
+    bool push(T item, std::stop_token stoken) {
+        std::unique_lock lock(mtx_);
+        not_full_.wait(lock, stoken, [this] { return queue_.size() < capacity_ || stop_; });
+        if (stop_ || stoken.stop_requested()) return false;
+        queue_.push(std::move(item));
+        not_empty_.notify_one();
+        return true;
+    }
+
+    std::optional<T> pop(std::stop_token stoken) {
+        std::unique_lock lock(mtx_);
+        not_empty_.wait(lock, stoken, [this] { return !queue_.empty() || stop_; });
+        if (queue_.empty()) return std::nullopt;
+        T value = std::move(queue_.front());
+        queue_.pop();
+        not_full_.notify_one();
+        return value;
+    }
+
+    void request_stop() {
+        {
+            std::lock_guard lock(mtx_);
+            stop_ = true;
+        }
+        not_empty_.notify_all();
+        not_full_.notify_all();
+    }
+
+private:
+    const std::size_t capacity_;
+    std::queue<T> queue_;
+    std::mutex mtx_;
+    std::condition_variable_any not_empty_;
+    std::condition_variable_any not_full_;
+    bool stop_ = false;
+};
+
+int main() {
+    BlockingQueue<int> queue(100);
+    std::atomic<int> produced{0}, consumed{0};
+
+    constexpr int kConsumers = 4;
+    constexpr int kProducers = 2;
+
+    std::vector<std::jthread> consumers;
+    consumers.reserve(kConsumers);
+    for (int i = 0; i < kConsumers; ++i) {
+        consumers.emplace_back([&queue, &consumed](std::stop_token st) {
+            while (!st.stop_requested()) {
+                if (auto item = queue.pop(st)) {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(5));
+                    ++consumed;
+                } else {
+                    break;
+                }
+            }
+        });
+    }
+
+    std::vector<std::jthread> producers;
+    producers.reserve(kProducers);
+    for (int i = 0; i < kProducers; ++i) {
+        producers.emplace_back([&queue, &produced](std::stop_token st) {
+            while (!st.stop_requested()) {
+                int id = ++produced;
+                if (!queue.push(id, st)) break;
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            }
+        });
+    }
+
+    std::this_thread::sleep_for(std::chrono::seconds(2));
+    queue.request_stop();
+    std::cout << "Produced: " << produced.load() << ", Consumed: " << consumed.load() << '\n';
+}

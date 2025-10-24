@@ -1,0 +1,13 @@
+#include <memory>
+
+struct TreeNode {
+    int value{};
+    std::unique_ptr<TreeNode> left;
+    std::unique_ptr<TreeNode> right;
+};
+
+bool dfs(const TreeNode* root, int target) noexcept {
+    if (!root) return false;
+    if (root->value == target) return true;
+    return dfs(root->left.get(), target) || dfs(root->right.get(), target);
+}

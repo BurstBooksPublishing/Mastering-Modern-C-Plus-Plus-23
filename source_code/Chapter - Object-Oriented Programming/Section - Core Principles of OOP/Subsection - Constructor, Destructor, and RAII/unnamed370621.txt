@@ -1,0 +1,19 @@
+#include <stdexcept>
+
+class MyClass {
+public:
+    MyClass() noexcept : value_(0) {}
+    explicit MyClass(int v) : value_(v) { validate(); }
+
+    int value() const noexcept { return value_; }
+    void set_value(int v) {
+        value_ = v;
+        validate();
+    }
+
+private:
+    int value_;
+    void validate() const {
+        if (value_ < 0) throw std::invalid_argument("value must be non-negative");
+    }
+};

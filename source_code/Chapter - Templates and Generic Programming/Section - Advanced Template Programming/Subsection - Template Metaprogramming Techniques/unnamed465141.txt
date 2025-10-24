@@ -1,0 +1,15 @@
+#include <type_traits>
+#include <limits>
+#include <iostream>
+
+template <typename T>
+void process_integer(T value) {
+    static_assert(std::is_integral_v<T>, "T must be an integral type");
+
+    // Clamp to signed 64-bit range to prevent downstream overflow
+    constexpr T min = std::numeric_limits<int64_t>::min();
+    constexpr T max = std::numeric_limits<int64_t>::max();
+    const T safe = std::clamp(value, min, max);
+
+    std::cout << "Processed: " << safe << '\n';
+}

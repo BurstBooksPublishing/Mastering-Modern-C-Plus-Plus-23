@@ -1,0 +1,10 @@
+#include <print>
+#include <exception>
+
+int main() try {
+    std::print("Hello, {}!\n", "C++23");
+    return 0;
+} catch (const std::exception& ex) {
+    std::println(stderr, "Fatal: {}", ex.what());
+    return 1;
+}

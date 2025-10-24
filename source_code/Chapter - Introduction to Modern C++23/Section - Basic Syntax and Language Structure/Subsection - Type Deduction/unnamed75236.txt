@@ -1,0 +1,4 @@
+#include <tuple>
+#include <string>
+
+const auto [a, b, c] = std::make_tuple(1, 2.0, std::string("three"));

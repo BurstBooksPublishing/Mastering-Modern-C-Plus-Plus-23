@@ -1,0 +1,4 @@
+#include <variant>
+#include <type_traits>
+
+using Number = std::variant<int, double>;

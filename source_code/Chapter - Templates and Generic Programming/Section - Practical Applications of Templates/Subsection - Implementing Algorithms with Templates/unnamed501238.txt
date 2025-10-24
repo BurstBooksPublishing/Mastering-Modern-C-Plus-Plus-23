@@ -1,0 +1,23 @@
+#include <iterator>
+#include <tuple>
+#include <vector>
+
+template <typename C1, typename C2>
+auto zip(const C1& c1, const C2& c2)
+{
+    using V1 = typename std::iterator_traits<decltype(std::begin(c1))>::value_type;
+    using V2 = typename std::iterator_traits<decltype(std::begin(c2))>::value_type;
+
+    std::vector<std::tuple<V1, V2>> result;
+    result.reserve(std::min(std::size(c1), std::size(c2)));
+
+    auto first1 = std::begin(c1);
+    auto first2 = std::begin(c2);
+    const auto last1 = std::end(c1);
+    const auto last2 = std::end(c2);
+
+    while (first1 != last1 && first2 != last2) {
+        result.emplace_back(*first1++, *first2++);
+    }
+    return result;
+}

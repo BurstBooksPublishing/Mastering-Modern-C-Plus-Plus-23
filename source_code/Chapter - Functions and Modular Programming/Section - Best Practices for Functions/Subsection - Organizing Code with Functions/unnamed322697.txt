@@ -1,0 +1,10 @@
+#include <limits>
+#include <stdexcept>
+
+int sum(int a, int b) {
+    if ((b > 0 && a > std::numeric_limits<int>::max() - b) ||
+        (b < 0 && a < std::numeric_limits<int>::min() - b)) {
+        throw std::overflow_error("integer overflow");
+    }
+    return a + b;
+}

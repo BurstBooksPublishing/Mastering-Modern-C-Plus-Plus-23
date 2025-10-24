@@ -1,0 +1,10 @@
+#include <iostream>
+#include <thread>
+
+void task() {
+    std::cout << "Executing task in parallel\n";
+}
+
+int main() {
+    std::jthread worker(task);   // RAII: automatically joins on destruction
+}                                // implicit return 0

@@ -1,0 +1,68 @@
+#include <algorithm>
+#include <cctype>
+#include <cstddef>
+#include <cstdio>
+#include <cstring>
+#include <streambuf>
+#include <vector>
+
+class RotatingBuffer : public std::streambuf {
+public:
+    explicit RotatingBuffer(std::size_t buffer_size = 4096)
+        : buffer_size_(std::max<std::size_t>(buffer_size, 16)),
+          in_(buffer_size_),
+          out_(buffer_size_) {
+        setg(&in_[0], &in_[0], &in_[0]);          // input area empty
+        setp(&out_[0], &out_[0] + out_.size());  // output area ready
+    }
+
+protected:
+    int_type overflow(int_type ch) override {
+        if (traits_type::eq_int_type(ch, traits_type::eof()))
+            return traits_type::not_eof(ch);
+
+        if (pptr() == epptr()) {           // buffer full
+            if (std::fflush(stdout) != 0)  // flush underlying device
+                return traits_type::eof();
+            setp(pbase(), epptr());        // reset put area
+        }
+
+        *pptr() = traits_type::to_char_type(rotate_char(ch));
+        pbump(1);
+        return ch;
+    }
+
+    int_type underflow() override {
+        if (gptr() < egptr())  // chars already available
+            return traits_type::to_int_type(*gptr());
+
+        std::size_t bytes_read = std::fread(&in_[0], 1, in_.size(), stdin);
+        if (bytes_read == 0)
+            return traits_type::eof();
+
+        for (std::size_t i = 0; i < bytes_read; ++i)
+            in_[i] = traits_type::to_char_type(rotate_char(in_[i]));
+
+        setg(&in_[0], &in_[0], &in_[0] + bytes_read);
+        return traits_type::to_int_type(*gptr());
+    }
+
+    int sync() override {
+        return std::fflush(stdout) == 0 ? 0 : -1;
+    }
+
+private:
+    static constexpr int kOffset = 3;
+
+    std::size_t buffer_size_;
+    std::vector<char> in_;
+    std::vector<char> out_;
+
+    int rotate_char(int ch) const noexcept {
+        if (std::isalpha(static_cast<unsigned char>(ch))) {
+            char base = std::islower(static_cast<unsigned char>(ch)) ? 'a' : 'A';
+            return base + (ch - base + kOffset) % 26;
+        }
+        return ch;
+    }
+};

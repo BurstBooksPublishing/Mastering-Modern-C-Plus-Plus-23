@@ -1,0 +1,4 @@
+- name: Check formatting  
+        run: |  
+          sudo apt-get install -y clang-format  
+          find src -name "*.cpp" -o -name "*.h" | xargs clang-format --dry-run --Werror

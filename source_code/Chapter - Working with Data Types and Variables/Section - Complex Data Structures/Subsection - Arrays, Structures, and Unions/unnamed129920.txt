@@ -1,0 +1,33 @@
+#include <array>
+#include <iostream>
+#include <variant>
+
+struct Point {
+    int x{};
+    int y{};
+};
+
+union Number {
+    int   i{};
+    float f;
+};
+
+int main() {
+    std::array<int, 5> numbers{1, 2, 3, 4, 5};
+    for (int n : numbers) std::cout << n << ' ';
+    std::cout << '\n';
+
+    Point p{10, 20};
+    std::cout << "Point: (" << p.x << ", " << p.y << ")\n";
+
+    Number num{};
+    num.i = 42;
+    std::cout << "Union int: " << num.i << '\n';
+    num.f = 3.14f;
+    std::cout << "Union float: " << num.f << '\n';
+
+    std::variant<int, float> var{42};
+    std::cout << "Variant int: " << std::get<int>(var) << '\n';
+    var = 3.14f;
+    std::cout << "Variant float: " << std::get<float>(var) << '\n';
+}

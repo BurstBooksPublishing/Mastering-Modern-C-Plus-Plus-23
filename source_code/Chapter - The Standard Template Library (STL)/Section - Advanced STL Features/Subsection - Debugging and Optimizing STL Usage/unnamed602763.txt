@@ -1,0 +1,6 @@
+#include <vector>
+
+std::vector<int> vec;
+vec.reserve(1000);          // pre-allocate to avoid reallocations
+vec.push_back(1);
+vec.shrink_to_fit();        // release unused memory

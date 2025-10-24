@@ -1,0 +1,12 @@
+#include <type_traits>
+
+template <unsigned N>
+struct Factorial {
+    static_assert(N <= 20, "Overflow: 21! exceeds 64-bit range.");
+    static constexpr unsigned long long value = N * Factorial<N - 1>::value;
+};
+
+template <>
+struct Factorial<0> {
+    static constexpr unsigned long long value = 1;
+};

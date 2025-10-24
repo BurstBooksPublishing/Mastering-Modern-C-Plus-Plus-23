@@ -1,0 +1,17 @@
+#include <fstream>
+#include <string>
+#include <type_traits>
+
+struct Point3D {
+    double x{}, y{}, z{};
+};
+
+void serializePoint(const Point3D& point, const std::string& filename) {
+    static_assert(std::is_trivially_copyable_v<Point3D>, "Point3D must be TriviallyCopyable");
+
+    std::ofstream outFile(filename, std::ios::binary);
+    if (!outFile) throw std::ios_base::failure("Failed to open file");
+
+    outFile.write(reinterpret_cast<const char*>(&point), sizeof(point));
+    if (!outFile) throw std::ios_base::failure("Write failed");
+}

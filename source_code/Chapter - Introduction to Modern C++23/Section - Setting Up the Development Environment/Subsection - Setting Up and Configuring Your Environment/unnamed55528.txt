@@ -1,0 +1,19 @@
+bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Absolute path to the vcpkg directory
+VCPKG_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/vcpkg"
+
+# Clone only the latest commit to save bandwidth/time
+if [[ ! -d "$VCPKG_ROOT/.git" ]]; then
+    git clone --depth=1 https://github.com/microsoft/vcpkg.git "$VCPKG_ROOT"
+fi
+
+# Build vcpkg if the binary is missing or outdated
+if [[ ! -x "$VCPKG_ROOT/vcpkg" ]] || [[ "$VCPKG_ROOT/vcpkg" -ot "$VCPKG_ROOT/bootstrap-vcpkg.sh" ]]; then
+    (cd "$VCPKG_ROOT" && ./bootstrap-vcpkg.sh)
+fi
+
+# Ensure vcpkg is on PATH for subsequent commands
+export PATH="$VCPKG_ROOT:$PATH"

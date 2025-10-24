@@ -1,0 +1,18 @@
+#include <iostream>
+#include <stdexcept>
+
+void processData(int value) {
+    if (value < 0) {
+        throw std::invalid_argument("Value must be non-negative");
+    }
+    std::cout << "Processing value: " << value << '\n';
+}
+
+int main() {
+    try {
+        processData(-5);
+    } catch (const std::invalid_argument& e) {
+        std::cerr << "Error: " << e.what() << '\n';
+    }
+    return 0;
+}

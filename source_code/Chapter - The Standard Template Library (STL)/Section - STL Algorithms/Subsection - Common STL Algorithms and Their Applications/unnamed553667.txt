@@ -1,0 +1,5 @@
+#include <vector>
+#include <algorithm>
+
+std::vector<int> v{1, 2, 3, 2, 4};
+const int count = static_cast<int>(std::count(v.begin(), v.end(), 2));

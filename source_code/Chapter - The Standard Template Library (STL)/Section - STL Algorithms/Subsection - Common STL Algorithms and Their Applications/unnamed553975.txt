@@ -1,0 +1,8 @@
+#include <algorithm>
+#include <vector>
+
+std::vector<int> v{1, 2, 3, 4, 5};
+
+if (auto it = std::find(v.begin(), v.end(), 3); it != v.end()) {
+    // Element found; *it == 3
+}

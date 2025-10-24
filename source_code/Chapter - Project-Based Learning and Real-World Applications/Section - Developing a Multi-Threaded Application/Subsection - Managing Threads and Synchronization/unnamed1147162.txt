@@ -1,0 +1,29 @@
+#include <atomic>
+#include <iostream>
+#include <thread>
+#include <vector>
+
+std::atomic<int> counter{0};
+
+void worker(std::size_t iterations) {
+    for (std::size_t i = 0; i < iterations; ++i) {
+        ++counter; // lock-free increment
+    }
+}
+
+int main() {
+    constexpr std::size_t threads = 8;
+    constexpr std::size_t iters   = 100'000;
+
+    std::vector<std::thread> pool;
+    pool.reserve(threads);
+
+    for (std::size_t i = 0; i < threads; ++i) {
+        pool.emplace_back(worker, iters);
+    }
+
+    for (auto& t : pool) t.join();
+
+    std::cout << "Final counter: " << counter << '\n';
+    return 0;
+}

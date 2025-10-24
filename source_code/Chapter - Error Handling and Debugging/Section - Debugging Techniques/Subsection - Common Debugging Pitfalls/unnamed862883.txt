@@ -1,0 +1,8 @@
+#include <memory>
+#include <iostream>
+
+void useSmartPointer() {
+    auto ptr = std::make_unique<int>(10);          // single owner
+    std::unique_ptr<int> ptr2 = std::move(ptr);    // transfer ownership
+    if (!ptr) std::cout << "ptr is now empty\n";   // ptr invalidated
+}

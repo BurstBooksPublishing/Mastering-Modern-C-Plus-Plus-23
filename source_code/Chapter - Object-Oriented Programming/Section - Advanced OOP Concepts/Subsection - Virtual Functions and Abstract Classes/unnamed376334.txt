@@ -1,0 +1,23 @@
+#include <iostream>
+#include <memory>
+
+class Base {
+public:
+    virtual ~Base() = default;               // Ensure proper destruction via base pointer
+    virtual void show() const {              // Mark const for read-only operation
+        std::cout << "Base class show function\n";
+    }
+};
+
+class Derived : public Base {
+public:
+    void show() const override {             // Mark override & const
+        std::cout << "Derived class show function\n";
+    }
+};
+
+int main() {
+    std::unique_ptr<Base> b = std::make_unique<Derived>();
+    b->show();                               // Polymorphic dispatch
+    return 0;
+}

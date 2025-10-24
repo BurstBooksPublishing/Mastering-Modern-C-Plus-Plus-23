@@ -1,0 +1,9 @@
+gdb
+# Load the executable (replace a.out with the real binary)
+file a.out
+
+# Set a breakpoint at line 42 of main.cpp in every existing thread
+break main.cpp:42 thread all
+
+# Run the program
+run

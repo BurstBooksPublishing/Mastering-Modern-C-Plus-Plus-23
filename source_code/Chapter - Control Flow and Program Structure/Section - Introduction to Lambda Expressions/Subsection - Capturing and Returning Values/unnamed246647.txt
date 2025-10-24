@@ -1,0 +1,19 @@
+#include <iostream>
+#include <utility>
+
+int main() {
+    int a = 5, b = 10;
+
+    // Capture by value; returns the sum without side effects
+    auto lambda_all_by_value = [a, b]() noexcept { return a + b; };
+
+    // Capture by reference; increments both variables and returns the new sum
+    auto lambda_all_by_ref = [&a, &b]() noexcept -> int {
+        ++a;
+        ++b;
+        return a + b;
+    };
+
+    std::cout << lambda_all_by_value() << '\n';
+    std::cout << lambda_all_by_ref() << '\n';
+}

@@ -1,0 +1,34 @@
+#include <algorithm>
+#include <functional>
+#include <iostream>
+#include <vector>
+
+struct MultiplyBy {
+    int factor;
+    explicit MultiplyBy(int f) : factor(f) {}
+    int operator()(int x) const noexcept { return x * factor; }
+};
+
+int main() {
+    std::vector<int> numbers{1, 2, 3, 4, 5};
+
+    // Functor
+    std::transform(numbers.begin(), numbers.end(), numbers.begin(),
+                   MultiplyBy{2});
+
+    // Bind expression
+    auto multiplyByThree = std::bind(std::multiplies<int>{},
+                                     std::placeholders::_1, 3);
+    std::transform(numbers.begin(), numbers.end(), numbers.begin(),
+                   multiplyByThree);
+
+    // Lambda stored in std::function
+    std::function<int(int)> multiplyByFour = [](int x) noexcept {
+        return x * 4;
+    };
+    std::transform(numbers.begin(), numbers.end(), numbers.begin(),
+                   multiplyByFour);
+
+    for (int n : numbers) std::cout << n << ' ';
+    std::cout << '\n';
+}

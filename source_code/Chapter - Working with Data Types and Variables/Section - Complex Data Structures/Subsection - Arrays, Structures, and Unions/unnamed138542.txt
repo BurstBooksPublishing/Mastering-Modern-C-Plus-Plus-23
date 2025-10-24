@@ -1,0 +1,14 @@
+#include <array>
+#include <string>
+
+struct Person {
+    std::string name;
+    int age;
+    double height;
+};
+
+const std::array<Person, 3> people{{
+    {"Alice", 25, 5.5},
+    {"Bob", 30, 6.0},
+    {"Charlie", 35, 5.8}
+}};

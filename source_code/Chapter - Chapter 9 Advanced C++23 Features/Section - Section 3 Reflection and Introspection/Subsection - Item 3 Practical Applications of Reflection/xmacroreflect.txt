@@ -1,0 +1,48 @@
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <string_view>
+#include <type_traits>
+
+#define PERSON_MEMBERS \
+    X(name)            \
+    X(age)             \
+    X(active)
+
+struct Person {
+    std::string name;
+    int age;
+    bool active;
+};
+
+template <typename F>
+void reflect_members(Person& obj, F&& f) {
+#define X(member) f(#member, obj.member);
+    PERSON_MEMBERS
+#undef X
+}
+
+template <typename T>
+std::string serialize_to_json(T& obj) {
+    std::ostringstream oss;
+    oss << '{';
+    bool first = true;
+    reflect_members(obj, [&](std::string_view name, auto& member) {
+        if (!first) oss << ',';
+        first = false;
+        oss << '"' << name << "\":";
+        if constexpr (std::is_same_v<std::decay_t<decltype(member)>, std::string>)
+            oss << '"' << member << '"';
+        else if constexpr (std::is_same_v<std::decay_t<decltype(member)>, bool>)
+            oss << (member ? "true" : "false");
+        else
+            oss << member;
+    });
+    oss << '}';
+    return oss.str();
+}
+
+int main() {
+    Person p{"Alice", 30, true};
+    std::cout << serialize_to_json(p) << '\n';
+}

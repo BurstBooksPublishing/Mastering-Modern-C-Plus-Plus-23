@@ -1,0 +1,22 @@
+#include <iostream>
+#include <mutex>
+#include <thread>
+#include <vector>
+
+std::mutex cout_mtx;                       // protects std::cout
+
+void printThreadId(int id) {
+    std::lock_guard<std::mutex> lock(cout_mtx);
+    std::cout << "Thread ID: " << id << '\n';
+}
+
+int main() {
+    constexpr std::size_t num_threads = 10;
+    std::vector<std::thread> threads;
+    threads.reserve(num_threads);
+
+    for (int i = 0; i < static_cast<int>(num_threads); ++i)
+        threads.emplace_back(printThreadId, i);
+
+    for (auto& t : threads) t.join();
+}

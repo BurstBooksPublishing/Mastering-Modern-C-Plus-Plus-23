@@ -1,0 +1,44 @@
+#include <iostream>
+#include <string>
+#include <vector>
+#include <tuple>
+
+// Lightweight compile-time reflection for aggregate types
+template <typename T>
+struct reflect;
+
+// Specialize for Person
+struct Person {
+    std::string name;
+    int age;
+};
+
+template <>
+struct reflect<Person> {
+    static constexpr std::string_view name = "Person";
+    using members = std::tuple<
+        std::pair<std::string_view, std::string_view>,
+        std::pair<std::string_view, std::string_view>
+    >;
+    static constexpr members member_info{
+        std::pair{"name", "std::string"},
+        std::pair{"age", "int"}
+    };
+};
+
+// Generic printer for any reflected aggregate
+template <typename T>
+void print_type_info() {
+    std::cout << "Type name: " << reflect<T>::name << '\n';
+    constexpr auto& info = reflect<T>::member_info;
+    std::cout << "Number of members: " << std::tuple_size_v<decltype(info)> << '\n';
+    [&]<std::size_t... I>(std::index_sequence<I...>) {
+        ((std::cout << "Member name: " << std::get<I>(info).first
+                    << ", Type: " << std::get<I>(info).second << '\n'), ...);
+    }(std::make_index_sequence<std::tuple_size_v<decltype(info)>>{});
+}
+
+int main() {
+    print_type_info<Person>();
+    return 0;
+}

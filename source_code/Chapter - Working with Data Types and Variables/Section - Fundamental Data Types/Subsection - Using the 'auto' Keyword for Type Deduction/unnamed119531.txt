@@ -1,0 +1,22 @@
+#include <iostream>
+#include <vector>
+#include <string>
+
+int main() {
+    auto x = 42;                 // int
+    auto y = 3.14;               // double
+    auto z = "Hello, Modern C++23!"s; // std::string (via user-defined literal)
+
+    std::cout << "x: " << x << ", y: " << y << ", z: " << z << '\n';
+
+    std::vector<int> numbers{1, 2, 3, 4, 5};
+
+    for (auto it = numbers.begin(); it != numbers.end(); ++it) {
+        std::cout << *it << ' ';
+    }
+    std::cout << '\n';
+
+    for (auto& num : numbers) num *= 2;   // in-place doubling
+    for (const auto& num : numbers) std::cout << num << ' ';
+    std::cout << '\n';
+}

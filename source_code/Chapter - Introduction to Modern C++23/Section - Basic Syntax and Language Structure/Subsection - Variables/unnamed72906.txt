@@ -1,0 +1,4 @@
+#include <cstdint>
+
+const std::uint8_t age = 25;      // User’s age in years
+constexpr double     pi  = 3.14159265358979323846;  // π to double precision

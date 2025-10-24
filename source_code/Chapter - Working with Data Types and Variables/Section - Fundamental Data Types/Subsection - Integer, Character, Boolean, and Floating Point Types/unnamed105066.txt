@@ -1,0 +1,5 @@
+#include <numbers>
+
+const float    piApprox = 3.14159f;                    // 32-bit π approximation
+const double   eValue   = 2.718281828459045;           // 64-bit Euler's number
+const long double sqrt2 = std::numbers::sqrt2_v<long double>;  // high-precision √2

@@ -1,0 +1,10 @@
+#include <iostream>
+#include <string>
+
+void greet(const std::string& name, unsigned int times = 1) {
+    if (name.empty()) return;               // avoid empty greetings
+    for (unsigned int i = 0; i < times; ++i) {
+        std::cout << "Hello, " << name << "!\n";
+    }
+    std::cout << std::flush;                // ensure output is delivered
+}

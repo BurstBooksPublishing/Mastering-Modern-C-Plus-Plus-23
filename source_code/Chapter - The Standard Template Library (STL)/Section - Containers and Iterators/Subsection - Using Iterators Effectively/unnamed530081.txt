@@ -1,0 +1,7 @@
+#include <vector>
+#include <algorithm>
+
+std::vector<int> src{1, 2, 3};
+std::vector<int> dst;
+dst.reserve(src.size());
+std::copy(src.begin(), src.end(), std::back_inserter(dst));

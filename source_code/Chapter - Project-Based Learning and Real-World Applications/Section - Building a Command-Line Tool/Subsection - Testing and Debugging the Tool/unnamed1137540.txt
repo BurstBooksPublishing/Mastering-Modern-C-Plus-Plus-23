@@ -1,0 +1,18 @@
+bash
+#!/usr/bin/env bash
+# Run Valgrind with full leak checking on the compiled binary.
+
+set -euo pipefail
+
+readonly BINARY="./my_tool"
+
+# Ensure the binary exists and is executable
+[[ -x "$BINARY" ]] || { echo "Error: '$BINARY' not found or not executable" >&2; exit 1; }
+
+# Run Valgrind with recommended flags for production-grade leak detection
+exec valgrind \
+  --leak-check=full \
+  --show-leak-kinds=all \
+  --track-origins=yes \
+  --error-exitcode=42 \
+  "$@"

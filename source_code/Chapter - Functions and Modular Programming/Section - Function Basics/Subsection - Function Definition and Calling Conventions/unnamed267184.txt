@@ -1,0 +1,7 @@
+#include <iostream>
+#include <utility>
+
+template <typename... Args>
+void print_all(Args&&... args) {
+    (std::cout << ... << std::forward<Args>(args)) << '\n';
+}

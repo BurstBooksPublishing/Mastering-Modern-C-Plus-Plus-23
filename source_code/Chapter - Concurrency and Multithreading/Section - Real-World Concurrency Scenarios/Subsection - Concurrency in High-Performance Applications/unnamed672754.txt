@@ -1,0 +1,29 @@
+#include <vector>
+#include <algorithm>
+#include <execution>
+#include <stdexcept>
+
+void matmul(const std::vector<std::vector<double>>& A,
+            const std::vector<std::vector<double>>& B,
+            std::vector<std::vector<double>>& C) {
+    if (A.empty() || B.empty() || A[0].empty() || B[0].empty())
+        throw std::invalid_argument("Empty matrix");
+
+    const size_t m = A.size();
+    const size_t n = B[0].size();
+    const size_t k = B.size();
+
+    if (A[0].size() != k)
+        throw std::invalid_argument("Incompatible dimensions");
+
+    C.assign(m, std::vector<double>(n, 0.0));
+
+    std::transform(std::execution::par_unseq, A.begin(), A.end(), C.begin(),
+        [&](const auto& rowA) {
+            std::vector<double> res(n, 0.0);
+            for (size_t j = 0; j < n; ++j)
+                for (size_t l = 0; l < k; ++l)
+                    res[j] += rowA[l] * B[l][j];
+            return res;
+        });
+}

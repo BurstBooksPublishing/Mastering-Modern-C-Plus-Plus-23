@@ -1,0 +1,4 @@
+#include <vector>
+
+template class std::vector<int>;      // Explicit instantiation for int
+template class std::vector<double>;   // Explicit instantiation for double

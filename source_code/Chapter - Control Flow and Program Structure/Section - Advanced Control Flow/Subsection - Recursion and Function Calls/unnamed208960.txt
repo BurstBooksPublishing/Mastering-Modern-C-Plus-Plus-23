@@ -1,0 +1,11 @@
+#include <vector>
+#include <optional>
+
+std::optional<int> search_value(const std::vector<std::vector<int>>& data, int target) {
+    for (const auto& row : data) {
+        for (int value : row) {
+            if (value == target) return value;   // Found; return immediately
+        }
+    }
+    return std::nullopt;   // Not found
+}

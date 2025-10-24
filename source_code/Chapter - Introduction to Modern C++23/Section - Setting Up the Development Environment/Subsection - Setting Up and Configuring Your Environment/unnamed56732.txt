@@ -1,0 +1,10 @@
+#include <iostream>
+#include <vector>
+
+int main() {
+    const std::vector<int> v{1, 2, 3, 4, 5};   // immutable data
+    for (const int& i : v) {                   // read-only iteration
+        std::cout << i << '\n';                // newline without flush
+    }
+    return 0;
+}

@@ -1,0 +1,4 @@
+#include <format>
+#include <string>
+
+std::string message = std::format("Hello, {}!", "world");

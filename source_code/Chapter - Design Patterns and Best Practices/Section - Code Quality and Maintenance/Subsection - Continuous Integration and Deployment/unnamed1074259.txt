@@ -1,0 +1,8 @@
+yaml
+- name: Run Clang-Tidy
+  run: |
+    set -euo pipefail
+    # Build compilation database so clang-tidy can read exact flags
+    cmake -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+    # Run on all source files with the same compile flags used by the build
+    run-clang-tidy -p build -checks='*' -quiet

@@ -1,0 +1,18 @@
+#include <iostream>
+#include <utility>
+
+template <typename T>
+void print(const T& value) {
+    std::cout << value << '\n';
+}
+
+template <typename T, typename... Args>
+void print(const T& first, Args&&... rest) {
+    std::cout << first << ' ';
+    print(std::forward<Args>(rest)...);
+}
+
+int main() {
+    print(1, 2.5, "Hello", 'A');  // Output: 1 2.5 Hello A
+    return 0;
+}

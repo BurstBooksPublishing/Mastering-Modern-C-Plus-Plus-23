@@ -1,0 +1,3 @@
+#include <cstdint>
+
+constexpr std::uint32_t fixedValue = 42;   // compile-time constant

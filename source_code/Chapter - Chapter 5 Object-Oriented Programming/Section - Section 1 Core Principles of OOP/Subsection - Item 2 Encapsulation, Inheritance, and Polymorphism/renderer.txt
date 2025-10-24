@@ -1,0 +1,41 @@
+#include <iostream>
+#include <memory>
+#include <vector>
+
+class Renderer {
+public:
+    virtual ~Renderer() = default;
+    void draw() {
+        begin_frame();
+        do_draw();
+        end_frame();
+    }
+    Renderer(const Renderer&) = delete;
+    Renderer& operator=(const Renderer&) = delete;
+
+protected:
+    Renderer() = default;
+    virtual void do_draw() = 0;
+
+private:
+    void begin_frame() { /* frame setup */ }
+    void end_frame()   { /* flush, stats */ }
+};
+
+class MeshRenderer final : public Renderer {
+protected:
+    void do_draw() override { std::cout << "Drawing mesh\n"; }
+};
+
+class SpriteRenderer final : public Renderer {
+protected:
+    void do_draw() override { std::cout << "Drawing sprite\n"; }
+};
+
+int main() {
+    std::vector<std::unique_ptr<Renderer>> pipeline;
+    pipeline.emplace_back(std::make_unique<MeshRenderer>());
+    pipeline.emplace_back(std::make_unique<SpriteRenderer>());
+
+    for (auto& r : pipeline) r->draw();
+}

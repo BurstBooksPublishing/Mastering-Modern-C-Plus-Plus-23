@@ -1,0 +1,41 @@
+#include <iostream>
+#include <fstream>
+#include <future>
+#include <string>
+#include <coroutine>
+#include <stdexcept>
+
+struct Task {
+    struct promise_type {
+        std::string value;
+        Task get_return_object() { return {std::coroutine_handle<promise_type>::from_promise(*this)}; }
+        std::suspend_never initial_suspend() noexcept { return {}; }
+        std::suspend_never final_suspend() noexcept { return {}; }
+        void return_value(std::string v) { value = std::move(v); }
+        void unhandled_exception() { std::rethrow_exception(std::current_exception()); }
+    };
+    std::coroutine_handle<promise_type> h;
+    ~Task() { if (h) h.destroy(); }
+    std::string get() { return h.promise().value; }
+};
+
+Task async_read_file(const std::string& filename) {
+    std::ifstream file(filename, std::ios::binary | std::ios::ate);
+    if (!file) co_return "";
+    auto size = file.tellg();
+    if (size < 0) co_return "";
+    std::string content(size, '\0');
+    file.seekg(0);
+    file.read(content.data(), size);
+    co_return content;
+}
+
+int main() {
+    try {
+        auto task = async_read_file("example.txt");
+        std::cout << "Reading file asynchronously...\n";
+        std::cout << "File content: " << task.get() << '\n';
+    } catch (const std::exception& ex) {
+        std::cerr << "Error: " << ex.what() << '\n';
+    }
+}

@@ -1,0 +1,22 @@
+#include <cstdint>
+#include <iostream>
+
+int main() {
+    const std::uint8_t x = 5;
+    const std::uint8_t y = 3;
+
+    const std::uint8_t bitwiseAND  = x & y;   // 5 & 3 = 1
+    const std::uint8_t bitwiseOR   = x | y;   // 5 | 3 = 7
+    const std::uint8_t bitwiseXOR  = x ^ y;   // 5 ^ 3 = 6
+    const std::uint8_t bitwiseNOT  = ~x;      // ~5  = 250 (8-bit)
+    const std::uint8_t leftShift   = x << 1;  // 5 << 1 = 10
+    const std::uint8_t rightShift  = x >> 1;  // 5 >> 1 = 2
+
+    std::cout << "AND: " << +bitwiseAND << '\n'
+              << "OR : " << +bitwiseOR  << '\n'
+              << "XOR: " << +bitwiseXOR << '\n'
+              << "NOT: " << +bitwiseNOT << '\n'
+              << "<< : " << +leftShift  << '\n'
+              << ">> : " << +rightShift << '\n';
+    return 0;
+}

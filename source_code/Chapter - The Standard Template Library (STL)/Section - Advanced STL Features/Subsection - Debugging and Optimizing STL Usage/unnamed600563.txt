@@ -1,0 +1,7 @@
+#include <vector>
+#include <cstdint>
+
+std::vector<int64_t> vec;
+vec.reserve(1'000'000);               // avoid reallocations
+for (int64_t i = 0; i < 1'000'000; ++i)
+    vec.push_back(i);

@@ -1,0 +1,7 @@
+#include <cstdint>
+#include <type_traits>
+
+enum class Color : std::uint8_t { Red = 0, Green = 1, Blue = 2 };
+
+constexpr Color c = Color::Red;
+static_assert(std::is_same_v<std::underlying_type_t<Color>, std::uint8_t>);

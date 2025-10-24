@@ -1,0 +1,46 @@
+#include <string>
+#include <source_location>
+#include <chrono>
+#include <format>
+#include <iostream>
+#include <fstream>
+#include <mutex>
+
+enum class LogLevel : int { Trace = 0, Debug, Info, Warn, Error, Fatal };
+
+void logMessage(const std::string& message,
+                LogLevel level = LogLevel::Info,
+                const std::source_location& loc = std::source_location::current())
+{
+    static std::mutex mtx;
+    static const std::string fileName = "app.log";
+
+    const char* levelStr = "";
+    switch (level) {
+        case LogLevel::Trace: levelStr = "TRACE"; break;
+        case LogLevel::Debug: levelStr = "DEBUG"; break;
+        case LogLevel::Info:  levelStr = "INFO";  break;
+        case LogLevel::Warn:  levelStr = "WARN";  break;
+        case LogLevel::Error: levelStr = "ERROR"; break;
+        case LogLevel::Fatal: levelStr = "FATAL"; break;
+    }
+
+    auto now = std::chrono::system_clock::now();
+    auto t = std::chrono::system_clock::to_time_t(now);
+    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()) % 1000;
+
+    std::string formatted = std::format("{:%Y-%m-%d %H:%M:%S}.{:03d} [{}] {} ({}:{})\n",
+                                        std::chrono::floor<std::chrono::seconds>(now),
+                                        ms.count(),
+                                        levelStr,
+                                        message,
+                                        loc.file_name(),
+                                        loc.line());
+
+    std::lock_guard lg(mtx);
+    std::ofstream logFile(fileName, std::ios::app);
+    if (logFile.is_open()) {
+        logFile << formatted;
+    }
+    std::cout << formatted;
+}

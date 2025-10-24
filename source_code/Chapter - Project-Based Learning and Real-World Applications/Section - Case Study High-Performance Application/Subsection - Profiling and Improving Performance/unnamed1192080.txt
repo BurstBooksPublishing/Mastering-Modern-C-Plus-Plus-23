@@ -1,0 +1,34 @@
+#include <algorithm>
+#include <chrono>
+#include <cstddef>
+#include <execution>
+#include <iostream>
+#include <numeric>
+#include <vector>
+
+int sumVector(const std::vector<int>& vec) {
+    return std::accumulate(vec.begin(), vec.end(), 0);
+}
+
+int sumVectorOptimized(const std::vector<int>& vec) {
+    return std::reduce(std::execution::par_unseq, vec.begin(), vec.end(), 0);
+}
+
+int main() {
+    constexpr std::size_t kSize = 1'000'000;
+    std::vector<int> data(kSize, 1);
+
+    auto benchmark = [](const auto& func, const auto& input) {
+        const auto start = std::chrono::high_resolution_clock::now();
+        const int result = func(input);
+        const auto end = std::chrono::high_resolution_clock::now();
+        const std::chrono::duration<double> elapsed = end - start;
+        return std::make_pair(result, elapsed.count());
+    };
+
+    const auto [origSum, origTime] = benchmark(sumVector, data);
+    std::cout << "Original sum: " << origSum << ", Time: " << origTime << "s\n";
+
+    const auto [optSum, optTime] = benchmark(sumVectorOptimized, data);
+    std::cout << "Optimized sum: " << optSum << ", Time: " << optTime << "s\n";
+}

@@ -1,0 +1,20 @@
+#include <algorithm>
+#include <iostream>
+#include <iterator>
+#include <vector>
+
+int main() {
+    const std::vector<int> numbers{1, 2, 3, 4, 5};
+    const int multiplier = 2;
+
+    // Transform each element by multiplying with the constant multiplier
+    std::vector<int> result;
+    result.reserve(numbers.size());
+    std::transform(numbers.begin(), numbers.end(), std::back_inserter(result),
+                   [multiplier](int x) { return x * multiplier; });
+
+    // Print the transformed values
+    std::copy(result.begin(), result.end(),
+              std::ostream_iterator<int>(std::cout, " "));
+    std::cout << '\n';
+}

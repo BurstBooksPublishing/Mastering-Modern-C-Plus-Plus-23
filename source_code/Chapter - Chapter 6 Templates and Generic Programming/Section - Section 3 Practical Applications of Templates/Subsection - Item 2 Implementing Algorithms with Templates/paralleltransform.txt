@@ -1,0 +1,45 @@
+#include <algorithm>
+#include <iostream>
+#include <iterator>
+#include <numeric>
+#include <ranges>
+#include <thread>
+#include <vector>
+
+template<std::ranges::random_access_range R, std::invocable<std::ranges::range_reference_t<R>> F>
+void parallel_transform_inplace(R& r, F&& f) {
+    using std::ranges::begin;
+    using std::ranges::size;
+
+    const std::size_t n = size(r);
+    if (n == 0) return;
+
+    const unsigned hw = std::thread::hardware_concurrency();
+    const unsigned threads = std::max(1u, std::min(hw ? hw : 2u, static_cast<unsigned>(n)));
+
+    const std::size_t chunk = n / threads;
+    const std::size_t rem   = n % threads;
+
+    auto first = begin(r);
+    std::vector<std::jthread> workers;
+    workers.reserve(threads);
+
+    std::size_t offset = 0;
+    for (unsigned t = 0; t < threads; ++t) {
+        const std::size_t len = chunk + (t < rem);
+        workers.emplace_back(
+            [first, offset, len, &f] {
+                auto b = std::next(first, offset);
+                auto e = std::next(b, len);
+                std::for_each(b, e, f);
+            });
+        offset += len;
+    }
+}
+
+int main() {
+    std::vector<int> data(1'000'000);
+    std::iota(data.begin(), data.end(), 0);
+    parallel_transform_inplace(data, [](int& x) { x = x * 2 + 1; });
+    std::cout << data.front() << ' ' << data[1] << ' ' << data.back() << '\n';
+}

@@ -1,0 +1,54 @@
+#include <fstream>
+#include <iostream>
+#include <string>
+
+int main() {
+    const std::string textPath = "example.txt";
+    const std::string binPath  = "example.bin";
+
+    // Write text
+    {
+        std::ofstream out(textPath);
+        if (!out) {
+            std::cerr << "Cannot open " << textPath << '\n';
+            return 1;
+        }
+        out << "Hello, Text File!\n";
+    } // RAII closes file
+
+    // Read text
+    {
+        std::ifstream in(textPath);
+        if (!in) {
+            std::cerr << "Cannot open " << textPath << '\n';
+            return 1;
+        }
+        std::string line;
+        while (std::getline(in, line)) std::cout << line << '\n';
+    }
+
+    // Write binary
+    {
+        std::ofstream out(binPath, std::ios::binary);
+        if (!out) {
+            std::cerr << "Cannot open " << binPath << '\n';
+            return 1;
+        }
+        int data = 42;
+        out.write(reinterpret_cast<const char*>(&data), sizeof(data));
+    }
+
+    // Read binary
+    {
+        std::ifstream in(binPath, std::ios::binary);
+        if (!in) {
+            std::cerr << "Cannot open " << binPath << '\n';
+            return 1;
+        }
+        int data;
+        in.read(reinterpret_cast<char*>(&data), sizeof(data));
+        if (in.gcount() == sizeof(data)) std::cout << "Read from binary: " << data << '\n';
+    }
+
+    return 0;
+}

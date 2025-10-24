@@ -1,0 +1,21 @@
+#include <atomic>
+#include <iostream>
+#include <thread>
+
+struct Point {
+    int x{}, y{};
+};
+
+std::atomic<Point> point{Point{0, 0}};
+
+void update_point() {
+    Point new_point{10, 20};
+    point.store(new_point, std::memory_order_relaxed);
+}
+
+int main() {
+    std::thread t(update_point);
+    t.join();
+    Point p = point.load(std::memory_order_relaxed);
+    std::cout << "Point: (" << p.x << ", " << p.y << ")\n";
+}

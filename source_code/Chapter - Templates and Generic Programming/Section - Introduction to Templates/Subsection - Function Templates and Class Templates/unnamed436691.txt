@@ -1,0 +1,10 @@
+#include <algorithm>
+#include <iostream>
+
+int main() {
+    int    result1 = std::max(3, 7);         // T is int
+    double result2 = std::max(3.14, 2.71);   // T is double
+
+    std::cout << result1 << '\n' << result2 << '\n';
+    return 0;
+}

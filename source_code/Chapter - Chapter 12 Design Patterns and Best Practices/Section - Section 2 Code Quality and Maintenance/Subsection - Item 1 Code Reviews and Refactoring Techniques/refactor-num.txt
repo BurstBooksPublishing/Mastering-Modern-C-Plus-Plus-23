@@ -1,0 +1,20 @@
+#include <cmath>
+#include <concepts>
+#include <iostream>
+#include <cassert>
+
+template<std::floating_point T>
+T l2_norm3(T x, T y, T z) {
+    return std::hypot(x, y, z);
+}
+
+int main() {
+    const double d = l2_norm3(3.0, 4.0, 0.0);
+    const float  f = l2_norm3(3.0f, 4.0f, 0.0f);
+
+    assert(std::abs(d - 5.0) < 1e-12);
+    assert(std::abs(f - 5.0f) < 1e-6f);
+
+    std::cout << "double norm: " << d << '\n';
+    std::cout << "float  norm: " << f << '\n';
+}

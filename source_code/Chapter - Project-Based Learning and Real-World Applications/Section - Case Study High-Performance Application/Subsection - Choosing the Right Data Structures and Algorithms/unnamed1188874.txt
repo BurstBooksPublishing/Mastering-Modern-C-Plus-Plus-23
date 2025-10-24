@@ -1,0 +1,14 @@
+#include <chrono>
+#include <iostream>
+
+int main() {
+    const auto start = std::chrono::steady_clock::now();
+
+    // --- benchmarked code goes here ---
+
+    const auto end = std::chrono::steady_clock::now();
+    const std::chrono::duration<double, std::milli> elapsed = end - start;
+
+    std::cout << "Elapsed: " << elapsed.count() << " ms\n";
+    return 0;
+}

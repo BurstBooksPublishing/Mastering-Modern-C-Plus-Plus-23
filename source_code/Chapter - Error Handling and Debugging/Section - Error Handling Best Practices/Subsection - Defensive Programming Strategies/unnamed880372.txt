@@ -1,0 +1,9 @@
+#include <memory>
+#include <stdexcept>
+
+void manage_resource() {
+    auto ptr = std::make_unique<int>(42);          // allocate and own the resource
+    if (!ptr)                                      // ensure allocation succeeded
+        throw std::runtime_error("allocation failed");
+    // automatic release when ptr leaves scope
+}

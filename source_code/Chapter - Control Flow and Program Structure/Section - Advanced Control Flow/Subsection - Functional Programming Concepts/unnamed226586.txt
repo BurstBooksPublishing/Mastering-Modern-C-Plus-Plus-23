@@ -1,0 +1,7 @@
+#include <stdexcept>
+
+int factorial(int n, int acc = 1) {
+    if (n < 0) throw std::invalid_argument("factorial undefined for negative numbers");
+    if (n <= 1) return acc;
+    return factorial(n - 1, acc * n);
+}

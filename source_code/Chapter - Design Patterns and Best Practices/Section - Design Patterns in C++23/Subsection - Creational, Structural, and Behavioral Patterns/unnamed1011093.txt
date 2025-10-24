@@ -1,0 +1,19 @@
+#include <memory>
+
+class Target {
+public:
+    virtual ~Target() = default;
+    virtual void request() {}
+};
+
+class Adaptee {
+public:
+    void specificRequest() {}
+};
+
+class Adapter : public Target {
+    std::unique_ptr<Adaptee> adaptee;
+public:
+    explicit Adapter(std::unique_ptr<Adaptee> a) : adaptee(std::move(a)) {}
+    void request() override { adaptee->specificRequest(); }
+};

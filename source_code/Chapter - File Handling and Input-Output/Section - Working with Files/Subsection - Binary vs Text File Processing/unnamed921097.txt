@@ -1,0 +1,33 @@
+#include <vector>
+#include <fstream>
+#include <iostream>
+
+int main() {
+    const std::vector<int> data{1, 2, 3, 4, 5};
+    const char* fileName = "data.bin";
+
+    // Write vector to binary file
+    {
+        std::ofstream out(fileName, std::ios::binary);
+        if (!out) {
+            std::cerr << "Cannot open " << fileName << " for writing\n";
+            return 1;
+        }
+        out.write(reinterpret_cast<const char*>(data.data()),
+                  static_cast<std::streamsize>(data.size() * sizeof(int)));
+    }
+
+    // Read back into new vector
+    std::vector<int> loaded(data.size());
+    {
+        std::ifstream in(fileName, std::ios::binary);
+        if (!in) {
+            std::cerr << "Cannot open " << fileName << " for reading\n";
+            return 1;
+        }
+        in.read(reinterpret_cast<char*>(loaded.data()),
+                static_cast<std::streamsize>(loaded.size() * sizeof(int)));
+    }
+
+    return 0;
+}

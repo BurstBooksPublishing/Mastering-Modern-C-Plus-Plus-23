@@ -1,0 +1,52 @@
+#include <cstdio>
+#include <iostream>
+#include <utility>
+#include <type_traits>
+#include <cstddef>
+
+struct Point { double x, y; };
+
+class FileWrapper {
+public:
+    explicit FileWrapper(const char* path) noexcept
+        : file_(std::fopen(path, "r")) {}
+
+    FileWrapper(const FileWrapper&)            = delete;
+    FileWrapper& operator=(const FileWrapper&) = delete;
+
+    FileWrapper(FileWrapper&& other) noexcept
+        : file_(std::exchange(other.file_, nullptr)) {}
+
+    FileWrapper& operator=(FileWrapper&& other) noexcept {
+        if (this != &other) {
+            close();
+            file_ = std::exchange(other.file_, nullptr);
+        }
+        return *this;
+    }
+
+    ~FileWrapper() { close(); }
+
+    explicit operator bool() const noexcept { return file_ != nullptr; }
+    std::FILE* get() const noexcept { return file_; }
+    std::FILE* release() noexcept { return std::exchange(file_, nullptr); }
+
+private:
+    std::FILE* file_{nullptr};
+    void close() noexcept {
+        if (file_) {
+            std::fclose(file_);
+            file_ = nullptr;
+        }
+    }
+};
+
+int main() {
+    FileWrapper f("/etc/hosts");
+    if (f) std::cout << "opened\n";
+    FileWrapper g = std::move(f);
+    static_assert(std::is_nothrow_move_constructible_v<FileWrapper>);
+    std::cout << "sizeof(FileWrapper): " << sizeof(FileWrapper) << '\n';
+    std::cout << "sizeof(Point): " << sizeof(Point) << '\n';
+    std::cout << "offsetof(Point,y): " << offsetof(Point, y) << '\n';
+}

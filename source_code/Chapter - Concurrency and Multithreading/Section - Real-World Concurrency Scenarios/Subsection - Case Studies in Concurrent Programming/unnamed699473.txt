@@ -1,0 +1,14 @@
+#include <mutex>
+
+class SafeLock {
+public:
+    explicit SafeLock(std::mutex& m1, std::mutex& m2)
+        : lock1_(m1, std::defer_lock),
+          lock2_(m2, std::defer_lock) {
+        std::lock(lock1_, lock2_);          // Acquire both locks without deadlock
+    }
+
+private:
+    std::unique_lock<std::mutex> lock1_;
+    std::unique_lock<std::mutex> lock2_;
+};

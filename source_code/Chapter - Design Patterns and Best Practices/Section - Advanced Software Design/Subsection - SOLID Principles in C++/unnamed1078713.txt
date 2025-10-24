@@ -1,0 +1,85 @@
+#include <iostream>
+#include <memory>
+#include <vector>
+#include <string>
+
+// SRP: logging only
+class Logger {
+public:
+    void log(const std::string& message) const {
+        std::cout << "Log: " << message << '\n';
+    }
+};
+
+// OCP: open for extension, closed for modification
+class Shape {
+public:
+    virtual ~Shape() = default;
+    virtual double area() const noexcept = 0;
+};
+
+class Circle final : public Shape {
+    double radius_;
+public:
+    explicit Circle(double r) : radius_(r) {}
+    double area() const noexcept override { return 3.141592653589793 * radius_ * radius_; }
+};
+
+class Square final : public Shape {
+    double side_;
+public:
+    explicit Square(double s) : side_(s) {}
+    double area() const noexcept override { return side_ * side_; }
+};
+
+// LSP: any Shape can be used here
+void printArea(const Shape& shape) {
+    std::cout << "Area: " << shape.area() << '\n';
+}
+
+// ISP: segregated interfaces
+class IPrinter {
+public:
+    virtual ~IPrinter() = default;
+    virtual void print() const = 0;
+};
+
+class IScanner {
+public:
+    virtual ~IScanner() = default;
+    virtual void scan() const = 0;
+};
+
+class Printer final : public IPrinter {
+public:
+    void print() const override { std::cout << "Printing...\n"; }
+};
+
+class Scanner final : public IScanner {
+public:
+    void scan() const override { std::cout << "Scanning...\n"; }
+};
+
+// DIP: depends on abstraction, not concrete printer
+class Report {
+    std::unique_ptr<IPrinter> printer_;
+public:
+    explicit Report(std::unique_ptr<IPrinter> p) : printer_(std::move(p)) {}
+    void generate() const {
+        printer_->print();
+    }
+};
+
+int main() {
+    Logger logger;
+    logger.log("Application started");
+
+    const Circle circle(5.0);
+    const Square square(4.0);
+    printArea(circle);
+    printArea(square);
+
+    auto printer = std::make_unique<Printer>();
+    Report report(std::move(printer));
+    report.generate();
+}

@@ -1,0 +1,59 @@
+#include <atomic>
+#include <chrono>
+#include <iostream>
+#include <mutex>
+#include <thread>
+#include <vector>
+
+constexpr std::size_t INCREMENTS = 1'000'000;
+constexpr std::size_t NTHREADS   = 4;
+
+struct MutexCounter {
+    std::mutex  m;
+    long long   value{0};
+    void inc() { std::lock_guard lg{m}; ++value; }
+};
+
+struct AtomicCounter {
+    std::atomic<long long> value{0};
+    void inc() noexcept { value.fetch_add(1, std::memory_order_relaxed); }
+};
+
+struct ShardedCounter {
+    std::vector<long long> shards;
+    explicit ShardedCounter(std::size_t n) : shards(n, 0) {}
+    void inc(std::size_t shard_id) noexcept { ++shards[shard_id]; }
+    long long total() const noexcept {
+        long long sum = 0;
+        for (long long v : shards) sum += v;
+        return sum;
+    }
+};
+
+template <typename Counter, typename IncFunc>
+void bench(Counter& counter, IncFunc inc, const char* label) {
+    auto t0 = std::chrono::steady_clock::now();
+    std::vector<std::jthread> threads;
+    threads.reserve(NTHREADS);
+    for (std::size_t i = 0; i < NTHREADS; ++i) {
+        threads.emplace_back([&counter, &inc, i] {
+            for (std::size_t k = 0; k < INCREMENTS; ++k) inc(counter, i);
+        });
+    }
+    auto t1 = std::chrono::steady_clock::now();
+    std::cout << label << ": "
+              << std::chrono::duration<double>(t1 - t0).count()
+              << " s\n";
+}
+
+int main() {
+    MutexCounter mc;
+    bench(mc, [](auto& c, std::size_t) { c.inc(); }, "Mutex");
+
+    AtomicCounter ac;
+    bench(ac, [](auto& c, std::size_t) { c.inc(); }, "Atomic");
+
+    ShardedCounter sc(NTHREADS);
+    bench(sc, [](auto& c, std::size_t id) { c.inc(id); }, "Sharded");
+    std::cout << "Sharded total: " << sc.total() << '\n';
+}

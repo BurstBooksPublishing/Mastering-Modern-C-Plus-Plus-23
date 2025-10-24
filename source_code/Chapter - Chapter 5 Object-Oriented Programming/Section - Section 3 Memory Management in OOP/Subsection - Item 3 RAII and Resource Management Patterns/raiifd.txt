@@ -1,0 +1,47 @@
+#include <fcntl.h>
+#include <unistd.h>
+#include <stdexcept>
+#include <utility>
+
+class FileDescriptor {
+    int fd_{-1};
+
+public:
+    explicit FileDescriptor(int fd = -1) noexcept : fd_(fd) {}
+
+    static FileDescriptor open_read(const char* path) {
+        int fd = ::open(path, O_RDONLY | O_CLOEXEC);
+        if (fd == -1) throw std::runtime_error("open failed");
+        return FileDescriptor(fd);
+    }
+
+    FileDescriptor(const FileDescriptor&)            = delete;
+    FileDescriptor& operator=(const FileDescriptor&) = delete;
+
+    FileDescriptor(FileDescriptor&& other) noexcept : fd_(other.fd_) { other.fd_ = -1; }
+
+    FileDescriptor& operator=(FileDescriptor&& other) noexcept {
+        if (this != &other) {
+            reset();
+            fd_ = other.fd_;
+            other.fd_ = -1;
+        }
+        return *this;
+    }
+
+    ~FileDescriptor() noexcept { reset(); }
+
+    int  get()  const noexcept { return fd_; }
+    explicit operator bool() const noexcept { return fd_ != -1; }
+
+    void reset(int new_fd = -1) noexcept {
+        if (fd_ != -1) ::close(fd_);
+        fd_ = new_fd;
+    }
+
+    int release() noexcept {
+        int old = fd_;
+        fd_ = -1;
+        return old;
+    }
+};

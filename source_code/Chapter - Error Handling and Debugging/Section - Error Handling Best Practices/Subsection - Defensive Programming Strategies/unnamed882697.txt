@@ -1,0 +1,16 @@
+#include <stdexcept>
+#include <gtest/gtest.h>
+
+// Returns the quotient of a / b or throws std::runtime_error if b == 0.
+double safe_divide(double a, double b) {
+    if (b == 0.0) throw std::runtime_error("Division by zero");
+    return a / b;
+}
+
+TEST(SafeDivideTest, HandlesDivisionByZero) {
+    EXPECT_THROW(safe_divide(1.0, 0.0), std::runtime_error);
+}
+
+TEST(SafeDivideTest, ReturnsCorrectQuotient) {
+    EXPECT_DOUBLE_EQ(safe_divide(6.0, 3.0), 2.0);
+}

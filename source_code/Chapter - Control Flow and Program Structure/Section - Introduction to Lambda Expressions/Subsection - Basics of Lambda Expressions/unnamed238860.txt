@@ -1,0 +1,10 @@
+#include <algorithm>
+#include <iterator>
+#include <vector>
+
+std::vector<int> numbers{1, 2, 3, 4, 5};
+std::vector<int> even_numbers;
+even_numbers.reserve(numbers.size());          // avoid reallocations
+std::copy_if(numbers.begin(), numbers.end(),
+             std::back_inserter(even_numbers),
+             [](int x) { return x % 2 == 0; });

@@ -1,0 +1,31 @@
+#include <iostream>
+#include <memory>
+#include <string>
+
+class ILogger {
+public:
+    virtual ~ILogger() = default;
+    virtual void log(const std::string& message) = 0;
+};
+
+class ConsoleLogger final : public ILogger {
+public:
+    void log(const std::string& message) override {
+        std::cout << "Log: " << message << '\n';
+    }
+};
+
+class Application {
+public:
+    explicit Application(std::unique_ptr<ILogger> logger)
+        : logger_(std::move(logger)) {
+        if (!logger_) throw std::invalid_argument("Logger must not be null");
+    }
+
+    void run() {
+        logger_->log("Application is running");
+    }
+
+private:
+    std::unique_ptr<ILogger> logger_;
+};

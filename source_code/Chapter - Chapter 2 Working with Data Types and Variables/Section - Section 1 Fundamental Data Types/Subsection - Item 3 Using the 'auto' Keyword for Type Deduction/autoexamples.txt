@@ -1,0 +1,44 @@
+#include <array>
+#include <initializer_list>
+#include <iostream>
+#include <type_traits>
+
+// compile-time type check helper
+template<typename T, typename U>
+constexpr bool check() noexcept { return std::is_same_v<T, U>; }
+
+int func() noexcept { return 42; }
+
+int global_arr[3] = {1, 2, 3};
+
+int main() {
+    auto a = 1;                           // int
+    static_assert(check<decltype(a), int>());
+
+    const int ci = 7;
+    auto b = ci;                          // int (cv dropped)
+    static_assert(check<decltype(b), int>());
+
+    auto& r_ci = ci;                      // const int&
+    static_assert(check<decltype(r_ci), const int&>());
+
+    int lvalue = 5;
+    auto&& u1 = lvalue;                   // int&
+    auto&& u2 = func();                   // int&&
+    static_assert(check<decltype(u1), int&>());
+    static_assert(check<decltype(u2), int&&>());
+
+    auto p = global_arr;                  // int*
+    static_assert(check<decltype(p), int*>());
+
+    auto& arr_ref = global_arr;           // int(&)[3]
+    static_assert(check<decltype(arr_ref), int(&)[3]>());
+
+    auto ilk = {1};                       // std::initializer_list<int>
+    static_assert(check<decltype(ilk), std::initializer_list<int>>());
+
+    std::array<double, 3> vec{0.1, 0.2, 0.3};
+    for (auto&& v : vec) { (void)v; }    // double&
+
+    std::cout << "a=" << a << " b=" << b << " u2=" << u2 << '\n';
+}

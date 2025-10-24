@@ -1,0 +1,12 @@
+#include <iterator>
+#include <type_traits>
+
+template <typename Iterator, typename Func>
+void for_each(Iterator begin, Iterator end, Func func) {
+    static_assert(std::is_invocable_v<Func, typename std::iterator_traits<Iterator>::reference>,
+                  "Func must be callable with the iterator's reference type");
+
+    for (auto it = begin; it != end; ++it) {
+        func(*it);
+    }
+}

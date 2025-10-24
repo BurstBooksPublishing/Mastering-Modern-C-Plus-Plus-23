@@ -1,0 +1,13 @@
+#include <iostream>
+#include <set>
+
+int main() {
+    std::set<int> s{3, 1, 4, 1, 5};   // duplicates ignored
+    s.insert(2);                      // add new element
+
+    for (const int val : s) {
+        std::cout << val << ' ';
+    }
+    std::cout << '\n';
+    return 0;
+}

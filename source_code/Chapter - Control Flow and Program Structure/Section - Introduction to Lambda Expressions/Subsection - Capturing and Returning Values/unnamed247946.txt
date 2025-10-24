@@ -1,0 +1,6 @@
+#include <cmath>   // std::sqrt
+#include <limits>  // std::numeric_limits
+
+auto lambda_complex = [](int n) noexcept -> double {
+    return (n > 0) ? std::sqrt(static_cast<double>(n)) : 0.0;
+};

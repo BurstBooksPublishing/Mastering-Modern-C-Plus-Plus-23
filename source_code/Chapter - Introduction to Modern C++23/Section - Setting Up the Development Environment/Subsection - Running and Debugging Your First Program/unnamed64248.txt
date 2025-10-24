@@ -1,0 +1,31 @@
+python
+#!/usr/bin/env python3
+import subprocess
+import sys
+import os
+
+def run_under_gdb(program: str, *args: str) -> int:
+    """
+    Launch `program` under GDB, set a breakpoint at `main`, and start execution.
+    Returns the exit status of GDB itself.
+    """
+    if not os.path.isfile(program):
+        sys.exit(f"error: '{program}' not found")
+
+    cmd = [
+        "gdb",
+        "-q",                       # quiet banner
+        "-ex", "set confirm off",   # skip “quit anyway?” prompts
+        "-ex", "break main",
+        "-ex", "run",
+        "--args",
+        program,
+        *args
+    ]
+
+    return subprocess.call(cmd)
+
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        sys.exit("usage: gdb_main.py <executable> [args...]")
+    sys.exit(run_under_gdb(sys.argv[1], *sys.argv[2:]))

@@ -1,0 +1,10 @@
+#include <format>
+#include <iostream>
+#include <string>
+
+int main() {
+    const int value = 42;                       // Immutable configuration
+    const std::string formatted = std::format("The answer is {}", value);
+    std::cout << formatted << '\n';
+    return 0;
+}

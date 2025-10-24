@@ -1,0 +1,17 @@
+#include <iostream>
+#include <stdexcept>
+#include <string>
+
+int main() {
+    try {
+        // Execute the compiler version query and capture the exit code
+        int exitCode = std::system("g++ --version");
+        if (exitCode != 0) {
+            throw std::runtime_error("Command failed with exit code " + std::to_string(exitCode));
+        }
+    } catch (const std::exception& ex) {
+        std::cerr << "Error: " << ex.what() << '\n';
+        return EXIT_FAILURE;
+    }
+    return EXIT_SUCCESS;
+}

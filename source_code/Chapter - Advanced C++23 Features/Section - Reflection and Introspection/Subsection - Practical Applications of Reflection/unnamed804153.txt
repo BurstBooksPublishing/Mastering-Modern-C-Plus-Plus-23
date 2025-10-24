@@ -1,0 +1,29 @@
+#include <any>
+#include <string>
+#include <unordered_map>
+#include <stdexcept>
+
+class GameObject {
+public:
+    template <typename T>
+    void setProperty(const std::string& key, const T& value) {
+        properties_[key] = value;
+    }
+
+    template <typename T>
+    T getProperty(const std::string& key) const {
+        auto it = properties_.find(key);
+        if (it == properties_.end())
+            throw std::out_of_range("Property not found: " + key);
+        return std::any_cast<T>(it->second);
+    }
+
+private:
+    std::unordered_map<std::string, std::any> properties_;
+};
+
+int main() {
+    GameObject obj;
+    obj.setProperty("health", 100);
+    int health = obj.getProperty<int>("health");
+}

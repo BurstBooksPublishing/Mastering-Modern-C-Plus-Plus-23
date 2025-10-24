@@ -1,0 +1,15 @@
+#include <fstream>
+#include <stdexcept>
+#include <string>
+
+void process_file(const std::string& file_path) {
+    std::ifstream file(file_path, std::ios::binary);
+    if (!file)
+        throw std::runtime_error("Cannot open file: " + file_path);
+
+    // TODO: implement actual processing
+}
+
+void test_process_file() {
+    process_file("test_input.txt");
+}

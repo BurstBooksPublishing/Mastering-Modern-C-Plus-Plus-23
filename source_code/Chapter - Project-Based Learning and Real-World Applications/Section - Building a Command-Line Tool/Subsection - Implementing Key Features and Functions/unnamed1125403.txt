@@ -1,0 +1,19 @@
+#include <expected>
+#include <iostream>
+#include <system_error>
+
+std::expected<int, std::error_code> safe_divide(int a, int b) noexcept {
+    if (b == 0) {
+        return std::unexpected(std::make_error_code(std::errc::invalid_argument));
+    }
+    return a / b;
+}
+
+int main() {
+    auto result = safe_divide(10, 0);
+    if (!result) {
+        std::cerr << "Error: " << result.error().message() << '\n';
+    } else {
+        std::cout << "Result: " << *result << '\n';
+    }
+}

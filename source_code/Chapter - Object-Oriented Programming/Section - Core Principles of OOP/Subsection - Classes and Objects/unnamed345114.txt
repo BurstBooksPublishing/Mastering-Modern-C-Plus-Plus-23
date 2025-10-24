@@ -1,0 +1,21 @@
+#include <string>
+#include <iostream>
+
+class Car {
+public:
+    Car(std::string make, std::string model, int year)
+        : make_(std::move(make)), model_(std::move(model)), year_(year) {}
+
+    const std::string& make()   const noexcept { return make_; }
+    const std::string& model()  const noexcept { return model_; }
+    int                year()   const noexcept { return year_; }
+
+    friend std::ostream& operator<<(std::ostream& os, const Car& c) {
+        return os << c.make_ << ' ' << c.model_ << ' ' << c.year_;
+    }
+
+private:
+    std::string make_;
+    std::string model_;
+    int year_;
+};

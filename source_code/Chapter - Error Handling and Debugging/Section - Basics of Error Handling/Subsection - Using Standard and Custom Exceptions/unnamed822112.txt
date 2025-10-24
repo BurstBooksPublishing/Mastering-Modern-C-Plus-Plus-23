@@ -1,0 +1,31 @@
+#include <iostream>
+#include <stdexcept>
+#include <string>
+
+class CustomException : public std::exception {
+public:
+    explicit CustomException(std::string msg) : msg_(std::move(msg)) {}
+    const char* what() const noexcept override { return msg_.c_str(); }
+private:
+    std::string msg_;
+};
+
+void riskyFunction(int value) {
+    if (value < 0) throw std::invalid_argument("Negative value not allowed");
+    if (value == 0) throw CustomException("Zero value is not acceptable");
+    std::cout << "Value is acceptable: " << value << '\n';
+}
+
+int main() {
+    for (int v : {-5, 0, 10}) {
+        try {
+            riskyFunction(v);
+        } catch (const std::invalid_argument& e) {
+            std::cerr << "Standard Exception: " << e.what() << '\n';
+        } catch (const CustomException& e) {
+            std::cerr << "Custom Exception: " << e.what() << '\n';
+        } catch (const std::exception& e) {
+            std::cerr << "Unexpected Exception: " << e.what() << '\n';
+        }
+    }
+}

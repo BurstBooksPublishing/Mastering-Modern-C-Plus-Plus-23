@@ -1,0 +1,37 @@
+#include <functional>
+#include <memory>
+#include <vector>
+#include <stdexcept>
+
+class Command {
+public:
+    virtual void execute() = 0;
+    virtual ~Command() = default;
+};
+
+class SimpleCommand : public Command {
+public:
+    explicit SimpleCommand(std::function<void()> action) : action_(std::move(action)) {
+        if (!action_) throw std::invalid_argument("action must be callable");
+    }
+
+    void execute() override { action_(); }
+
+private:
+    std::function<void()> action_;
+};
+
+class Invoker {
+public:
+    void addCommand(std::unique_ptr<Command> command) {
+        if (!command) throw std::invalid_argument("command cannot be null");
+        commands_.push_back(std::move(command));
+    }
+
+    void executeCommands() {
+        for (const auto& cmd : commands_) cmd->execute();
+    }
+
+private:
+    std::vector<std::unique_ptr<Command>> commands_;
+};

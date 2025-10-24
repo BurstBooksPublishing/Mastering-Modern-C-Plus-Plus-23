@@ -1,0 +1,7 @@
+#include <cstdint>   // fixed-width integers
+#include <limits>    // numeric_limits
+
+// Use fixed-width types for portability and clarity.
+int16_t  smallNumber   = std::numeric_limits<int16_t>::max();
+int32_t  largeNumber   = std::numeric_limits<int32_t>::max();
+int64_t  veryLargeNumber = std::numeric_limits<int64_t>::max();

@@ -1,0 +1,9 @@
+#include <iostream>
+#include <iomanip>
+#include <string>
+
+int main() {
+    const std::string message = "Hello, World!";
+    std::cout << std::quoted(message) << '\n';
+    return 0;
+}

@@ -1,0 +1,12 @@
+#include <iostream>
+#include <iomanip>
+
+int main() {
+    const int    x = 10;      // integral constant
+    const double y = 3.14;    // floating-point constant
+
+    std::cout << std::fixed << std::setprecision(2)
+              << "x = " << x << '\n'
+              << "y = " << y << '\n';
+    return 0;
+}

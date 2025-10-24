@@ -1,0 +1,10 @@
+#include <vector>
+#include <numeric>   // std::accumulate
+#include <cstdint>   // std::int64_t
+
+// Returns the sum of squares of all elements in `v`.
+// Uses 64-bit accumulator to reduce overflow risk.
+std::int64_t sum_of_squares(const std::vector<int>& v) {
+    return std::accumulate(v.begin(), v.end(), std::int64_t{0},
+                           [](std::int64_t acc, int x) { return acc + 1LL * x * x; });
+}

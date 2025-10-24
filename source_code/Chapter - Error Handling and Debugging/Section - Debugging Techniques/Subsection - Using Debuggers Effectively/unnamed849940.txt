@@ -1,0 +1,13 @@
+ruby
+# frozen_string_literal: true
+
+# Ensure the variables are defined before use
+raise ArgumentError, 'x is not defined' unless defined?(x)
+raise ArgumentError, 'y is not defined' unless defined?(y)
+raise ArgumentError, 'data is not defined' unless defined?(data)
+
+# Output the sum of x and y
+puts x + y
+
+# Output the size of the data collection
+puts data.size

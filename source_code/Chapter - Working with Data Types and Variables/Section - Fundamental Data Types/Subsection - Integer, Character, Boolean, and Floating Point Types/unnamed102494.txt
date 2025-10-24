@@ -1,0 +1,9 @@
+#include <cstdint>   // fixed-width integer types
+#include <limits>    // numeric_limits
+
+namespace constants {
+
+constexpr std::int32_t  kMyInt    = 42;
+constexpr std::uint64_t kLargeInt = std::numeric_limits<std::uint64_t>::max();
+
+} // namespace constants

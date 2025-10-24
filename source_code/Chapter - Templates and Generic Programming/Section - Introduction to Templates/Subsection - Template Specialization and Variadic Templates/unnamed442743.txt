@@ -1,0 +1,26 @@
+#include <iostream>
+#include <utility>
+
+// Base case: single argument
+template <typename T>
+void print(const T& value) {
+    std::cout << value << '\n';
+}
+
+// Specialization for C-style strings to avoid pointer decay
+template <>
+void print(const char* const& value) {
+    std::cout << value << '\n';
+}
+
+// Variadic overload: fold expression prints all arguments separated by spaces
+template <typename... Args>
+void print(const Args&... args) {
+    ((std::cout << args << ' '), ...) << '\n';
+}
+
+int main() {
+    print(42);
+    print("Hello, World!");
+    print(1, 2.5, "C++", 'A', true);
+}

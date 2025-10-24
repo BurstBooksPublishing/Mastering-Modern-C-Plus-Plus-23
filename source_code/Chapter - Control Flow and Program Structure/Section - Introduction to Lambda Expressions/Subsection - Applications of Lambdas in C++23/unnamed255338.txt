@@ -1,0 +1,10 @@
+#include <functional>
+#include <iostream>
+
+int main() {
+    std::function<void(int)> callback = [](int value) {
+        std::cout << "Callback called with value: " << value << '\n';
+    };
+    callback(42);
+    return 0;
+}

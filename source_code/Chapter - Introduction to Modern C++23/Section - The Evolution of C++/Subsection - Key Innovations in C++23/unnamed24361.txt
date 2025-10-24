@@ -1,0 +1,20 @@
+#include <format>
+#include <print>
+#include <expected>
+#include <iostream>
+
+int main() {
+    int x = 42;
+    double y = 3.14159;
+
+    std::println("The value of x is {} and y is {:.2f}", x, y);
+
+    std::expected<int, std::string> result = 42;
+    if (result) {
+        std::println("Success: {}", *result);
+    } else {
+        std::println("Error: {}", result.error());
+    }
+
+    return 0;
+}

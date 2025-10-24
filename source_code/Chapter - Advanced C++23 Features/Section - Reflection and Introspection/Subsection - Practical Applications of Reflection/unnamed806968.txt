@@ -1,0 +1,28 @@
+#include <type_traits>
+#include <experimental/reflect>
+
+using namespace std::experimental::reflect;
+
+template <typename T>
+constexpr bool validateStructure() {
+    using meta = reflexpr(T);
+    for_each(get_public_data_members_v<meta>, [](auto member) {
+        using type = typename decltype(member)::value_type;
+        static_assert(std::is_integral_v<type>,
+                      "All public data members must be integral");
+    });
+    return true;
+}
+
+struct ValidStruct {
+    int a;
+    int b;
+};
+
+struct InvalidStruct {
+    int a;
+    double b;
+};
+
+static_assert(validateStructure<ValidStruct>(), "ValidStruct is valid");
+// static_assert(validateStructure<InvalidStruct>(), "InvalidStruct is invalid");

@@ -1,0 +1,19 @@
+#include <iostream>
+#include <memory>
+
+struct Resource {
+    Resource() { std::cout << "Resource acquired\n"; }
+    ~Resource() { std::cout << "Resource released\n"; }
+};
+
+int main() {
+    auto ptr1 = std::make_shared<Resource>();
+
+    {
+        auto ptr2 = ptr1; // Shared ownership
+        std::cout << "Inside inner scope\n";
+    } // ptr2 destroyed here; Resource still alive because ptr1 holds a reference
+
+    std::cout << "Outside inner scope\n";
+    return 0;
+} // ptr1 destroyed here; Resource released when last shared_ptr goes out of scope

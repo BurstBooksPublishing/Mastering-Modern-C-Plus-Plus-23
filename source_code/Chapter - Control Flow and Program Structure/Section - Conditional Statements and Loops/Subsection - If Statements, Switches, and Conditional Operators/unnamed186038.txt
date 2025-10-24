@@ -1,0 +1,32 @@
+#include <iostream>
+#include <limits>
+
+int main() {
+    int x = 10;
+    int y = 20;
+
+    // Determine the larger value
+    if (x > y) {
+        std::cout << "x is greater than y\n";
+    } else {
+        std::cout << "y is greater than or equal to x\n";
+    }
+
+    // Dispatch on known values of x
+    switch (x) {
+        case 10:
+            std::cout << "x is 10\n";
+            break;
+        case 20:
+            std::cout << "x is 20\n";
+            break;
+        default:
+            std::cout << "x is neither 10 nor 20\n";
+    }
+
+    // Compute maximum via ternary operator
+    int max = (x > y) ? x : y;
+    std::cout << "The maximum value is: " << max << '\n';
+
+    return 0;
+}

@@ -1,0 +1,48 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <stdexcept>
+
+struct Args {
+    std::string in;
+    std::string out;
+    bool verbose = false;
+};
+
+Args parse(int argc, char* argv[]) {
+    Args a;
+    for (int i = 1; i < argc; ++i) {
+        std::string arg = argv[i];
+        if ((arg == "-i" || arg == "--input") && i + 1 < argc) {
+            a.in = argv[++i];
+        } else if ((arg == "-o" || arg == "--output") && i + 1 < argc) {
+            a.out = argv[++i];
+        } else if (arg == "-v" || arg == "--verbose") {
+            a.verbose = true;
+        } else {
+            throw std::invalid_argument("Unknown argument: " + arg);
+        }
+    }
+    if (a.in.empty() || a.out.empty())
+        throw std::invalid_argument("Input and output files are required.");
+    return a;
+}
+
+int main(int argc, char* argv[]) try {
+    Args args = parse(argc, argv);
+
+    if (args.verbose)
+        std::cerr << "Input: " << args.in << "  Output: " << args.out << '\n';
+
+    std::ifstream in(args.in, std::ios::binary);
+    if (!in) throw std::runtime_error("Cannot open input file: " + args.in);
+
+    std::ofstream out(args.out, std::ios::binary);
+    if (!out) throw std::runtime_error("Cannot open output file: " + args.out);
+
+    out << in.rdbuf();          // copy contents
+    if (!out) throw std::runtime_error("Write failed.");
+} catch (const std::exception& e) {
+    std::cerr << "Error: " << e.what() << '\n';
+    return 1;
+}

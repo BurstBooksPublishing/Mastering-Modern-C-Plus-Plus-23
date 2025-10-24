@@ -1,0 +1,12 @@
+#include <unordered_map>
+#include <string>
+
+std::string get_value(const std::unordered_map<std::string, std::string>& m,
+                      const std::string& key,
+                      const std::string& default_value = {})
+{
+    if (auto it = m.find(key); it != m.end()) {
+        return it->second;          // key exists → return mapped value
+    }
+    return default_value;           // key missing → return caller-supplied default
+}

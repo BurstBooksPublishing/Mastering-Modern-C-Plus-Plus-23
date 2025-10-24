@@ -1,0 +1,8 @@
+#include <limits>
+
+namespace physics {
+
+constexpr std::size_t max_iterations = 1000;          // Safety cap for iterative solvers
+constexpr double gravity = 9.81;                      // Standard gravitational acceleration (m/s²)
+
+} // namespace physics

@@ -1,0 +1,34 @@
+#include <memory>
+#include <mutex>
+#include <string>
+#include <unordered_set>
+
+class UserManager {
+public:
+    static UserManager& instance() {
+        static UserManager inst;
+        return inst;
+    }
+
+    bool add_user(const std::string& name) {
+        std::lock_guard<std::mutex> lock(mtx_);
+        auto [_, inserted] = users_.insert(name);
+        if (inserted) ++user_count_;
+        return inserted;
+    }
+
+    std::size_t user_count() const {
+        std::lock_guard<std::mutex> lock(mtx_);
+        return user_count_;
+    }
+
+private:
+    UserManager() = default;
+    ~UserManager() = default;
+    UserManager(const UserManager&) = delete;
+    UserManager& operator=(const UserManager&) = delete;
+
+    mutable std::mutex mtx_;
+    std::unordered_set<std::string> users_;
+    std::size_t user_count_{0};
+};

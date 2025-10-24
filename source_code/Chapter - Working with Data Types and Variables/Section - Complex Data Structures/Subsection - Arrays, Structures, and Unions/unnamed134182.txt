@@ -1,0 +1,12 @@
+#include <iostream>
+
+struct Point {
+    int x{};
+    int y{};
+
+    constexpr Point(int x_, int y_) noexcept : x{x_}, y{y_} {}
+
+    friend std::ostream& operator<<(std::ostream& os, const Point& p) {
+        return os << '(' << p.x << ", " << p.y << ')';
+    }
+};

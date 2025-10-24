@@ -1,0 +1,10 @@
+bash
+#!/usr/bin/env bash
+# Exit on first error, undefined variable, or failed pipe
+set -euo pipefail
+
+# Absolute path to the binary
+readonly BINARY="${1:-./my_tool}"
+
+# Launch GDB non-interactively: run, print back-trace on crash, then quit
+gdb -batch -ex 'run' -ex 'bt' --args "${BINARY}" "${@:2}"

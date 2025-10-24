@@ -1,0 +1,20 @@
+#include <iostream>
+#include <stdexcept>
+
+// Throws on demand; useful for unit-testing failure paths.
+[[noreturn]] void mightFail(bool fail) {
+    if (fail) {
+        throw std::logic_error("Logical error encountered");
+    }
+    std::unreachable();          // Tell the compiler this path never returns.
+}
+
+int main() {
+    try {
+        mightFail(true);
+    } catch (const std::logic_error& e) {
+        std::cerr << "Caught exception: " << e.what() << '\n';
+    } catch (...) {
+        std::cerr << "Caught an unknown exception\n";
+    }
+}

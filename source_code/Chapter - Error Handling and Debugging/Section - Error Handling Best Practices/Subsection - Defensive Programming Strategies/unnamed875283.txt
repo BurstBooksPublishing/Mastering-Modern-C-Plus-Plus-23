@@ -1,0 +1,34 @@
+#include <iostream>
+#include <stdexcept>
+#include <limits>
+
+double safe_divide(double numerator, double denominator) {
+    if (denominator == 0.0) {
+        throw std::invalid_argument("Division by zero.");
+    }
+    return numerator / denominator;
+}
+
+int get_positive_integer(const std::string& prompt) {
+    int value;
+    while (true) {
+        std::cout << prompt;
+        if (std::cin >> value && value > 0) {
+            return value;
+        }
+        std::cin.clear();
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::cerr << "Invalid input. Enter a positive integer.\n";
+    }
+}
+
+int main() {
+    try {
+        int numerator   = get_positive_integer("Numerator: ");
+        int denominator = get_positive_integer("Denominator: ");
+        std::cout << "Result: " << safe_divide(numerator, denominator) << '\n';
+    } catch (const std::exception& ex) {
+        std::cerr << "Error: " << ex.what() << '\n';
+        return 1;
+    }
+}

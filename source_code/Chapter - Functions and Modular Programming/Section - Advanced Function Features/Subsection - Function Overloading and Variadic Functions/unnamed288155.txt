@@ -1,0 +1,20 @@
+#include <iostream>
+#include <numeric>
+#include <vector>
+#include <initializer_list>
+
+// Sum any number of ints via initializer-list; noexcept for optimization
+int add(std::initializer_list<int> values) noexcept {
+    return std::accumulate(values.begin(), values.end(), 0);
+}
+
+// Convenience overloads for common arities
+int add(int a, int b) noexcept { return a + b; }
+int add(int a, int b, int c) noexcept { return a + b + c; }
+
+int main() {
+    std::cout << "Sum of 2 and 3: " << add(2, 3) << '\n';
+    std::cout << "Sum of 2, 3, and 4: " << add(2, 3, 4) << '\n';
+    std::cout << "Sum of 2, 3, 4, and 5: " << add({2, 3, 4, 5}) << '\n';
+    return 0;
+}

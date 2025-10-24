@@ -1,0 +1,43 @@
+#include <iostream>
+#include <memory>
+#include <stdexcept>
+
+class ServiceA {
+public:
+    virtual ~ServiceA() = default;
+    void doSomething() { std::cout << "ServiceA working\n"; }
+};
+
+class ServiceB {
+public:
+    virtual ~ServiceB() = default;
+    void doSomething() { std::cout << "ServiceB working\n"; }
+};
+
+class Client {
+public:
+    explicit Client(std::shared_ptr<ServiceA> a, std::shared_ptr<ServiceB> b)
+        : serviceA_(std::move(a)), serviceB_(std::move(b)) {
+        if (!serviceA_ || !serviceB_) throw std::invalid_argument("null service");
+    }
+
+    void execute() {
+        serviceA_->doSomething();
+        serviceB_->doSomething();
+    }
+
+private:
+    std::shared_ptr<ServiceA> serviceA_;
+    std::shared_ptr<ServiceB> serviceB_;
+};
+
+std::unique_ptr<Client> createClient() {
+    return std::make_unique<Client>(
+        std::make_shared<ServiceA>(),
+        std::make_shared<ServiceB>());
+}
+
+int main() {
+    auto client = createClient();
+    client->execute();
+}

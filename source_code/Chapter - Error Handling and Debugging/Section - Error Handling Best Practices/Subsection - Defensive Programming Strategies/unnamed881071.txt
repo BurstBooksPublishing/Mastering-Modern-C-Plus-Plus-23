@@ -1,0 +1,9 @@
+#include <stdexcept>
+
+void risky_operation()
+{
+    if (/* critical error condition */)
+        throw std::runtime_error("Critical error occurred");
+
+    // Proceed with normal operation
+}

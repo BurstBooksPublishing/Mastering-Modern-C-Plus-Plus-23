@@ -1,0 +1,70 @@
+#include <coroutine>
+#include <iostream>
+#include <memory>
+#include <stdexcept>
+
+class Generator {
+public:
+    struct promise_type {
+        int current_value{};
+
+        Generator get_return_object() noexcept {
+            return Generator{std::coroutine_handle<promise_type>::from_promise(*this)};
+        }
+        std::suspend_always initial_suspend() noexcept { return {}; }
+        std::suspend_always final_suspend() noexcept { return {}; }
+        std::suspend_always yield_value(int value) noexcept {
+            current_value = value;
+            return {};
+        }
+        void return_void() noexcept {}
+        void unhandled_exception() { std::rethrow_exception(std::current_exception()); }
+    };
+
+    using handle_type = std::coroutine_handle<promise_type>;
+
+    explicit Generator(handle_type h) noexcept : h_(h) {}
+    ~Generator() { if (h_) h_.destroy(); }
+
+    Generator(Generator&& other) noexcept : h_(std::exchange(other.h_, {})) {}
+    Generator& operator=(Generator&& other) noexcept {
+        if (this != &other) {
+            if (h_) h_.destroy();
+            h_ = std::exchange(other.h_, {});
+        }
+        return *this;
+    }
+
+    // Input iterator support
+    struct iterator {
+        handle_type h_;
+        bool done_;
+
+        iterator(handle_type h, bool done) noexcept : h_(h), done_(done) {}
+
+        int operator*() const { return h_.promise().current_value; }
+        iterator& operator++() {
+            h_.resume();
+            done_ = h_.done();
+            return *this;
+        }
+        bool operator!=(const iterator& rhs) const noexcept { return done_ != rhs.done_; }
+    };
+
+    iterator begin() {
+        if (h_) h_.resume();
+        return iterator{h_, h_.done()};
+    }
+    iterator end() noexcept { return iterator{h_, true}; }
+
+private:
+    handle_type h_;
+};
+
+Generator sequence() {
+    for (int i = 0; i < 5; ++i) co_yield i;
+}
+
+int main() {
+    for (int v : sequence()) std::cout << v << ' ';
+}

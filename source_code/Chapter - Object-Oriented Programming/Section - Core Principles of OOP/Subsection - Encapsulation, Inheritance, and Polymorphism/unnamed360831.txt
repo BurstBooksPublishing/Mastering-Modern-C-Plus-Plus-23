@@ -1,0 +1,22 @@
+#include <concepts>
+#include <vector>
+#include <memory>
+
+template<typename T>
+concept Drawable = requires(const T& t) {
+    { t.draw() } -> std::same_as<void>;
+};
+
+// Single object overload
+template<Drawable T>
+void render(const T& obj) {
+    obj.draw();
+}
+
+// Container overload
+template<Drawable T>
+void render(const std::vector<std::unique_ptr<T>>& scene) {
+    for (const auto& obj : scene) {
+        if (obj) obj->draw();
+    }
+}

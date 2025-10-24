@@ -1,0 +1,9 @@
+#include <iostream>
+#include <meta/meta.hpp>
+
+int main() {
+    const auto metadata = std::meta::reflect_type<MyType>();   // Reflect the target type
+    for (const auto& member : std::meta::get_members(metadata)) {
+        std::cout << std::meta::get_name(member) << '\n';      // Print each member’s name
+    }
+}

@@ -1,0 +1,12 @@
+#include <cstdint>
+#include <array>
+#include <string_view>
+
+// UTF-8 encoded code point U+03A9 (Greek Capital Letter Omega)
+constexpr std::array<char8_t, 3> utf8Omega = { 0xCE, 0xA9, 0x00 };
+
+// UTF-32 encoded code point U+3053 (Hiragana Letter KO)
+constexpr char32_t wideKo = 0x3053;
+
+// ASCII 'A'
+constexpr char asciiA = 'A';

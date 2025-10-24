@@ -1,0 +1,4 @@
+#include <memory>
+#include <vector>
+
+std::unique_ptr<int> ptr = nullptr;   // RAII-managed, exception-safe

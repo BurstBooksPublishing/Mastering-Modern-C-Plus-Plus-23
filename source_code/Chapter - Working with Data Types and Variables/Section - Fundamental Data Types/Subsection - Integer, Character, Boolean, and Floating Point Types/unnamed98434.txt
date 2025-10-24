@@ -1,0 +1,25 @@
+#include <format>
+#include <iostream>
+#include <limits>
+
+int main() {
+    // Fundamental scalar types
+    int integerVar{42};
+    long long bigIntegerVar{123'456'789'012'345LL};
+    char charVar{'A'};
+    wchar_t wideCharVar{L'Ω'};
+    bool boolVar{true};
+    float floatVar{3.14f};
+    double doubleVar{2.718281828459045};
+    long double longDoubleVar{1.18973149535723176502L};
+
+    // Output with consistent precision
+    std::cout << std::format("Integer: {}\n", integerVar);
+    std::cout << std::format("Big Integer: {}\n", bigIntegerVar);
+    std::cout << std::format("Character: {}\n", charVar);
+    std::cout << std::format("Wide Character: {}\n", wideCharVar);
+    std::cout << std::format("Boolean: {}\n", boolVar);
+    std::cout << std::format("Float: {:.6f}\n", floatVar);
+    std::cout << std::format("Double: {:.15f}\n", doubleVar);
+    std::cout << std::format("Long Double: {:.18Lf}\n", longDoubleVar);
+}

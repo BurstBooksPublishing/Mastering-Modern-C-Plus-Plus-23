@@ -1,0 +1,11 @@
+#include <array>
+#include <meta>
+
+template<typename T>
+constexpr auto member_types = [] {
+    constexpr auto members = std::meta::members_of(^T);
+    std::array<std::meta::info, members.size()> types{};
+    for (std::size_t i = 0; i < members.size(); ++i)
+        types[i] = std::meta::type_of(members[i]);
+    return types;
+}();

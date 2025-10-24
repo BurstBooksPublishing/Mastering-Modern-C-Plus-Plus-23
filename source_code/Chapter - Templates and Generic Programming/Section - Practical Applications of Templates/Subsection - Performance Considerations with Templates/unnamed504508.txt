@@ -1,0 +1,22 @@
+#include <chrono>
+#include <iostream>
+#include <numeric>
+#include <vector>
+
+// Returns the sum of all elements in the container and prints elapsed time.
+template <typename Container>
+auto sum_elements(const Container& container) {
+    const auto start = std::chrono::high_resolution_clock::now();
+    const auto sum = std::accumulate(container.begin(), container.end(),
+                                     typename Container::value_type{});
+    const auto end = std::chrono::high_resolution_clock::now();
+    std::cout << "Time taken: "
+              << std::chrono::duration<double>(end - start).count()
+              << " seconds\n";
+    return sum;
+}
+
+int main() {
+    const std::vector<int> vec(1'000'000, 1);
+    std::cout << "Sum: " << sum_elements(vec) << '\n';
+}

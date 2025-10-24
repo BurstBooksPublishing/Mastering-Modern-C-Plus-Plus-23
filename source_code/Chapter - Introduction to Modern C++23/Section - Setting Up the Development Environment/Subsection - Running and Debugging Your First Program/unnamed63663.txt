@@ -1,0 +1,23 @@
+bash
+#!/usr/bin/env bash
+# Usage: ./debug.sh [binary] [corefile]
+#   binary   – executable to debug (default: ./hello)
+#   corefile – optional core dump to open
+
+set -euo pipefail
+
+binary="${1:-./hello}"
+corefile="${2:-}"
+
+if [[ ! -x "$binary" ]]; then
+    echo "Error: '$binary' is not an executable file." >&2
+    exit 1
+fi
+
+cmd=(gdb -quiet)
+
+# Load core dump if provided
+[[ -n "$corefile" ]] && cmd+=(-c "$corefile")
+
+# Start GDB with the binary
+exec "${cmd[@]}" "$binary"

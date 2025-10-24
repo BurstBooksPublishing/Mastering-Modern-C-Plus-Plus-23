@@ -1,0 +1,27 @@
+#include <iostream>
+#include <version>
+
+#if __has_include(<expected>)
+  #include <expected>
+  #define HAS_STD_EXPECTED 1
+#else
+  #define HAS_STD_EXPECTED 0
+#endif
+
+int main() {
+    std::cout << "__cplusplus = " << __cplusplus << '\n';
+
+#if __cplusplus >= 202002L
+    std::cout << "C++20 or later detected.\n";
+#elif __cplusplus >= 201703L
+    std::cout << "C++17 detected.\n";
+#else
+    std::cout << "Pre-C++17 detected.\n";
+#endif
+
+#if HAS_STD_EXPECTED
+    std::cout << "<expected> is available.\n";
+#else
+    std::cout << "<expected> is not available.\n";
+#endif
+}

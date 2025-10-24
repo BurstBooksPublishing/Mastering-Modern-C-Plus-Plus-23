@@ -1,0 +1,20 @@
+#include <vector>
+#include <stdexcept>
+
+// Returns a vector<bool> where index i is true iff i is prime.
+// Throws std::invalid_argument for n < 2.
+std::vector<bool> sieveOfEratosthenes(int n) {
+    if (n < 2) throw std::invalid_argument("n must be >= 2");
+
+    std::vector<bool> isPrime(n + 1, true);
+    isPrime[0] = isPrime[1] = false;
+
+    for (int i = 2; i * i <= n; ++i) {
+        if (isPrime[i]) {
+            for (int j = i * i; j <= n; j += i) {
+                isPrime[j] = false;
+            }
+        }
+    }
+    return isPrime;
+}

@@ -1,0 +1,61 @@
+#include <algorithm>
+#include <chrono>
+#include <iomanip>
+#include <iostream>
+#include <random>
+#include <string>
+#include <utility>
+#include <vector>
+
+struct Frame {
+    int id{};
+    double value{};
+    double confidence{};
+    std::string tag;
+};
+
+int main() {
+    constexpr std::size_t kTotalFrames = 100'000;
+    constexpr double kConfidenceThreshold = 0.85;
+    constexpr std::size_t kMaxOutput = 100;
+
+    // Deterministic seed for reproducible benchmarks.
+    std::mt19937_64 rng{std::random_device{}()};
+    std::uniform_real_distribution<double> val_dist(0.0, 100.0);
+    std::uniform_real_distribution<double> conf_dist(0.0, 1.0);
+
+    std::vector<Frame> frames;
+    frames.reserve(kTotalFrames);
+    for (std::size_t i = 0; i < kTotalFrames; ++i) {
+        frames.emplace_back(
+            static_cast<int>(i),
+            val_dist(rng),
+            conf_dist(rng),
+            (i % 2 == 0 ? "A" : "B")
+        );
+    }
+
+    // Stream pipeline: filter → transform → limit.
+    auto pipeline = frames
+                  | std::views::filter([](const Frame& f) { return f.confidence > kConfidenceThreshold; })
+                  | std::views::transform([](const Frame& f) {
+                        return std::pair{f.id, f.value / 100.0};
+                    })
+                  | std::views::take(kMaxOutput);
+
+    // Materialize into contiguous storage.
+    std::vector<std::pair<int, double>> results;
+    results.reserve(kMaxOutput);
+    std::ranges::copy(pipeline, std::back_inserter(results));
+
+    // Compute average normalized value.
+    const double sum = std::accumulate(
+        results.begin(), results.end(), 0.0,
+        [](double acc, const auto& p) { return acc + p.second; });
+
+    std::cout << "Processed: " << results.size() << " frames\n";
+    if (!results.empty()) {
+        std::cout << "Average normalized value: "
+                  << std::setprecision(4) << (sum / results.size()) << '\n';
+    }
+}

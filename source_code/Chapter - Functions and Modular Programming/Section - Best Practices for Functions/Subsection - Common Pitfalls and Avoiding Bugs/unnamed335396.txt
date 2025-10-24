@@ -1,0 +1,8 @@
+#include <vector>
+#include <algorithm>
+
+void processVector(const std::vector<int>& vec) {
+    // Example: compute sum in-place without copying
+    const auto sum = std::accumulate(vec.begin(), vec.end(), 0LL);
+    (void)sum; // suppress unused warning in minimal example
+}

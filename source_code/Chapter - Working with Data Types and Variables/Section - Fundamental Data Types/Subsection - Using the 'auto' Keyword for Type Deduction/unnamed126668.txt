@@ -1,0 +1,9 @@
+#include <type_traits>
+
+template <typename T, typename U>
+auto add(const T& a, const U& b)
+    -> std::common_type_t<T, U>          // ensure consistent return type
+{
+    return static_cast<std::common_type_t<T, U>>(a) +
+           static_cast<std::common_type_t<T, U>>(b);
+}

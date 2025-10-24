@@ -1,0 +1,6 @@
+#include <stdexcept>
+
+auto divide(int a, int b) -> double {
+    if (b == 0) throw std::invalid_argument("division by zero");
+    return static_cast<double>(a) / b;
+}

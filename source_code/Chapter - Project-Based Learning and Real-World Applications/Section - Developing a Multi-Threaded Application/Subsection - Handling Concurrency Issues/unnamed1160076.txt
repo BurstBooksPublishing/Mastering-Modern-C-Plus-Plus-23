@@ -1,0 +1,18 @@
+#include <chrono>
+#include <iostream>
+#include <stop_token>
+#include <thread>
+
+void task(std::stop_token stoken) {
+    while (!stoken.stop_requested()) {
+        std::cout << "Running...\n";
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+    }
+    std::cout << "Stopped\n";
+}
+
+int main() {
+    std::jthread worker(task);                 // RAII: thread joins automatically
+    std::this_thread::sleep_for(std::chrono::seconds(5));
+    worker.request_stop();                   // Signal cancellation
+}

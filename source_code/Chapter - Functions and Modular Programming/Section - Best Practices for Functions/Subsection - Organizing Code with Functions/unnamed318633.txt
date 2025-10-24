@@ -1,0 +1,9 @@
+#include <cmath>
+#include <stdexcept>
+
+double calculateCircleArea(double radius) {
+    if (radius < 0.0) {
+        throw std::invalid_argument("Radius must be non-negative");
+    }
+    return M_PI * radius * radius;
+}

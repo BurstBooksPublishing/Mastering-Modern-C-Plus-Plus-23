@@ -1,0 +1,12 @@
+#include <algorithm>   // std::max
+#include <limits>      // std::numeric_limits
+#include <stdexcept>   // std::invalid_argument
+
+int safeMax(int a, int b)
+{
+    // Guard against UB when both inputs are INT_MIN
+    if (a == std::numeric_limits<int>::min() && b == std::numeric_limits<int>::min())
+        throw std::invalid_argument("Both arguments are INT_MIN");
+
+    return std::max(a, b);
+}

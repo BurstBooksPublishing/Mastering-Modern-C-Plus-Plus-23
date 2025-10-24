@@ -1,0 +1,37 @@
+#include <iostream>
+#include <memory>
+#include <string>
+#include <stdexcept>
+
+class SecureResource {
+public:
+    explicit SecureResource(std::string data)
+        : data_(std::make_unique<std::string>(std::move(data))) {}
+
+    SecureResource(const SecureResource&)            = delete;
+    SecureResource& operator=(const SecureResource&) = delete;
+    SecureResource(SecureResource&&)                 = default;
+    SecureResource& operator=(SecureResource&&)      = default;
+
+    void display() const {
+        if (!data_) throw std::runtime_error("Resource is empty or moved");
+        std::cout << *data_ << '\n';
+    }
+
+private:
+    std::unique_ptr<std::string> data_;
+};
+
+int main() {
+    try {
+        SecureResource resource("Sensitive Data");
+        resource.display();
+
+        SecureResource movedResource = std::move(resource);
+        movedResource.display();
+
+        resource.display(); // throws
+    } catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << '\n';
+    }
+}

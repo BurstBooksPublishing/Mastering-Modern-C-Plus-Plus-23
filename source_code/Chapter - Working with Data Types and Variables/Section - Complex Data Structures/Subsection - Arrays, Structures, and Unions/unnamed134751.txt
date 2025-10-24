@@ -1,0 +1,85 @@
+#include <cstdint>
+#include <type_traits>
+#include <new>
+
+// Type-safe, well-aligned tagged union for {int32, float, char}.
+class Data {
+public:
+    enum class Tag : std::uint8_t { Int, Float, Char };
+
+    Data() noexcept : tag_(Tag::Int) { new (&storage_.i) std::int32_t{}; }
+    explicit Data(std::int32_t v) noexcept : tag_(Tag::Int) { new (&storage_.i) std::int32_t{v}; }
+    explicit Data(float v) noexcept : tag_(Tag::Float) { new (&storage_.f) float{v}; }
+    explicit Data(char v) noexcept : tag_(Tag::Char) { new (&storage_.c) char{v}; }
+
+    Data(const Data& rhs) noexcept : tag_(rhs.tag_) { copy(rhs); }
+    Data& operator=(const Data& rhs) noexcept {
+        if (this != &rhs) {
+            destroy();
+            tag_ = rhs.tag_;
+            copy(rhs);
+        }
+        return *this;
+    }
+
+    Data(Data&& rhs) noexcept : tag_(rhs.tag_) { move(std::move(rhs)); }
+    Data& operator=(Data&& rhs) noexcept {
+        if (this != &rhs) {
+            destroy();
+            tag_ = rhs.tag_;
+            move(std::move(rhs));
+        }
+        return *this;
+    }
+
+    ~Data() noexcept { destroy(); }
+
+    Tag type() const noexcept { return tag_; }
+
+    std::int32_t& as_int() noexcept { assert_type(Tag::Int); return storage_.i; }
+    float& as_float() noexcept { assert_type(Tag::Float); return storage_.f; }
+    char& as_char() noexcept { assert_type(Tag::Char); return storage_.c; }
+
+    const std::int32_t& as_int() const noexcept { assert_type(Tag::Int); return storage_.i; }
+    const float& as_float() const noexcept { assert_type(Tag::Float); return storage_.f; }
+    const char& as_char() const noexcept { assert_type(Tag::Char); return storage_.c; }
+
+private:
+    union Storage {
+        std::int32_t i;
+        float f;
+        char c;
+        Storage() {} // uninitialized
+        ~Storage() {}
+    };
+    Storage storage_;
+    Tag tag_;
+
+    void copy(const Data& rhs) noexcept {
+        switch (rhs.tag_) {
+            case Tag::Int:   new (&storage_.i) std::int32_t{rhs.storage_.i}; break;
+            case Tag::Float: new (&storage_.f) float{rhs.storage_.f}; break;
+            case Tag::Char:  new (&storage_.c) char{rhs.storage_.c}; break;
+        }
+    }
+
+    void move(Data&& rhs) noexcept {
+        switch (rhs.tag_) {
+            case Tag::Int:   new (&storage_.i) std::int32_t{std::move(rhs.storage_.i)}; break;
+            case Tag::Float: new (&storage_.f) float{std::move(rhs.storage_.f)}; break;
+            case Tag::Char:  new (&storage_.c) char{std::move(rhs.storage_.c)}; break;
+        }
+    }
+
+    void destroy() noexcept {
+        switch (tag_) {
+            case Tag::Int:   storage_.i.~int32_t(); break;
+            case Tag::Float: storage_.f.~float(); break;
+            case Tag::Char:  storage_.c.~char(); break;
+        }
+    }
+
+    void assert_type(Tag expected) const noexcept {
+        if (tag_ != expected) __builtin_unreachable();
+    }
+};

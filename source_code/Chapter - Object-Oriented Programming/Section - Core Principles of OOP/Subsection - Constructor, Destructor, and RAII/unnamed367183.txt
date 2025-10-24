@@ -1,0 +1,19 @@
+#include <memory>
+#include <vector>
+
+class MyClass {
+public:
+    MyClass() = default;
+
+    // Rule of Five: explicitly defaulted or deleted to document intent
+    MyClass(const MyClass&)            = delete;
+    MyClass& operator=(const MyClass&) = delete;
+    MyClass(MyClass&&)                 = default;
+    MyClass& operator=(MyClass&&)      = default;
+
+    ~MyClass() noexcept = default;   // noexcept is implicit, but explicit is clearer
+
+private:
+    // Example resource managed via RAII; no manual cleanup needed
+    std::unique_ptr<std::vector<int>> data_ = std::make_unique<std::vector<int>>();
+};

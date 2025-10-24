@@ -1,0 +1,68 @@
+// Windows-only: compile with any modern MSVC (cl.exe)
+#include <windows.h>
+#include <iostream>
+#include <string>
+#include <vector>
+#include <algorithm>
+
+// RAII wrapper around a pipe handle
+class Pipe {
+public:
+    explicit Pipe(HANDLE h = INVALID_HANDLE_VALUE) noexcept : h_(h) {}
+    ~Pipe() { if (h_ != INVALID_HANDLE_VALUE) ::CloseHandle(h_); }
+    Pipe(const Pipe&)            = delete;
+    Pipe& operator=(const Pipe&) = delete;
+    Pipe(Pipe&& other) noexcept : h_(other.h_) { other.h_ = INVALID_HANDLE_VALUE; }
+    Pipe& operator=(Pipe&& other) noexcept {
+        if (this != &other) { reset(other.h_); other.h_ = INVALID_HANDLE_VALUE; }
+        return *this;
+    }
+    HANDLE get() const noexcept { return h_; }
+    void reset(HANDLE h = INVALID_HANDLE_VALUE) noexcept {
+        if (h_ != INVALID_HANDLE_VALUE) ::CloseHandle(h_);
+        h_ = h;
+    }
+private:
+    HANDLE h_;
+};
+
+// Execute `cl /?`, capture stdout+stderr, print to console
+int main() {
+    SECURITY_ATTRIBUTES sa{ sizeof(sa), nullptr, TRUE }; // inheritable handles
+    Pipe hRead, hWrite;
+
+    HANDLE hTmpR{}, hTmpW{};
+    if (!::CreatePipe(&hTmpR, &hTmpW, &sa, 0)) {
+        std::cerr << "CreatePipe failed\n";
+        return 1;
+    }
+    hRead.reset(hTmpR);
+    hWrite.reset(hTmpW);
+
+    STARTUPINFOA si{};
+    si.cb = sizeof(si);
+    si.dwFlags = STARTF_USESTDHANDLES;
+    si.hStdOutput = hWrite.get();
+    si.hStdError  = hWrite.get();
+
+    PROCESS_INFORMATION pi{};
+    if (!::CreateProcessA(nullptr,
+                          const_cast<char*>("cl /?"),
+                          nullptr, nullptr,
+                          TRUE,  // inherit handles
+                          0, nullptr, nullptr,
+                          &si, &pi)) {
+        std::cerr << "CreateProcess failed (" << ::GetLastError() << ")\n";
+        return 1;
+    }
+    ::CloseHandle(pi.hThread);
+    ::CloseHandle(pi.hProcess);
+    hWrite.reset(); // close write end so ReadFile will finish
+
+    std::vector<char> buf(4096);
+    DWORD bytesRead{};
+    while (::ReadFile(hRead.get(), buf.data(), static_cast<DWORD>(buf.size()), &bytesRead, nullptr) && bytesRead) {
+        std::cout.write(buf.data(), bytesRead);
+    }
+    return 0;
+}

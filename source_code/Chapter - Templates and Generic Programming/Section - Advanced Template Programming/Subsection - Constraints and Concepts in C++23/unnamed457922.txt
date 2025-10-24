@@ -1,0 +1,7 @@
+#include <concepts>
+
+template<typename T>
+concept HasMethods = requires(T t) {
+    { t.method() } -> std::same_as<int>;          // method() must return int
+    { t + t } -> std::convertible_to<int>;        // operator+ must yield int-convertible
+};

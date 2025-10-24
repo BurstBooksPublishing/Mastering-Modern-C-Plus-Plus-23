@@ -1,0 +1,24 @@
+#include <mutex>
+#include <iostream>
+#include <functional>
+#include <type_traits>
+
+// Executes `f(args...)` while holding `m`.  Propagates noexcept and return type.
+template <typename Callable, typename... Args>
+    requires std::invocable<Callable, Args...>
+auto with_lock(std::mutex& m, Callable&& f, Args&&... args)
+    noexcept(std::is_nothrow_invocable_v<Callable, Args...>)
+    -> std::invoke_result_t<Callable, Args...>
+{
+    std::lock_guard lg{m};
+    return std::invoke(std::forward<Callable>(f), std::forward<Args>(args)...);
+}
+
+int main() {
+    std::mutex m;
+    int counter = 0;
+
+    auto inc = [](int& c, int delta) { return c += delta; };
+
+    std::cout << with_lock(m, inc, std::ref(counter), 5) << '\n';
+}

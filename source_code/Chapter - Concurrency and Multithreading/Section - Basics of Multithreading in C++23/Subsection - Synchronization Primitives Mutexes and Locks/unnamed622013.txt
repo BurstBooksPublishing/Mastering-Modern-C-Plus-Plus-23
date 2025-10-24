@@ -1,0 +1,31 @@
+#include <iostream>
+#include <thread>
+#include <mutex>
+#include <vector>
+#include <atomic>
+
+std::mutex mtx;
+std::atomic<int> shared_data{0};          // atomic avoids UB on concurrent read/write
+
+void increment(std::size_t times) {
+    for (std::size_t i = 0; i < times; ++i) {
+        std::lock_guard<std::mutex> lock(mtx);  // RAII ensures unlock on any exit path
+        ++shared_data;
+    }
+}
+
+int main() {
+    constexpr std::size_t threads = 8;
+    constexpr std::size_t increments_per_thread = 100'000;
+
+    std::vector<std::thread> pool;
+    pool.reserve(threads);
+
+    for (std::size_t i = 0; i < threads; ++i)
+        pool.emplace_back(increment, increments_per_thread);
+
+    for (auto& t : pool) t.join();
+
+    std::cout << "Shared data: " << shared_data.load() << '\n';
+    return 0;
+}

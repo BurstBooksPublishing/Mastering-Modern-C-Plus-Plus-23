@@ -1,0 +1,55 @@
+#include <algorithm>
+#include <atomic>
+#include <chrono>
+#include <cstddef>
+#include <iostream>
+#include <numeric>
+#include <random>
+#include <thread>
+#include <vector>
+
+int main() {
+    constexpr std::size_t N = 8'000'000;
+    std::vector<int> data;
+    data.reserve(N);
+
+    std::mt19937_64 rng{123456};
+    std::uniform_int_distribution<int> dist(0, 100);
+    std::generate_n(std::back_inserter(data), N, [&] { return dist(rng); });
+
+    const unsigned hw = std::thread::hardware_concurrency();
+    const unsigned thread_count = hw ? hw : 2u;
+
+    std::atomic<long long> result{0};
+
+    const auto t0 = std::chrono::steady_clock::now();
+
+    {
+        std::vector<std::jthread> workers;
+        workers.reserve(thread_count);
+
+        const std::size_t block = data.size() / thread_count;
+
+        for (unsigned i = 0; i < thread_count; ++i) {
+            const std::size_t begin = i * block;
+            const std::size_t end   = (i + 1 == thread_count) ? data.size() : begin + block;
+
+            workers.emplace_back([&, begin, end] {
+                long long local = std::accumulate(data.begin() + begin,
+                                                  data.begin() + end,
+                                                  0LL);
+                result.fetch_add(local, std::memory_order_relaxed);
+            });
+        }
+    } // std::jthread joins automatically
+
+    const auto t1 = std::chrono::steady_clock::now();
+    const std::chrono::duration<double> elapsed = t1 - t0;
+
+    const long long single = std::accumulate(data.begin(), data.end(), 0LL);
+
+    std::cout << "threads: " << thread_count
+              << ", parallel sum: " << result.load()
+              << ", single sum: " << single
+              << ", time: " << elapsed.count() << "s\n";
+}

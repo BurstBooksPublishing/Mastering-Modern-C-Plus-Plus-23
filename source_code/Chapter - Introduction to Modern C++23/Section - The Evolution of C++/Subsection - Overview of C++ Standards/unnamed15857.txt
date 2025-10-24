@@ -1,0 +1,16 @@
+#include <algorithm>
+#include <iostream>
+#include <ranges>
+#include <vector>
+
+int main() {
+    std::vector<int> numbers{1, 2, 3, 4, 5};
+
+    // Transform each element to its square and materialize into a vector
+    auto squared = numbers | std::views::transform([](int n) { return n * n; })
+                           | std::ranges::to<std::vector>();
+
+    // Output the squared values
+    for (int n : squared) std::cout << n << ' ';
+    std::cout << '\n';
+}

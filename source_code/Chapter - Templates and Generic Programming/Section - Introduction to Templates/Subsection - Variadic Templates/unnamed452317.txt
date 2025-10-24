@@ -1,0 +1,4 @@
+#include <tuple>
+#include <string>
+
+const std::tuple<int, double, std::string> myTuple{1, 2.3, "Hello"};

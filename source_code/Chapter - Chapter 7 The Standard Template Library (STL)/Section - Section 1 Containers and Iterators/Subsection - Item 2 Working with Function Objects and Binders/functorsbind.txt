@@ -1,0 +1,35 @@
+#include <algorithm>
+#include <functional>
+#include <iostream>
+#include <iterator>
+#include <vector>
+
+struct Adder {
+    int offset{};
+    [[nodiscard]] constexpr int operator()(int x) const noexcept { return x + offset; }
+};
+
+[[nodiscard]] constexpr int multiply(int factor, int x) noexcept { return factor * x; }
+
+struct Processor {
+    int scale_factor{1};
+    [[nodiscard]] constexpr int scale(int x) const noexcept { return x * scale_factor; }
+};
+
+int main() {
+    std::vector<int> data{1, 2, 3, 4, 5};
+    std::vector<int> tmp(data.size());
+
+    std::transform(data.begin(), data.end(), tmp.begin(), Adder{10});
+    std::transform(tmp.begin(), tmp.end(), data.begin(), std::bind_front(multiply, 3));
+
+    Processor p{2};
+    std::transform(data.begin(), data.end(), tmp.begin(),
+                   [&p](int v) { return p.scale(v); });
+
+    std::function<int(int)> polymorphic = Adder{5};
+    std::transform(tmp.begin(), tmp.end(), data.begin(), polymorphic);
+
+    std::copy(data.begin(), data.end(), std::ostream_iterator<int>(std::cout, " "));
+    std::cout << '\n';
+}

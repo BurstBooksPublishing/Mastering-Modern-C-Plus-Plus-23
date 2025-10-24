@@ -1,0 +1,48 @@
+// cl.cpp : minimal driver that launches the Microsoft C/C++ compiler
+//          with the same arguments it received.
+
+#include <windows.h>
+#include <string>
+#include <vector>
+
+int wmain(int argc, wchar_t* argv[])
+{
+    // Build the full command line to pass to CreateProcessW
+    std::wstring cmdLine = L"cl.exe";
+    for (int i = 1; i < argc; ++i) {
+        cmdLine += L' ';
+        cmdLine += argv[i];
+    }
+
+    // Prepare process startup info
+    STARTUPINFOW si{};
+    si.cb = sizeof(si);
+
+    PROCESS_INFORMATION pi{};
+
+    // Spawn the real compiler
+    if (!CreateProcessW(
+            nullptr,                       // module name
+            cmdLine.data(),                // command line
+            nullptr,                       // process security attributes
+            nullptr,                       // thread security attributes
+            FALSE,                         // inherit handles
+            0,                             // creation flags
+            nullptr,                       // environment
+            nullptr,                       // current directory
+            &si,
+            &pi)) {
+        return GetLastError();
+    }
+
+    // Wait for the compiler to finish and propagate its exit code
+    WaitForSingleObject(pi.hProcess, INFINITE);
+
+    DWORD exitCode = 0;
+    GetExitCodeProcess(pi.hProcess, &exitCode);
+
+    CloseHandle(pi.hThread);
+    CloseHandle(pi.hProcess);
+
+    return static_cast<int>(exitCode);
+}

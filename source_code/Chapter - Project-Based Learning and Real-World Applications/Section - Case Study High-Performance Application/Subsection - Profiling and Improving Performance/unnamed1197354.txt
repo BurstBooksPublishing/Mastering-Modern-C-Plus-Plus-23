@@ -1,0 +1,21 @@
+#include <vector>
+#include <cstddef>
+
+// AoS: one contiguous allocation, cache-friendly when all members are accessed together
+struct Point {
+    double x{}, y{}, z{};
+};
+
+using PointAoS = std::vector<Point>;
+
+// SoA: three separate allocations, cache-friendly when only one or two members are accessed
+struct PointsSoA {
+    std::vector<double> x, y, z;
+
+    // Ensure all arrays stay synchronized
+    void reserve(std::size_t n) { x.reserve(n); y.reserve(n); z.reserve(n); }
+    void resize(std::size_t n)  { x.resize(n);  y.resize(n);  z.resize(n);  }
+    void push_back(double px, double py, double pz) {
+        x.push_back(px); y.push_back(py); z.push_back(pz);
+    }
+};

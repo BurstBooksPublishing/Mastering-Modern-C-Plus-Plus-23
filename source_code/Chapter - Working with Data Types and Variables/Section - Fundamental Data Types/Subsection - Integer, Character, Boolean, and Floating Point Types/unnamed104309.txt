@@ -1,0 +1,8 @@
+#include <stdexcept>
+
+bool isReady = true;
+bool isEmpty = false;
+
+if (isReady && !isEmpty) {
+    // Critical action only when ready and not empty
+}

@@ -1,0 +1,36 @@
+#include <fstream>
+#include <iostream>
+#include <stdexcept>
+
+struct Data {
+    int id{};
+    double value{};
+};
+
+void writeBinary(const std::string& path, const Data& data) {
+    std::ofstream out(path, std::ios::binary);
+    if (!out) throw std::runtime_error("writeBinary: cannot open " + path);
+    out.write(reinterpret_cast<const char*>(&data), sizeof(data));
+    if (!out) throw std::runtime_error("writeBinary: write failed");
+}
+
+Data readBinary(const std::string& path) {
+    std::ifstream in(path, std::ios::binary);
+    if (!in) throw std::runtime_error("readBinary: cannot open " + path);
+    Data data;
+    in.read(reinterpret_cast<char*>(&data), sizeof(data));
+    if (!in || in.gcount() != sizeof(data))
+        throw std::runtime_error("readBinary: incomplete read");
+    return data;
+}
+
+int main() {
+    try {
+        writeBinary("data.bin", Data{1, 3.14});
+        const auto data = readBinary("data.bin");
+        std::cout << "Read ID: " << data.id << ", Value: " << data.value << '\n';
+    } catch (const std::exception& ex) {
+        std::cerr << ex.what() << '\n';
+        return 1;
+    }
+}

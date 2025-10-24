@@ -1,0 +1,6 @@
+#include <complex>
+
+template <>
+std::complex<double> abs<std::complex<double>>(std::complex<double> value) {
+    return std::complex<double>(std::abs(value), 0.0);
+}

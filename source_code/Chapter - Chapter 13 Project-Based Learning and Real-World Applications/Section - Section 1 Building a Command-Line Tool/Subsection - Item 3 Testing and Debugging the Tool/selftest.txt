@@ -1,0 +1,84 @@
+#include <algorithm>
+#include <cassert>
+#include <cctype>
+#include <cstdint>
+#include <fstream>
+#include <iostream>
+#include <random>
+#include <string>
+#include <string_view>
+#include <vector>
+#include <filesystem>
+
+using namespace std::literals;
+
+// Collapse runs of whitespace into a single space and trim ends.
+std::string process_line(std::string_view in) {
+    std::string out;
+    out.reserve(in.size());
+    bool prev_space = true;               // treat leading space as already handled
+    for (unsigned char c : in) {
+        if (std::isspace(c)) {
+            prev_space = true;
+        } else {
+            if (prev_space && !out.empty()) out += ' ';
+            out += static_cast<char>(c);
+            prev_space = false;
+        }
+    }
+    return out;
+}
+
+// Unit tests
+void run_unit_tests() {
+    assert(process_line("  a  b  ") == "a b");
+    assert(process_line(""sv) == ""sv);
+    assert(process_line("single") == "single");
+    assert(process_line(" multiple\tspaces\nhere ") == "multiple spaces here");
+}
+
+// Integration test via temporary file
+void run_integration_test() {
+    const auto tmp = std::filesystem::temp_directory_path() / "cli_test_tmp.txt";
+    {
+        std::ofstream ofs(tmp);
+        ofs << "  line one  \n\n\tline\t   two\n";
+    }
+    std::ifstream ifs(tmp);
+    std::vector<std::string> out;
+    for (std::string line; std::getline(ifs, line);)
+        out.emplace_back(process_line(line));
+    std::filesystem::remove(tmp);
+    assert(out.size() == 3);
+    assert(out[0] == "line one");
+    assert(out[1] == "");
+    assert(out[2] == "line two");
+}
+
+// Deterministic fuzz test
+void run_fuzz_tests(std::size_t iterations = 1000, unsigned seed = 42) {
+    std::mt19937_64 rng(seed);
+    std::uniform_int_distribution<int> len_dist(0, 256);
+    std::uniform_int_distribution<int> byte_dist(0, 127);
+    for (std::size_t i = 0; i < iterations; ++i) {
+        const int n = len_dist(rng);
+        std::string s(n, '\0');
+        std::generate(s.begin(), s.end(), [&] { return static_cast<char>(byte_dist(rng)); });
+        const auto out = process_line(s);
+        assert(out.size() <= s.size());
+    }
+}
+
+int main(int argc, char** argv) {
+    for (int i = 1; i < argc; ++i)
+        if (std::string_view(argv[i]) == "--self-test") {
+            run_unit_tests();
+            run_integration_test();
+            run_fuzz_tests(5000, 12345);
+            std::cout << "self-test: OK\n";
+            return 0;
+        }
+    for (std::string line; std::getline(std::cin, line);)
+        std::cout << process_line(line) << '\n';
+    return 0;
+}

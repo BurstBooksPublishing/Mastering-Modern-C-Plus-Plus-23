@@ -1,0 +1,13 @@
+#include <iterator>
+#include <type_traits>
+
+template <typename T>
+void process(const T& container) {
+    static_assert(std::is_same_v<
+        typename std::iterator_traits<typename T::const_iterator>::iterator_category,
+        std::random_access_iterator_tag>, "Container must provide random-access iterators");
+
+    for (auto it = container.begin(); it != container.end(); ++it) {
+        // critical processing step
+    }
+}

@@ -1,0 +1,38 @@
+#include <functional>
+#include <iostream>
+#include <memory>
+#include <vector>
+
+class Subject {
+public:
+    using Observer = std::function<void()>;
+
+    void attach(Observer obs) {
+        observers_.push_back(obs);
+    }
+
+    void notify() {
+        for (const auto& obs : observers_) {
+            obs();
+        }
+    }
+
+private:
+    std::vector<Observer> observers_;
+};
+
+class Observer : public std::enable_shared_from_this<Observer> {
+public:
+    static std::shared_ptr<Observer> create(Subject& subject) {
+        auto self = std::shared_ptr<Observer>(new Observer());
+        subject.attach([self]() { self->update(); });
+        return self;
+    }
+
+    void update() {
+        std::cout << "Observer notified!\n";
+    }
+
+private:
+    Observer() = default;
+};

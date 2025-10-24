@@ -1,0 +1,14 @@
+#include <chrono>
+#include <ctime>
+#include <iomanip>
+#include <iostream>
+
+std::ostream& operator<<(std::ostream& os, const std::chrono::system_clock::time_point& tp) {
+    const auto t = std::chrono::system_clock::to_time_t(tp);
+    const std::tm tm = *std::localtime(&t);                 // thread-safe on POSIX; on Windows use localtime_s
+    return os << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
+}
+
+int main() {
+    std::cout << "Current time: " << std::chrono::system_clock::now() << '\n';
+}

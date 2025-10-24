@@ -1,0 +1,23 @@
+#include <iostream>
+#include <string>
+#include <vector>
+#include <algorithm>
+#include <ranges>
+#include <format>
+
+// Example: read integers, sort them, and print the result.
+int main() {
+    std::ios::sync_with_stdio(false);
+    std::cin.tie(nullptr);
+
+    std::size_t n{};
+    if (!(std::cin >> n)) return 0;
+
+    std::vector<int> values(n);
+    for (std::size_t i = 0; i < n && std::cin >> values[i]; ++i) {}
+
+    std::ranges::sort(values);
+
+    for (const auto& v : values) std::cout << v << ' ';
+    std::cout << '\n';
+}

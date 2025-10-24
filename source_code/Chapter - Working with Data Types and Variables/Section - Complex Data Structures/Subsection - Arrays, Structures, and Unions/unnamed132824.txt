@@ -1,0 +1,12 @@
+#include <array>
+#include <vector>
+#include <memory>
+
+// Prefer std::array for fixed-size data
+std::array<int, 5> arr{1, 2, 3, 4, 5};
+
+// Prefer std::vector for runtime-sized data
+std::vector<int> dynamic_arr(10);
+
+// If shared ownership is required, use std::shared_ptr<int[]> with make_shared
+// auto dynamic_arr = std::shared_ptr<int[]>(new int[10]);

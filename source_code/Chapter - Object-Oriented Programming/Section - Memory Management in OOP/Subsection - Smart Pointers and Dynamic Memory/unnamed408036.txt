@@ -1,0 +1,29 @@
+#include <iostream>
+#include <memory>
+
+class MyClass {
+public:
+    MyClass()  { std::cout << "MyClass constructed\n"; }
+    ~MyClass() { std::cout << "MyClass destroyed\n"; }
+};
+
+int main() {
+    auto sharedPtr = std::make_shared<MyClass>();
+    std::weak_ptr<MyClass> weakPtr = sharedPtr;
+
+    if (auto tempPtr = weakPtr.lock()) {
+        std::cout << "Object is still alive\n";
+    } else {
+        std::cout << "Object has been destroyed\n";
+    }
+
+    sharedPtr.reset();
+
+    if (auto tempPtr = weakPtr.lock()) {
+        std::cout << "Object is still alive\n";
+    } else {
+        std::cout << "Object has been destroyed\n";
+    }
+
+    return 0;
+}

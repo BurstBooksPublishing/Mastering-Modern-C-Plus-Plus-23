@@ -1,0 +1,26 @@
+#include <iostream>
+#include <stdexcept>
+
+int main() {
+    const int a = 10;
+    const int b = 3;
+
+    if (b == 0) {
+        throw std::invalid_argument("Division by zero");
+    }
+
+    const int sum        = a + b;
+    const int difference = a - b;
+    const int product    = a * b;
+    const int quotient   = a / b;
+    const int remainder  = a % b;
+
+    std::cout << "sum=" << sum
+              << " difference=" << difference
+              << " product=" << product
+              << " quotient=" << quotient
+              << " remainder=" << remainder
+              << '\n';
+
+    return 0;
+}

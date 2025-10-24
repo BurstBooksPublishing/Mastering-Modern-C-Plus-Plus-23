@@ -1,0 +1,22 @@
+#include <vector>
+#include <shared_mutex>
+#include <iostream>
+
+std::vector<int> vec{1, 2, 3, 4};
+std::shared_mutex vec_mutex;
+
+void reader() {
+    std::shared_lock lock(vec_mutex);
+    if (!vec.empty()) {
+        int value = vec.front();
+        std::cout << "Read: " << value << '\n';
+    }
+}
+
+void writer(int new_value) {
+    std::unique_lock lock(vec_mutex);
+    if (!vec.empty()) {
+        vec.front() = new_value;
+        std::cout << "Wrote: " << new_value << '\n';
+    }
+}

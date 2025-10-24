@@ -1,0 +1,9 @@
+#include <vector>
+#include <iostream>
+
+template <typename T>
+void print(const std::vector<T>& vec) {
+    for (const auto& item : vec) {
+        std::cout << item << '\n';
+    }
+}

@@ -1,0 +1,34 @@
+#include <atomic>
+#include <memory>
+
+template <typename T>
+class LockFreeStack {
+public:
+    void push(const T& value) {
+        auto node = std::make_shared<Node>(value);
+        node->next = head.load(std::memory_order_relaxed);
+        while (!head.compare_exchange_weak(
+            node->next, node,
+            std::memory_order_release,
+            std::memory_order_relaxed));
+    }
+
+    std::shared_ptr<T> pop() {
+        std::shared_ptr<Node> oldHead = head.load(std::memory_order_acquire);
+        while (oldHead &&
+               !head.compare_exchange_weak(
+                   oldHead, oldHead->next,
+                   std::memory_order_release,
+                   std::memory_order_relaxed));
+        return oldHead ? oldHead->data : nullptr;
+    }
+
+private:
+    struct Node {
+        std::shared_ptr<T> data;
+        std::shared_ptr<Node> next;
+        explicit Node(const T& value) : data(std::make_shared<T>(value)) {}
+    };
+
+    std::atomic<std::shared_ptr<Node>> head{nullptr};
+};

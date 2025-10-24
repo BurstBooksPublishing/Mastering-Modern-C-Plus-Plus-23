@@ -1,0 +1,3 @@
+#include <functional>
+
+const std::function<int(int)> lambda_square = [](int n) noexcept { return n * n; };

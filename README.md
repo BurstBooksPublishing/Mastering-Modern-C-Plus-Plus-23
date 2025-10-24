@@ -15,21 +15,3 @@
 View the live site at [burstbookspublishing.github.io/mastering-modern-c-plus-plus-23](https://burstbookspublishing.github.io/mastering-modern-c-plus-plus-23/)
 ---
 
----
-## Chapter 1. Introduction to Modern C++23
-### Section 1. The Evolution of C++
-- History and Evolution of C++
-- Overview of C++ Standards
-- Key Innovations in C++23
-
-### Section 2. Setting Up the Development Environment
-- Choosing a Compiler and IDE
-- Setting Up and Configuring Your Environment
-- Running and Debugging Your First Program
-
-### Section 3. Basic Syntax and Language Structure
-- Variables and Data Types
-- Operators and Expressions
-- Basic Input/Output
-
----

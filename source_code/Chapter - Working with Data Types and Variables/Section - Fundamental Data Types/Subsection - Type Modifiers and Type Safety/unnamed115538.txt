@@ -1,0 +1,14 @@
+#include <cstdint>
+#include <limits>
+#include <stdexcept>
+
+int main() {
+    const int32_t largeNumber = 1'000'000;
+
+    if (largeNumber < std::numeric_limits<int16_t>::min() ||
+        largeNumber > std::numeric_limits<int16_t>::max()) {
+        throw std::overflow_error("Value exceeds int16_t range");
+    }
+
+    const int16_t smallNumber = static_cast<int16_t>(largeNumber);
+}

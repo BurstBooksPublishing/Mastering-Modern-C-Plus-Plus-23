@@ -1,0 +1,55 @@
+#include <iostream>
+#include <coroutine>
+#include <memory>
+#include <optional>
+
+class Generator {
+public:
+    struct promise_type {
+        int current_value{};
+        std::suspend_always yield_value(int value) noexcept {
+            current_value = value;
+            return {};
+        }
+        std::suspend_always initial_suspend() noexcept { return {}; }
+        std::suspend_always final_suspend() noexcept { return {}; }
+        Generator get_return_object() { return Generator{*this}; }
+        void return_void() noexcept {}
+        void unhandled_exception() { std::rethrow_exception(std::current_exception()); }
+    };
+
+    using handle_type = std::coroutine_handle<promise_type>;
+
+    explicit Generator(promise_type& p) noexcept
+        : handle_(handle_type::from_promise(p)) {}
+
+    Generator(Generator&& other) noexcept : handle_(std::exchange(other.handle_, {})) {}
+    Generator& operator=(Generator&& other) noexcept {
+        if (this != &other) {
+            if (handle_) handle_.destroy();
+            handle_ = std::exchange(other.handle_, {});
+        }
+        return *this;
+    }
+    ~Generator() { if (handle_) handle_.destroy(); }
+
+    std::optional<int> next() {
+        if (!handle_.done()) {
+            handle_.resume();
+            if (!handle_.done()) return handle_.promise().current_value;
+        }
+        return std::nullopt;
+    }
+
+private:
+    handle_type handle_;
+};
+
+Generator generate_sequence() {
+    for (int i = 1; i <= 5; ++i) co_yield i;
+}
+
+int main() {
+    Generator gen = generate_sequence();
+    while (auto val = gen.next()) std::cout << *val << ' ';
+}

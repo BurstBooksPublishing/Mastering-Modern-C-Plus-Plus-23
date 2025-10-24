@@ -1,0 +1,11 @@
+#include <iostream>
+
+// noexcept guarantees the function will not propagate exceptions.
+void safeFunction() noexcept {
+    std::cout << "This function is guaranteed not to throw exceptions.\n";
+}
+
+int main() {
+    safeFunction();
+    return 0;
+}

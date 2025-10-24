@@ -1,0 +1,61 @@
+#include <algorithm>
+#include <atomic>
+#include <chrono>
+#include <cmath>
+#include <iostream>
+#include <iterator>
+#include <numeric>
+#include <thread>
+#include <type_traits>
+#include <vector>
+
+template <typename Func>
+void parallel_for_chunked(std::size_t n,
+                          Func&& f,
+                          std::size_t num_threads = std::thread::hardware_concurrency(),
+                          std::size_t chunk_size = 256)
+{
+    static_assert(std::is_invocable_v<Func&, std::size_t>, "f must be callable with std::size_t");
+
+    if (n == 0) return;
+    if (num_threads == 0) num_threads = 1;
+
+    if (num_threads == 1) {
+        for (std::size_t i = 0; i < n; ++i) f(i);
+        return;
+    }
+
+    std::atomic<std::size_t> next{0};
+    auto worker = [&] {
+        for (;;) {
+            std::size_t start = next.fetch_add(chunk_size, std::memory_order_relaxed);
+            if (start >= n) break;
+            std::size_t end = std::min(n, start + chunk_size);
+            for (std::size_t i = start; i < end; ++i) f(i);
+        }
+    };
+
+    std::vector<std::jthread> threads;
+    threads.reserve(num_threads);
+    for (std::size_t t = 0; t < num_threads; ++t) threads.emplace_back(worker);
+}
+
+int main()
+{
+    constexpr std::size_t N = 5'000'000;
+    std::vector<double> data(N);
+    std::iota(data.begin(), data.end(), 0.0);
+
+    auto work = [&](std::size_t i) {
+        double x = data[i];
+        data[i] = std::sin(x) * std::cos(x) + std::sqrt(x + 1.0);
+    };
+
+    auto t0 = std::chrono::high_resolution_clock::now();
+    parallel_for_chunked(N, work, std::thread::hardware_concurrency(), 1024);
+    auto t1 = std::chrono::high_resolution_clock::now();
+
+    std::cout << "Elapsed: "
+              << std::chrono::duration<double>(t1 - t0).count()
+              << " s\n";
+}

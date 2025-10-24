@@ -1,0 +1,43 @@
+#include <iterator>
+#include <cstddef>
+
+template <typename T>
+class CustomIterator {
+public:
+    using value_type        = T;
+    using difference_type   = std::ptrdiff_t;
+    using reference         = T&;
+    using pointer           = T*;
+    using iterator_category = std::random_access_iterator_tag;
+
+    constexpr CustomIterator(pointer ptr = nullptr) noexcept : ptr_(ptr) {}
+
+    constexpr reference operator*()  const noexcept { return *ptr_; }
+    constexpr pointer   operator->() const noexcept { return ptr_; }
+
+    constexpr CustomIterator& operator++() noexcept { ++ptr_; return *this; }
+    constexpr CustomIterator  operator++(int) noexcept { CustomIterator tmp(*this); ++ptr_; return tmp; }
+
+    constexpr CustomIterator& operator--() noexcept { --ptr_; return *this; }
+    constexpr CustomIterator  operator--(int) noexcept { CustomIterator tmp(*this); --ptr_; return tmp; }
+
+    constexpr CustomIterator  operator+(difference_type n) const noexcept { return CustomIterator(ptr_ + n); }
+    constexpr CustomIterator  operator-(difference_type n) const noexcept { return CustomIterator(ptr_ - n); }
+
+    constexpr difference_type operator-(const CustomIterator& rhs) const noexcept { return ptr_ - rhs.ptr_; }
+
+    constexpr CustomIterator& operator+=(difference_type n) noexcept { ptr_ += n; return *this; }
+    constexpr CustomIterator& operator-=(difference_type n) noexcept { ptr_ -= n; return *this; }
+
+    constexpr reference operator[](difference_type n) const noexcept { return *(ptr_ + n); }
+
+    constexpr bool operator==(const CustomIterator& rhs) const noexcept { return ptr_ == rhs.ptr_; }
+    constexpr bool operator!=(const CustomIterator& rhs) const noexcept { return ptr_ != rhs.ptr_; }
+    constexpr bool operator< (const CustomIterator& rhs) const noexcept { return ptr_ <  rhs.ptr_; }
+    constexpr bool operator<=(const CustomIterator& rhs) const noexcept { return ptr_ <= rhs.ptr_; }
+    constexpr bool operator> (const CustomIterator& rhs) const noexcept { return ptr_ >  rhs.ptr_; }
+    constexpr bool operator>=(const CustomIterator& rhs) const noexcept { return ptr_ >= rhs.ptr_; }
+
+private:
+    pointer ptr_;
+};

@@ -1,0 +1,35 @@
+#include <memory>
+#include <type_traits>
+
+template <typename T>
+class Container {
+    static_assert(!std::is_pointer_v<T>,
+                  "Use Container<T*> for pointer types.");
+
+    std::unique_ptr<T[]> data_;
+    std::size_t          size_ = 0;
+
+public:
+    Container() = default;
+    explicit Container(std::size_t n) : data_(std::make_unique<T[]>(n)), size_(n) {}
+
+    T&       operator[](std::size_t i)       { return data_[i]; }
+    const T& operator[](std::size_t i) const { return data_[i]; }
+
+    std::size_t size() const noexcept { return size_; }
+};
+
+template <typename T>
+class Container<T*> {
+    std::unique_ptr<T*[]> ptrs_;
+    std::size_t           size_ = 0;
+
+public:
+    Container() = default;
+    explicit Container(std::size_t n) : ptrs_(std::make_unique<T*[]>(n)), size_(n) {}
+
+    T*&       operator[](std::size_t i)       { return ptrs_[i]; }
+    T* const& operator[](std::size_t i) const { return ptrs_[i]; }
+
+    std::size_t size() const noexcept { return size_; }
+};

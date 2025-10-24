@@ -1,0 +1,64 @@
+#include <array>
+#include <cstddef>
+#include <iostream>
+#include <type_traits>
+
+// Variadic type container
+template <typename... Ts>
+struct type_list {};
+
+// Number of types in the list
+template <typename List>
+struct length;
+
+template <typename... Ts>
+struct length<type_list<Ts...>> {
+    static constexpr std::size_t value = sizeof...(Ts);
+};
+
+// Apply F to every type in List
+template <template <typename> typename F, typename List>
+struct transform;
+
+template <template <typename> typename F, typename... Ts>
+struct transform<F, type_list<Ts...>> {
+    using type = type_list<F<Ts>...>;
+};
+
+template <template <typename> typename F, typename List>
+using transform_t = typename transform<F, List>::type;
+
+// Sum of sizeof(T) for every T in List
+template <typename List>
+struct total_size;
+
+template <typename... Ts>
+struct total_size<type_list<Ts...>> {
+    static constexpr std::size_t value = (0 + ... + sizeof(Ts));
+};
+
+// Array of byte offsets for each type in List
+template <typename... Ts>
+consteval auto compute_offsets(type_list<Ts...>) {
+    constexpr std::size_t N = sizeof...(Ts);
+    std::array<std::size_t, N> offsets{};
+    std::size_t off = 0;
+    std::size_t idx = 0;
+    ((offsets[idx++] = off, off += sizeof(Ts)), ...);
+    return offsets;
+}
+
+int main() {
+    using record = type_list<int, double, char>;
+
+    constexpr std::size_t total = total_size<record>::value;
+    constexpr auto offsets = compute_offsets(record{});
+
+    std::cout << "total bytes: " << total << '\n';
+    std::cout << "offsets:";
+    for (std::size_t o : offsets) std::cout << ' ' << o;
+    std::cout << '\n';
+
+    using cleaned = transform_t<std::remove_cvref_t, record>;
+    static_assert(std::is_same_v<cleaned, type_list<int, double, char>>);
+}

@@ -1,0 +1,22 @@
+#include <cstdlib>      // std::abort
+#include <exception>    // std::terminate, std::set_terminate
+
+namespace {
+
+[[noreturn]] void on_terminate() noexcept {
+    std::abort();       // Ensure immediate termination without unwinding
+}
+
+struct TerminateHandlerGuard {
+    TerminateHandlerGuard() noexcept {
+        std::set_terminate(on_terminate);
+    }
+};
+
+const TerminateHandlerGuard guard{};
+
+} // unnamed namespace
+
+void safe_function() noexcept {
+    // All exceptions must be handled internally; any leak triggers std::terminate
+}

@@ -1,0 +1,38 @@
+#include <algorithm>
+#include <iostream>
+#include <iterator>
+#include <list>
+#include <vector>
+
+// Collect a range [first, last) into a vector.
+// Reserves space in O(1) when the iterator category allows it.
+template <std::input_iterator It>
+auto collect_to_vector(It first, It last) {
+    using value_type = std::iter_value_t<It>;
+    std::vector<value_type> out;
+
+    if constexpr (std::random_access_iterator<It>) {
+        out.reserve(static_cast<std::size_t>(std::distance(first, last)));
+    }
+
+    std::copy(first, last, std::back_inserter(out));
+    return out;
+}
+
+int main() {
+    std::vector<int> v{1, 2, 3, 4, 5};
+    std::list<int>   l{6, 7, 8, 9};
+
+    auto vec_from_v = collect_to_vector(v.begin(), v.end());
+    auto vec_from_l = collect_to_vector(l.begin(), l.end());
+
+    std::cout << "sizes: " << vec_from_v.size() << ", " << vec_from_l.size() << '\n';
+
+    // Erase even numbers from v.
+    v.erase(std::remove_if(v.begin(), v.end(),
+                           [](int x) { return x % 2 == 0; }),
+            v.end());
+
+    for (int x : v) std::cout << x << ' ';
+    std::cout << '\n';
+}

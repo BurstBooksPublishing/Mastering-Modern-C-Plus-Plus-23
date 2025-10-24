@@ -1,0 +1,10 @@
+#include <optional>
+#include <string>
+
+std::optional<std::string> fetch_record(const std::string& id) {
+    // Simulate database query
+    if (id == "valid_id") {
+        return "Record data";
+    }
+    return std::nullopt;
+}

@@ -1,0 +1,22 @@
+#include <iostream>
+#include <span>
+#include <string_view>
+#include <vector>
+
+void parse_arguments(std::span<char*> args) {
+    for (std::size_t i = 1; i < args.size(); ++i) {
+        std::string_view arg{args[i]};
+        if (arg == "-h" || arg == "--help") {
+            std::cout << "Usage: tool [options]\n";
+        } else if (arg == "-v" || arg == "--version") {
+            std::cout << "Version 1.0\n";
+        } else {
+            std::cerr << "Unknown option: " << arg << '\n';
+        }
+    }
+}
+
+int main(int argc, char* argv[]) {
+    parse_arguments(std::span{argv, static_cast<std::size_t>(argc)});
+    return 0;
+}

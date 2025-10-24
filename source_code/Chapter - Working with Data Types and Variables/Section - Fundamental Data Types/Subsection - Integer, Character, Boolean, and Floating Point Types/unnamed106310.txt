@@ -1,0 +1,14 @@
+#include <cstdint>
+#include <limits>
+
+// Exact-width integer for predictable size
+std::int32_t intVal = 123;
+
+// Single-precision float
+float floatVal = 3.14f;
+
+// Extended precision floating-point
+long double longDoubleVal = 1.4142135623730950488L;
+
+// UTF-8 encoded Unicode code point
+char32_t utf8Char = U'€';

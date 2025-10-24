@@ -1,0 +1,95 @@
+#include <algorithm>
+#include <cstddef>
+#include <cstring>
+#include <ios>
+#include <mutex>
+#include <ostream>
+#include <streambuf>
+#include <vector>
+
+class ring_streambuf : public std::streambuf {
+public:
+    explicit ring_streambuf(std::size_t capacity)
+        : buf_(capacity), head_(0), size_(0) {
+        if (capacity == 0) throw std::invalid_argument("capacity must be > 0");
+    }
+
+    ring_streambuf(const ring_streambuf&)            = delete;
+    ring_streambuf& operator=(const ring_streambuf&) = delete;
+
+    std::size_t drain(char* dest, std::size_t max) {
+        std::lock_guard<std::mutex> lock(mtx_);
+        const std::size_t n = std::min(max, size_);
+        if (n == 0) return 0;
+
+        const std::size_t first = std::min(n, buf_.size() - head_);
+        std::memcpy(dest, buf_.data() + head_, first);
+        if (n > first) std::memcpy(dest + first, buf_.data(), n - first);
+
+        head_ = (head_ + n) % buf_.size();
+        size_ -= n;
+        return n;
+    }
+
+protected:
+    int_type overflow(int_type ch) override {
+        if (traits_type::eq_int_type(ch, traits_type::eof()))
+            return traits_type::not_eof(ch);
+        char c = traits_type::to_char_type(ch);
+        push_bytes(&c, 1);
+        return ch;
+    }
+
+    std::streamsize xsputn(const char* s, std::streamsize n) override {
+        if (n <= 0) return 0;
+        push_bytes(s, static_cast<std::size_t>(n));
+        return n;
+    }
+
+    int sync() override { return 0; }
+
+private:
+    void push_bytes(const char* s, std::size_t n) {
+        std::lock_guard<std::mutex> lock(mtx_);
+
+        if (n >= buf_.size()) {
+            const char* src = s + (n - buf_.size());
+            std::memcpy(buf_.data(), src, buf_.size());
+            head_ = 0;
+            size_ = buf_.size();
+            return;
+        }
+
+        const std::size_t free_space = buf_.size() - size_;
+        if (n > free_space) {
+            const std::size_t to_drop = n - free_space;
+            head_ = (head_ + to_drop) % buf_.size();
+            size_ -= to_drop;
+        }
+
+        const std::size_t write_pos = (head_ + size_) % buf_.size();
+        const std::size_t first     = std::min(n, buf_.size() - write_pos);
+        std::memcpy(buf_.data() + write_pos, s, first);
+        if (n > first) std::memcpy(buf_.data(), s + first, n - first);
+
+        size_ += n;
+    }
+
+    std::vector<char> buf_;
+    std::size_t       head_;
+    std::size_t       size_;
+    std::mutex        mtx_;
+};
+
+int main() {
+    ring_streambuf rb(1024);
+    std::ostream   os(&rb);
+
+    os << "Hello, ring buffer logging!\n";
+    os << std::hex << 255 << '\n';
+    os.flush();
+
+    char tmp[2048];
+    const std::size_t n = rb.drain(tmp, sizeof(tmp));
+    std::cout.write(tmp, static_cast<std::streamsize>(n));
+}

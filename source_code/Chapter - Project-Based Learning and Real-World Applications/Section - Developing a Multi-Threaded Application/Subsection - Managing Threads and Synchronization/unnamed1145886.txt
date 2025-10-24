@@ -1,0 +1,30 @@
+#include <iostream>
+#include <thread>
+#include <mutex>
+#include <vector>
+
+std::mutex mtx;
+int shared_data = 0;
+
+void increment_data(std::size_t times) {
+    for (std::size_t i = 0; i < times; ++i) {
+        std::lock_guard<std::mutex> lock(mtx);
+        ++shared_data;
+    }
+}
+
+int main() {
+    constexpr std::size_t kThreads = 8;
+    constexpr std::size_t kIncrementsPerThread = 100'000;
+
+    std::vector<std::thread> threads;
+    threads.reserve(kThreads);
+
+    for (std::size_t i = 0; i < kThreads; ++i)
+        threads.emplace_back(increment_data, kIncrementsPerThread);
+
+    for (auto& t : threads) t.join();
+
+    std::cout << "Shared data: " << shared_data << '\n';
+    return 0;
+}

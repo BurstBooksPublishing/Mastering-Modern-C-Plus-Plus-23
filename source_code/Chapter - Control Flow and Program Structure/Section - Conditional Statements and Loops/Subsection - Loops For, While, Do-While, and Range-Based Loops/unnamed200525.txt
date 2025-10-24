@@ -1,0 +1,11 @@
+#include <iostream>
+#include <cstdint>
+
+int main() {
+    std::uint64_t sum_squares = 0;          // 64-bit to avoid overflow for larger ranges
+    for (std::uint32_t i = 1; i <= 5; ++i)  // fixed upper bound kept for clarity
+        sum_squares += static_cast<std::uint64_t>(i) * i;
+
+    std::cout << "Sum of squares: " << sum_squares << '\n';
+    return 0;
+}

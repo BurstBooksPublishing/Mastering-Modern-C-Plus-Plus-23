@@ -1,0 +1,8 @@
+#include <iostream>
+#include <iomanip>
+
+int main() {
+    const double value = 123.456789;          // constant data
+    std::cout << std::setw(10) << std::setprecision(4) << std::fixed << value << '\n';
+    return 0;
+}

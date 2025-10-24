@@ -1,0 +1,80 @@
+#include <iostream>
+#include <utility>
+#include <stdexcept>
+
+class Resource {
+public:
+    explicit Resource(std::size_t sz)
+        : data_(new int[sz]()), size_(sz) {
+        std::cout << "Resource allocated\n";
+    }
+
+    Resource(const Resource& rhs)
+        : data_(new int[rhs.size_]), size_(rhs.size_) {
+        std::copy(rhs.data_, rhs.data_ + rhs.size_, data_);
+        std::cout << "Resource copied\n";
+    }
+
+    Resource& operator=(const Resource& rhs) {
+        if (this != &rhs) {
+            Resource tmp(rhs);
+            swap(tmp);
+            std::cout << "Resource copy-assigned\n";
+        }
+        return *this;
+    }
+
+    Resource(Resource&& other) noexcept
+        : data_(nullptr), size_(0) {
+        swap(other);
+        std::cout << "Resource moved\n";
+    }
+
+    Resource& operator=(Resource&& other) noexcept {
+        if (this != &other) {
+            Resource tmp(std::move(other));
+            swap(tmp);
+            std::cout << "Resource move-assigned\n";
+        }
+        return *this;
+    }
+
+    ~Resource() {
+        delete[] data_;
+        std::cout << "Resource deallocated\n";
+    }
+
+    void swap(Resource& other) noexcept {
+        std::swap(data_, other.data_);
+        std::swap(size_, other.size_);
+    }
+
+    int& operator[](std::size_t idx) {
+        if (idx >= size_) throw std::out_of_range("index out of range");
+        return data_[idx];
+    }
+
+    const int& operator[](std::size_t idx) const {
+        if (idx >= size_) throw std::out_of_range("index out of range");
+        return data_[idx];
+    }
+
+    std::size_t size() const noexcept { return size_; }
+
+    void print() const {
+        for (std::size_t i = 0; i < size_; ++i) std::cout << data_[i] << ' ';
+        std::cout << '\n';
+    }
+
+private:
+    int* data_;
+    std::size_t size_;
+};
+
+int main() {
+    Resource res1(5);
+    Resource res2 = std::move(res1);
+
+    Resource res3(10);
+    res3 = std::move(res2);
+}

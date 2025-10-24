@@ -1,0 +1,12 @@
+bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Ensure vcpkg is on the PATH
+if ! command -v vcpkg >/dev/null 2>&1; then
+    echo "vcpkg not found in PATH" >&2
+    exit 1
+fi
+
+# Install Boost with default triplet (x64-linux on Linux, x64-windows on Windows, etc.)
+vcpkg install boost

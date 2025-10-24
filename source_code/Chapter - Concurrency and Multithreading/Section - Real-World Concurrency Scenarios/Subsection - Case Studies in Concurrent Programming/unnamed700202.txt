@@ -1,0 +1,16 @@
+#include <shared_mutex>
+#include <atomic>
+
+class ThreadSafeCounter {
+public:
+    int get() const noexcept {
+        return value_.load(std::memory_order_acquire);
+    }
+
+    void increment() noexcept {
+        value_.fetch_add(1, std::memory_order_relaxed);
+    }
+
+private:
+    std::atomic<int> value_{0};
+};

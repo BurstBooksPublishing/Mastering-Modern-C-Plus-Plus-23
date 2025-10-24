@@ -1,0 +1,8 @@
+#include <experimental/meta>
+#include <type_traits>
+
+using std::experimental::meta::get_type;
+using std::experimental::meta::get_members;
+
+template <typename T>
+using first_member_type = get_type<get_members(^T)[0]>;

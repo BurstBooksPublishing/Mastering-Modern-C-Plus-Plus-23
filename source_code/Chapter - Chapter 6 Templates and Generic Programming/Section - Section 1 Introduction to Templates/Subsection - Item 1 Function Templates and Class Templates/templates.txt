@@ -1,0 +1,76 @@
+#include <array>
+#include <iostream>
+#include <stdexcept>
+#include <type_traits>
+
+// Constrain to arithmetic types only; noexcept when hi >= lo.
+template <typename T>
+constexpr T clamp(T value, T lo, T hi) noexcept(std::is_arithmetic_v<T>) {
+    static_assert(std::is_arithmetic_v<T>, "clamp requires arithmetic type");
+    if (hi < lo) throw std::invalid_argument("clamp: lo > hi");
+    return (value < lo) ? lo : (hi < value) ? hi : value;
+}
+
+// Fixed-size contiguous buffer with STL-like interface.
+template <typename T, std::size_t N>
+class FixedBuffer {
+public:
+    using value_type      = T;
+    using size_type       = std::size_t;
+    using reference       = T&;
+    using const_reference = const T&;
+    using iterator        = T*;
+    using const_iterator  = const T*;
+
+    constexpr FixedBuffer() noexcept = default;
+
+    // Strong exception-safety: throws only if T copy throws.
+    constexpr bool push_back(const T& item) {
+        if (size_ == N) return false;
+        storage_[size_++] = item;
+        return true;
+    }
+
+    // Unchecked access for performance; use at() for bounds checking.
+    constexpr reference       operator[](size_type i) noexcept { return storage_[i]; }
+    constexpr const_reference operator[](size_type i) const noexcept { return storage_[i]; }
+
+    constexpr reference       at(size_type i) {
+        if (i >= size_) throw std::out_of_range("FixedBuffer::at");
+        return storage_[i];
+    }
+    constexpr const_reference at(size_type i) const {
+        if (i >= size_) throw std::out_of_range("FixedBuffer::at");
+        return storage_[i];
+    }
+
+    constexpr iterator       begin() noexcept { return storage_.data(); }
+    constexpr const_iterator begin() const noexcept { return storage_.data(); }
+    constexpr iterator       end() noexcept { return storage_.data() + size_; }
+    constexpr const_iterator end() const noexcept { return storage_.data() + size_; }
+
+    constexpr size_type size() const noexcept { return size_; }
+    constexpr size_type capacity() const noexcept { return N; }
+    constexpr bool      empty() const noexcept { return size_ == 0; }
+
+private:
+    std::array<T, N> storage_{};
+    size_type        size_ = 0;
+};
+
+int main() {
+    int x = clamp(15, 0, 10);
+    std::cout << "clamped int: " << x << '\n';
+
+    double y = clamp(3.14, -1.0, 2.0);
+    std::cout << "clamped double: " << y << '\n';
+
+    FixedBuffer<int, 4> buf;
+    for (int i = 0; i < 6; ++i) {
+        bool ok = buf.push_back(i);
+        std::cout << "push " << i << (ok ? " ok\n" : " failed\n");
+    }
+
+    for (auto v : buf) std::cout << v << ' ';
+    std::cout << '\n';
+}

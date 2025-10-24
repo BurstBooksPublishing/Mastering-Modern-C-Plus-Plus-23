@@ -1,0 +1,20 @@
+#include <algorithm>
+#include <iostream>
+#include <vector>
+
+int main() {
+    const std::vector<int> numbers{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+
+    const auto is_even = [](int n) { return n % 2 == 0; };
+    const std::size_t even_count = std::count_if(numbers.begin(), numbers.end(), is_even);
+    std::cout << "Number of even numbers: " << even_count << '\n';
+
+    std::vector<int> squared;
+    squared.reserve(numbers.size());
+    std::transform(numbers.begin(), numbers.end(), std::back_inserter(squared),
+                   [](int n) { return n * n; });
+
+    std::cout << "Squared numbers:";
+    for (int n : squared) std::cout << ' ' << n;
+    std::cout << '\n';
+}

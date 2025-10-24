@@ -1,0 +1,37 @@
+#include <iostream>
+#include <memory>
+#include <string>
+
+class Printable {
+public:
+    virtual void print() const = 0;
+    virtual ~Printable() noexcept = default;
+};
+
+class Loggable {
+public:
+    virtual void log(const std::string& message) const = 0;
+    virtual ~Loggable() noexcept = default;
+};
+
+class Document final : public Printable, public Loggable {
+public:
+    explicit Document(std::string content) : content_(std::move(content)) {}
+
+    void print() const override {
+        std::cout << "Printing document: " << content_ << '\n';
+    }
+
+    void log(const std::string& message) const override {
+        std::cout << "Log: " << message << " - Document: " << content_ << '\n';
+    }
+
+private:
+    std::string content_;
+};
+
+int main() {
+    const Document doc("Modern C++23 Advanced OOP Concepts");
+    doc.print();
+    doc.log("Document accessed");
+}

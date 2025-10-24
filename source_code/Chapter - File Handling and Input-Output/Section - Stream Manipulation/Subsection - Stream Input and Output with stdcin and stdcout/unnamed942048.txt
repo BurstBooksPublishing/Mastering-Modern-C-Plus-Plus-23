@@ -1,0 +1,17 @@
+#include <iostream>
+#include <limits>
+
+int main() {
+    int age{};
+
+    std::cout << "Enter your age: ";
+
+    while (!(std::cin >> age) || age < 0) {
+        std::cin.clear();                                   // reset error flags
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // discard bad input
+        std::cout << "Invalid input. Please enter a non-negative integer: ";
+    }
+
+    std::cout << "You are " << age << " years old.\n";
+    return 0;
+}

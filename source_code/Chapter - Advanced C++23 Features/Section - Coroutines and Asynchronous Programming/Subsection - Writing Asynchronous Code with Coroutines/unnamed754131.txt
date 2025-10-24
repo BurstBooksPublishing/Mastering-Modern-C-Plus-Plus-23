@@ -1,0 +1,29 @@
+#include <coroutine>
+#include <iostream>
+#include <exception>
+
+struct Task {
+    struct promise_type {
+        Task get_return_object() { return Task{std::coroutine_handle<promise_type>::from_promise(*this)}; }
+        std::suspend_never initial_suspend() noexcept { return {}; }
+        std::suspend_never final_suspend() noexcept { return {}; }
+        void return_void() noexcept {}
+        void unhandled_exception() { std::terminate(); }
+    };
+
+    std::coroutine_handle<promise_type> h;
+    explicit Task(std::coroutine_handle<promise_type> handle) noexcept : h(handle) {}
+    ~Task() { if (h) h.destroy(); }
+    Task(Task&& other) noexcept : h(std::exchange(other.h, {})) {}
+    Task& operator=(Task&& other) noexcept { if (this != &other) { if (h) h.destroy(); h = std::exchange(other.h, {}); } return *this; }
+};
+
+Task myCoroutine() {
+    co_await std::suspend_always{};
+    std::cout << "Coroutine resumed!\n";
+}
+
+int main() {
+    auto coro = myCoroutine();
+    coro.h.resume();
+}

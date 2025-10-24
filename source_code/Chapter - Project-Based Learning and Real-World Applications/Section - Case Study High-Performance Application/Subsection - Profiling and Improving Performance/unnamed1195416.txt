@@ -1,0 +1,9 @@
+#include <vector>
+#include <cstdint>
+
+void process_data(const std::vector<int>& data) {
+    for (const int value : data) {
+        // (value + 1)^2
+        [[maybe_unused]] const int result = (value + 1) * (value + 1);
+    }
+}

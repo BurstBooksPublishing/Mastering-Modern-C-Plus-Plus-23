@@ -1,0 +1,8 @@
+#include <type_traits>
+#include <concepts>
+
+template <typename... Args>
+    requires (std::integral<Args> || ...) || (std::floating_point<Args> || ...)
+constexpr auto sum(Args... args) noexcept {
+    return (args + ...);
+}

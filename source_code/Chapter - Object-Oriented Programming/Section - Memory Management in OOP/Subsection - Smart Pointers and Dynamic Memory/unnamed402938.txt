@@ -1,0 +1,31 @@
+#include <iostream>
+#include <memory>
+
+class MyClass {
+public:
+    MyClass()  { std::cout << "MyClass constructed\n"; }
+    ~MyClass() { std::cout << "MyClass destroyed\n"; }
+
+    void doSomething() const { std::cout << "Doing something\n"; }
+};
+
+int main() {
+    // unique ownership
+    auto unique = std::make_unique<MyClass>();
+    unique->doSomething();
+
+    // shared ownership
+    auto shared = std::make_shared<MyClass>();
+    {
+        auto alias = shared;          // second owner
+        alias->doSomething();
+    }                                 // alias released; object still alive
+
+    // non-owning observer
+    std::weak_ptr<MyClass> weak = shared;
+    if (auto locked = weak.lock()) {  // ensure object is alive
+        locked->doSomething();
+    }
+
+    return 0;
+}

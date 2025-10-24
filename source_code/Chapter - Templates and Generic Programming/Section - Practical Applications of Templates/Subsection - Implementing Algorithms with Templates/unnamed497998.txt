@@ -1,0 +1,21 @@
+#include <iterator>
+#include <utility>
+
+template <typename RandomIt>
+void bubble_sort(RandomIt first, RandomIt last) {
+    if (first == last) return;
+
+    bool swapped;
+    do {
+        swapped = false;
+        for (auto it = first; std::next(it) != last; ++it) {
+            auto next = std::next(it);
+            if (*next < *it) {
+                using std::iter_swap;
+                iter_swap(it, next);
+                swapped = true;
+            }
+        }
+        --last; // largest element now at end
+    } while (swapped);
+}

@@ -1,0 +1,8 @@
+#include <type_traits>
+
+static_assert(std::is_signed_v<int>, "int must be signed");
+
+consteval int compile_time_square(int x) noexcept {
+    static_assert(sizeof(int) >= 4, "int must be at least 32-bit");
+    return x * x;
+}

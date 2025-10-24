@@ -1,0 +1,9 @@
+#include <vector>
+#include <stdexcept>
+
+void process_data(const std::vector<int>& data) {
+    if (data.empty()) {
+        throw std::invalid_argument("Data must not be empty");
+    }
+    // Process data
+}

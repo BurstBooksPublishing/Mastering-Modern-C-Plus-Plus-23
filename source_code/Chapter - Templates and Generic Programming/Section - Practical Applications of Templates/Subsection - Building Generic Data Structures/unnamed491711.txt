@@ -1,0 +1,17 @@
+#include <vector>
+#include <numeric>
+#include <concepts>
+#include <stdexcept>
+
+template<std::integral T>
+class Vector {
+    std::vector<T> elements_;
+
+public:
+    void add(const T& value) { elements_.push_back(value); }
+
+    T sum() const {
+        if (elements_.empty()) throw std::runtime_error("empty vector");
+        return std::accumulate(elements_.begin(), elements_.end(), T{});
+    }
+};

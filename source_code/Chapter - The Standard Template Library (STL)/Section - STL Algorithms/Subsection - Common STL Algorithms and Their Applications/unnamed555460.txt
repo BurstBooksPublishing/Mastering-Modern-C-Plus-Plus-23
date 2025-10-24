@@ -1,0 +1,9 @@
+#include <vector>
+#include <algorithm>
+
+std::vector<int> v{5, 3, 8, 1, 4};          // example data
+std::make_heap(v.begin(), v.end());         // ensure max-heap property
+
+std::pop_heap(v.begin(), v.end());          // move largest to back
+const int largest = v.back();               // retrieve largest
+v.pop_back();                               // shrink vector

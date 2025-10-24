@@ -1,0 +1,16 @@
+#include <tuple>
+
+struct Coordinate {
+    double x{};
+    double y{};
+    double z{};
+};
+
+Coordinate getOrigin() {
+    return {0.0, 0.0, 0.0};
+}
+
+int main() {
+    auto [x, y, z] = getOrigin();  // Structured binding for immediate use
+    (void)x; (void)y; (void)z;     // Suppress unused-variable warnings
+}

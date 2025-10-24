@@ -1,0 +1,17 @@
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <stdexcept>
+
+int main() {
+    const std::string input = "42";
+    std::istringstream iss(input);
+
+    int value{};
+    if (!(iss >> value) || iss.peek() != EOF) {
+        throw std::invalid_argument("Input is not a valid integer");
+    }
+
+    std::cout << "Parsed value: " << value << '\n';
+    return 0;
+}

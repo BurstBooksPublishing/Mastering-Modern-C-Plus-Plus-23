@@ -1,0 +1,15 @@
+#include <limits>
+#include <stdexcept>
+
+auto multiply(double x, double y) -> double
+{
+    if (x == 0.0 || y == 0.0) return 0.0;
+
+    // Detect overflow/underflow before multiplication
+    const double limit = std::numeric_limits<double>::max();
+    if ((std::abs(x) > 1.0 && std::abs(y) > limit / std::abs(x)) ||
+        (std::abs(x) < 1.0 && std::abs(y) < std::numeric_limits<double>::min() / std::abs(x)))
+        throw std::overflow_error("Multiplication would overflow/underflow");
+
+    return x * y;
+}

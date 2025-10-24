@@ -1,0 +1,13 @@
+#include <tuple>
+#include <string>
+#include <utility>
+
+int main() {
+    const std::tuple<int, double, std::string> tuple{1, 2.5, "hello"};
+    const auto [a, b, c] = tuple;                       // structured binding
+    const auto lambda_struct = [a, b]() noexcept {      // capture by value, noexcept
+        return a + b;
+    };
+    (void)c;                                            // suppress unused warning
+    (void)lambda_struct;                                // suppress unused warning
+}

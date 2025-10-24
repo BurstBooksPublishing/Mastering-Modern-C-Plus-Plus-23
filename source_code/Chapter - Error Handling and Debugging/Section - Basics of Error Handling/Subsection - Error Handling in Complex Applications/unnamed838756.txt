@@ -1,0 +1,16 @@
+#include <string>
+#include <stdexcept>
+#include <optional>
+
+// Returns the raw record for the given id; empty optional if not found.
+std::optional<std::string> fetch_record(const std::string& id);
+
+// Retrieves and validates a record; throws if missing.
+std::string process_record(const std::string& id) {
+    if (id.empty()) throw std::invalid_argument("id must not be empty");
+
+    auto record = fetch_record(id);
+    if (!record) throw std::runtime_error("Record not found: " + id);
+
+    return *record;
+}

@@ -1,0 +1,4 @@
+#include <algorithm>
+#include <vector>
+
+bool found = std::binary_search(v.begin(), v.end(), 3);   // true if 3 is present in the sorted vector v

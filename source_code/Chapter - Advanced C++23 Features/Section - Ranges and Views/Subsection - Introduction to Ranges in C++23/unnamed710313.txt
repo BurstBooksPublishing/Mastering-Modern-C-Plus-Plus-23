@@ -1,0 +1,39 @@
+#include <iostream>
+#include <iterator>
+#include <ranges>
+
+class FibonacciView : public std::ranges::view_interface<FibonacciView> {
+    struct Iterator {
+        using difference_type = std::ptrdiff_t;
+        using value_type = long long;
+
+        long long a = 0, b = 1;
+
+        long long operator*() const noexcept { return a; }
+
+        Iterator& operator++() noexcept {
+            const long long next = a + b;
+            a = b;
+            b = next;
+            return *this;
+        }
+
+        Iterator operator++(int) noexcept {
+            Iterator tmp = *this;
+            ++*this;
+            return tmp;
+        }
+
+        bool operator==(const Iterator&) const noexcept = default;
+    };
+
+public:
+    constexpr Iterator begin() const noexcept { return {}; }
+    constexpr Iterator end() const noexcept { return {}; }
+};
+
+int main() {
+    for (long long n : FibonacciView{} | std::views::take(10)) {
+        std::cout << n << ' ';
+    }
+}

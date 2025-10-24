@@ -1,0 +1,8 @@
+#include <numeric>
+#include <vector>
+
+int sum = 0;
+auto lambda_accumulate = [&sum](int n) noexcept {
+    sum += n;          // accumulate in captured reference
+    return sum;        // return running total
+};

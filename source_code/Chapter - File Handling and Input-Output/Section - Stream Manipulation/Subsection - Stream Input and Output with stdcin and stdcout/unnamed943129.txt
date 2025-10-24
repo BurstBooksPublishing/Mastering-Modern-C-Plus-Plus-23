@@ -1,0 +1,8 @@
+#include <iostream>
+#include <iomanip>
+
+int main() {
+    constexpr double kPi = 3.14159265358979323846;  // Compile-time constant
+    std::cout << std::fixed << std::setprecision(2) << kPi << '\n';
+    return 0;
+}

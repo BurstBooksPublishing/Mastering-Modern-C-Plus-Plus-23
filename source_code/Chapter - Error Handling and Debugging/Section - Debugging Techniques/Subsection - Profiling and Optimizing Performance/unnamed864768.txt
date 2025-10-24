@@ -1,0 +1,22 @@
+#include <vector>
+#include <numeric>
+#include <chrono>
+#include <iostream>
+
+int sum_vector(const std::vector<int>& vec) {
+    return std::accumulate(vec.begin(), vec.end(), 0);
+}
+
+int main() {
+    constexpr std::size_t kSize = 1'000'000;
+    std::vector<int> large_vec(kSize, 1);
+
+    const auto start = std::chrono::high_resolution_clock::now();
+    const int result = sum_vector(large_vec);
+    const auto end = std::chrono::high_resolution_clock::now();
+
+    const auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+
+    std::cout << "Sum: " << result << '\n';
+    std::cout << "Time taken: " << duration.count() << " µs\n";
+}

@@ -1,0 +1,23 @@
+#include <iostream>
+#include <string>
+#include <nlohmann/json.hpp>
+
+int main() {
+    try {
+        const std::string json_string = R"({"name":"John Doe","age":30,"is_student":false})";
+        const auto j = nlohmann::json::parse(json_string);
+
+        // Access fields safely; throws if key missing or type mismatch
+        const std::string name = j.at("name").get<std::string>();
+        const int age = j.at("age").get<int>();
+        const bool is_student = j.at("is_student").get<bool>();
+
+        std::cout << "Name: " << name << '\n'
+                  << "Age: " << age << '\n'
+                  << "Is Student: " << std::boolalpha << is_student << '\n';
+    } catch (const nlohmann::json::exception& ex) {
+        std::cerr << "JSON error: " << ex.what() << '\n';
+        return 1;
+    }
+    return 0;
+}

@@ -1,0 +1,11 @@
+#include <iostream>
+#include <vector>
+#include <ranges>
+
+int main() {
+    const std::vector<int> nums{1, 2, 3, 4, 5};
+
+    for (const int num : nums | std::views::filter([](int n) { return n % 2 == 0; })) {
+        std::cout << "Even Number: " << num << '\n';
+    }
+}

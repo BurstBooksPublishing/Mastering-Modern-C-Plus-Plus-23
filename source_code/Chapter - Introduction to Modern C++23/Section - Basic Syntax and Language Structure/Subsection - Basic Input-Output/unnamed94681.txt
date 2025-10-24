@@ -1,0 +1,8 @@
+#include <format>
+#include <iostream>
+
+int main() {
+    constexpr double pi = 3.14159265358979323846;  // Higher-precision constant
+    std::cout << std::format("The value of pi is approximately {:.2f}\n", pi);
+    return 0;
+}

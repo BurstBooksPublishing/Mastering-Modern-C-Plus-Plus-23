@@ -1,0 +1,29 @@
+#include <type_traits>
+#include <utility>
+
+// Returns the greater of two comparable values.
+template <typename T>
+constexpr const T& max(const T& a, const T& b) noexcept {
+    return (a < b) ? b : a;
+}
+
+// A simple heterogeneous pair.
+template <typename T1, typename T2>
+class Pair {
+public:
+    T1 first;
+    T2 second;
+
+    constexpr Pair(T1 f, T2 s) noexcept(std::is_nothrow_move_constructible_v<T1> &&
+                                        std::is_nothrow_move_constructible_v<T2>)
+        : first(std::move(f)), second(std::move(s)) {}
+};
+
+int main() {
+    int  intMax    = max(10, 20);
+    double doubleMax = max(3.14, 2.71);
+
+    Pair<int, double> p(5, 3.14);
+
+    return 0;
+}

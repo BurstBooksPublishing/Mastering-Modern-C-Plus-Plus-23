@@ -1,0 +1,25 @@
+#include <memory>
+
+class Product {
+public:
+    virtual ~Product() = default;
+    virtual void operation() = 0;
+};
+
+class ConcreteProduct : public Product {
+public:
+    void operation() override { /* Implementation */ }
+};
+
+class Creator {
+public:
+    virtual ~Creator() = default;
+    virtual std::unique_ptr<Product> factoryMethod() = 0;
+};
+
+class ConcreteCreator : public Creator {
+public:
+    std::unique_ptr<Product> factoryMethod() override {
+        return std::make_unique<ConcreteProduct>();
+    }
+};

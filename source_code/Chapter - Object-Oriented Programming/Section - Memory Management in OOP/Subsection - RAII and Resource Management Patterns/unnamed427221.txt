@@ -1,0 +1,40 @@
+#include <cstdio>
+#include <string>
+#include <stdexcept>
+#include <utility>
+
+class FileHandler {
+public:
+    explicit FileHandler(const std::string& filename)
+        : file_(std::fopen(filename.c_str(), "rb")) {          // open in binary mode for consistency
+        if (!file_) throw std::runtime_error("Failed to open file");
+    }
+
+    FileHandler(const FileHandler&)            = delete;        // non-copyable resource
+    FileHandler& operator=(const FileHandler&) = delete;
+
+    FileHandler(FileHandler&& other) noexcept
+        : file_(std::exchange(other.file_, nullptr)) {}        // transfer ownership
+
+    FileHandler& operator=(FileHandler&& other) noexcept {
+        if (this != &other) {
+            close();                                            // clean current handle
+            file_ = std::exchange(other.file_, nullptr);
+        }
+        return *this;
+    }
+
+    ~FileHandler() { close(); }
+
+    std::FILE* get() const noexcept { return file_; }
+
+private:
+    std::FILE* file_{nullptr};
+
+    void close() noexcept {
+        if (file_) {
+            std::fclose(file_);
+            file_ = nullptr;
+        }
+    }
+};

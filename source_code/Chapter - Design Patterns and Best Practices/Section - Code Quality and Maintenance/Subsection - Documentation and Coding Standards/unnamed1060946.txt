@@ -1,0 +1,7 @@
+#include <expected>
+#include <string>
+
+std::expected<int, std::string> divide(int a, int b) {
+    if (b == 0) return std::unexpected(std::string("Division by zero"));
+    return a / b;
+}

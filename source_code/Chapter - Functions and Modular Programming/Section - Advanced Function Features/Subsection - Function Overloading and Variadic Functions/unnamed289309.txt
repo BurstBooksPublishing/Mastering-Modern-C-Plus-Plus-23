@@ -1,0 +1,15 @@
+#include <iostream>
+#include <string>
+
+// Overloaded print functions for fundamental types
+void print(int value) {
+    std::cout << "Integer: " << value << '\n';
+}
+
+void print(double value) {
+    std::cout << "Double: " << value << '\n';
+}
+
+void print(const std::string& value) {
+    std::cout << "String: " << value << '\n';
+}

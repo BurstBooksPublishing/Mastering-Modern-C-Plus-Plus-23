@@ -1,0 +1,18 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <iterator>
+
+int main() {
+    const std::vector<int> numbers{1, 2, 3, 4, 5};
+
+    std::vector<int> squared;
+    squared.reserve(numbers.size());
+
+    std::transform(numbers.begin(), numbers.end(), std::back_inserter(squared),
+                   [](int x) { return x * x; });
+
+    std::copy(squared.begin(), squared.end(),
+              std::ostream_iterator<int>(std::cout, " "));
+    std::cout << '\n';
+}

@@ -1,0 +1,41 @@
+#include <iostream>
+#include <memory>
+#include <vector>
+#include <utility>
+
+class Resource {
+public:
+    Resource() { std::cout << "Resource acquired\n"; }
+    ~Resource() { std::cout << "Resource released\n"; }
+    void use() const { std::cout << "Resource in use\n"; }
+};
+
+void processResources() {
+    auto resource = std::make_unique<Resource>();
+    resource->use();
+}
+
+class DataProcessor {
+public:
+    explicit DataProcessor(std::vector<int>&& data) noexcept
+        : data_(std::move(data)) {
+        std::cout << "Data moved for processing\n";
+    }
+
+    void process() const {
+        for (const auto& value : data_) {
+            std::cout << "Processing value: " << value << '\n';
+        }
+    }
+
+private:
+    std::vector<int> data_;
+};
+
+int main() {
+    processResources();
+
+    std::vector<int> data{1, 2, 3, 4, 5};
+    DataProcessor processor(std::move(data));
+    processor.process();
+}

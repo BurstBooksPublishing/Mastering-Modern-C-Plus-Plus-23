@@ -1,0 +1,11 @@
+#include <vector>
+#include <numeric>   // inner_product
+#include <stdexcept> // invalid_argument
+
+int dot_product(const std::vector<int>& a, const std::vector<int>& b)
+{
+    if (a.size() != b.size())
+        throw std::invalid_argument("Vectors must be the same size.");
+
+    return std::inner_product(a.begin(), a.end(), b.begin(), 0);
+}

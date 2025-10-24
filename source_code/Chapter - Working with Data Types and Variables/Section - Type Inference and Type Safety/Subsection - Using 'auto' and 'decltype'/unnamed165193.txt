@@ -1,0 +1,4 @@
+#include <vector>
+#include <initializer_list>
+
+std::vector<int> x{1, 2, 3};   // concrete container for production use

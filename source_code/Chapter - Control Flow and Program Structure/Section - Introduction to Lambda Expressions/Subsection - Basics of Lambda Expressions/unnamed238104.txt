@@ -1,0 +1,20 @@
+#include <atomic>
+#include <memory>
+
+// Thread-safe, dynamically-replaceable π value
+class PiStore {
+public:
+    PiStore() noexcept : value_(std::make_unique<double>(3.141592653589793)) {}
+
+    double get() const noexcept {
+        return *value_.load(std::memory_order_acquire);
+    }
+
+    void set(double new_value) noexcept {
+        auto new_ptr = std::make_unique<double>(new_value);
+        value_.store(std::move(new_ptr), std::memory_order_release);
+    }
+
+private:
+    std::atomic<std::unique_ptr<double>> value_;
+};

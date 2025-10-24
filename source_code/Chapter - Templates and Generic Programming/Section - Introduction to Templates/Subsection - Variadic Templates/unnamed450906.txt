@@ -1,0 +1,13 @@
+#include <iostream>
+#include <utility>
+
+template <typename T>
+void print(const T& value) {
+    std::cout << value << '\n';
+}
+
+template <typename T, typename... Args>
+void print(const T& value, Args&&... args) {
+    std::cout << value << ' ';
+    print(std::forward<Args>(args)...);
+}

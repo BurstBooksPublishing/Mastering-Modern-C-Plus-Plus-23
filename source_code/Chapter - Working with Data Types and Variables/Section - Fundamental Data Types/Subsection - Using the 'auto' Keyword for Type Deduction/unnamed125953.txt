@@ -1,0 +1,9 @@
+#include <type_traits>   // std::remove_const_t
+#include <utility>       // std::move
+
+// Immutable configuration value
+constexpr int kAnswer = 42;
+
+// Preserve const-qualification in the deduced type
+const auto a = kAnswer;          // a is const int
+static_assert(std::is_same_v<std::remove_const_t<decltype(a)>, int>);

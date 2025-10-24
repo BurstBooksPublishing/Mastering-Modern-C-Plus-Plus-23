@@ -1,0 +1,12 @@
+#include <fstream>
+#include <vector>
+#include <string>
+
+void serializeVector(const std::vector<int>& vec, const std::string& filename) {
+    std::ofstream outFile(filename, std::ios::binary);
+    if (!outFile) return;                       // fail silently if file cannot be opened
+
+    const size_t size = vec.size();
+    outFile.write(reinterpret_cast<const char*>(&size), sizeof(size));
+    outFile.write(reinterpret_cast<const char*>(vec.data()), size * sizeof(int));
+}

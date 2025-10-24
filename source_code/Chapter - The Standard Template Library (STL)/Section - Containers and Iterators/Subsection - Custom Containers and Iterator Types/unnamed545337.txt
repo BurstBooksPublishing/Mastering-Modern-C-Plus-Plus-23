@@ -1,0 +1,41 @@
+#include <iterator>
+
+template <class Iterator>
+class ZigZagIterator {
+public:
+    using iterator_category = std::bidirectional_iterator_tag;
+    using value_type        = typename std::iterator_traits<Iterator>::value_type;
+    using difference_type   = typename std::iterator_traits<Iterator>::difference_type;
+    using pointer           = typename std::iterator_traits<Iterator>::pointer;
+    using reference         = typename std::iterator_traits<Iterator>::reference;
+
+    ZigZagIterator(Iterator it = Iterator{}, bool forward = true)
+        : current(it), forward(forward) {}
+
+    reference operator*() const { return *current; }
+    pointer   operator->() const { return current.operator->(); }
+
+    ZigZagIterator& operator++() {
+        if (forward) ++current;
+        else         --current;
+        forward = !forward;
+        return *this;
+    }
+
+    ZigZagIterator operator++(int) {
+        ZigZagIterator tmp(*this);
+        ++(*this);
+        return tmp;
+    }
+
+    friend bool operator==(const ZigZagIterator& a, const ZigZagIterator& b) {
+        return a.current == b.current && a.forward == b.forward;
+    }
+    friend bool operator!=(const ZigZagIterator& a, const ZigZagIterator& b) {
+        return !(a == b);
+    }
+
+private:
+    Iterator current;
+    bool     forward;
+};

@@ -1,0 +1,15 @@
+#include <catch2/catch_all.hpp>
+#include <limits>
+
+constexpr unsigned long long factorial(unsigned int n) noexcept {
+    return (n <= 1) ? 1ULL : n * factorial(n - 1);
+}
+
+TEST_CASE("Factorial function works correctly", "[factorial]") {
+    REQUIRE(factorial(0) == 1);
+    REQUIRE(factorial(1) == 1);
+    REQUIRE(factorial(5) == 120);
+    REQUIRE(factorial(10) == 3628800ULL);
+    REQUIRE(factorial(20) == 2432902008176640000ULL);
+    REQUIRE(factorial(21) == 51090942171709440000ULL);
+}

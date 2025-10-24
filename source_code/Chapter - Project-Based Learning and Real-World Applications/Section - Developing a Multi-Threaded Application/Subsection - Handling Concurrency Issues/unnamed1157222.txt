@@ -1,0 +1,23 @@
+#include <iostream>
+#include <mutex>
+#include <thread>
+
+std::mutex mtx1, mtx2;
+
+void task1() {
+    std::scoped_lock lock(mtx1, mtx2);   // Acquire both locks in a deadlock-free manner
+    std::cout << "Task 1 executed\n";
+}
+
+void task2() {
+    std::scoped_lock lock(mtx1, mtx2);   // Same lock order as task1 to avoid deadlock
+    std::cout << "Task 2 executed\n";
+}
+
+int main() {
+    std::thread t1(task1);
+    std::thread t2(task2);
+    t1.join();
+    t2.join();
+    return 0;
+}

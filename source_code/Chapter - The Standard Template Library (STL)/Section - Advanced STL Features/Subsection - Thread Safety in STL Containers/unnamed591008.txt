@@ -1,0 +1,10 @@
+#include <vector>
+#include <mutex>
+
+std::vector<int> vec{1, 2, 3, 4};
+std::mutex vec_mutex;
+
+void safe_access() {
+    std::lock_guard<std::mutex> lock(vec_mutex);
+    if (!vec.empty()) vec[0] = 42;
+}

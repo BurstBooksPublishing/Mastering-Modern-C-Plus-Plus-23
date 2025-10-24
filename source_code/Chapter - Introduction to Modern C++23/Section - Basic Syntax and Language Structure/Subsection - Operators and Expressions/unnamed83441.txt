@@ -1,0 +1,17 @@
+#include <cstdint>
+#include <type_traits>
+
+// Ensure the variables are of an integral type; static_cast to bool suppresses
+// any implicit conversion warnings and makes the intent explicit.
+template <typename T, typename U>
+[[nodiscard]] constexpr bool evaluate_conditions(const T a, const U b) noexcept
+{
+    static_assert(std::is_integral_v<T> && std::is_integral_v<U>,
+                  "Arguments must be integral types");
+
+    const bool result      = static_cast<bool>(a > 5 && b < 4);
+    const bool alternative = static_cast<bool>(a == 10 || b == 5);
+    const bool negation    = static_cast<bool>(!(a == b));
+
+    return result || alternative || negation;
+}

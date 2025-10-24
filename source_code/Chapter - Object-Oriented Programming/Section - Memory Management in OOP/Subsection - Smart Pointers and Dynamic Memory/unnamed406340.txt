@@ -1,0 +1,13 @@
+#include <iostream>
+#include <memory>
+
+class MyClass {
+public:
+    MyClass()  { std::cout << "MyClass constructed\n"; }
+    ~MyClass() { std::cout << "MyClass destroyed\n"; }
+};
+
+int main() {
+    auto ptr = std::make_unique<MyClass>();
+    return 0;
+}

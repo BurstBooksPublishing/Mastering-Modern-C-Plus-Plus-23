@@ -1,0 +1,61 @@
+#include <algorithm>
+#include <chrono>
+#include <cstddef>
+#include <iostream>
+#include <memory>
+#include <random>
+#include <vector>
+
+// Strategy interface for runtime polymorphism
+struct IFilter {
+    virtual void process(std::vector<float>& data) noexcept = 0;
+    virtual ~IFilter() = default;
+};
+
+struct GainFilter final : IFilter {
+    float gain;
+    explicit GainFilter(float g) noexcept : gain(g) {}
+    void process(std::vector<float>& data) noexcept override {
+        std::for_each(data.begin(), data.end(), [g = gain](float& v) { v *= g; });
+    }
+};
+
+// Compile-time concept
+template<typename T>
+concept Filter = requires(T f, std::vector<float>& d) {
+    { f.process(d) } noexcept;
+};
+
+struct BiasFilter {
+    float bias;
+    explicit BiasFilter(float b) noexcept : bias(b) {}
+    void process(std::vector<float>& data) const noexcept {
+        std::for_each(data.begin(), data.end(), [b = bias](float& v) { v += b; });
+    }
+};
+
+// Benchmark helper
+template<typename F>
+[[nodiscard]] auto measure(F&& f, std::vector<float>& data, std::size_t iters = 100) {
+    using clk = std::chrono::high_resolution_clock;
+    const auto start = clk::now();
+    for (std::size_t i = 0; i < iters; ++i) f(data);
+    return std::chrono::duration_cast<std::chrono::microseconds>(clk::now() - start).count();
+}
+
+int main() {
+    constexpr std::size_t kSize = 1024;
+    std::mt19937_64 rng{42};
+    std::uniform_real_distribution<float> dist(-1.0f, 1.0f);
+    std::vector<float> data(kSize);
+    std::generate(data.begin(), data.end(), [&] { return dist(rng); });
+
+    std::unique_ptr<IFilter> runtime = std::make_unique<GainFilter>(1.001f);
+    const auto rt_time = measure([&](auto& d) { runtime->process(d); }, data);
+
+    BiasFilter bias{0.0001f};
+    const auto ct_time = measure([&](auto& d) { bias.process(d); }, data);
+
+    std::cout << "runtime (virtual) microseconds: " << rt_time << '\n';
+    std::cout << "compile-time (template) microseconds: " << ct_time << '\n';
+}

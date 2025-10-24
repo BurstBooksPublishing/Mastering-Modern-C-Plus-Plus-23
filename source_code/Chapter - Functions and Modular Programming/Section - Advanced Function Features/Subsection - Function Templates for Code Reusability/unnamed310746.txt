@@ -1,0 +1,8 @@
+#include <type_traits>
+
+template <typename T>
+constexpr auto add(const T& a, const T& b)
+    -> std::enable_if_t<std::is_arithmetic_v<T>, T>
+{
+    return a + b;
+}

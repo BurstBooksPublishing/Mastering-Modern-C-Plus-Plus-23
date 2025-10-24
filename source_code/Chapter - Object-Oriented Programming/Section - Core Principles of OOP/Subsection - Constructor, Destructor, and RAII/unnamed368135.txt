@@ -1,0 +1,36 @@
+#include <cstdio>
+#include <stdexcept>
+#include <utility>
+
+class FileHandler {
+    FILE* file_ = nullptr;
+
+public:
+    explicit FileHandler(const char* filename) : file_(std::fopen(filename, "r")) {
+        if (!file_) throw std::runtime_error("Failed to open file");
+    }
+
+    FileHandler(const FileHandler&) = delete;
+    FileHandler& operator=(const FileHandler&) = delete;
+
+    FileHandler(FileHandler&& other) noexcept : file_(std::exchange(other.file_, nullptr)) {}
+    FileHandler& operator=(FileHandler&& other) noexcept {
+        if (this != &other) {
+            close();
+            file_ = std::exchange(other.file_, nullptr);
+        }
+        return *this;
+    }
+
+    ~FileHandler() { close(); }
+
+    FILE* get() const noexcept { return file_; }
+
+private:
+    void close() noexcept {
+        if (file_) {
+            std::fclose(file_);
+            file_ = nullptr;
+        }
+    }
+};

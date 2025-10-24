@@ -1,0 +1,48 @@
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include <stdexcept>
+#include <string>
+
+struct Person {
+    std::string name;
+    int age{};
+    double height{};
+
+    std::string serialize() const {
+        std::ostringstream oss;
+        oss.exceptions(std::ios::failbit | std::ios::badbit);
+        oss << name << ' ' << age << ' ' << height;
+        return oss.str();
+    }
+
+    static Person deserialize(const std::string& data) {
+        std::istringstream iss(data);
+        iss.exceptions(std::ios::failbit | std::ios::badbit);
+        Person p;
+        iss >> p.name >> p.age >> p.height;
+        return p;
+    }
+};
+
+int main() {
+    const std::string fileName = "person.txt";
+
+    {
+        const Person person{"Alice", 30, 5.5};
+        std::ofstream out(fileName);
+        if (!out) throw std::runtime_error("Cannot open file for writing");
+        out << person.serialize();
+    }
+
+    {
+        std::ifstream in(fileName);
+        if (!in) throw std::runtime_error("Cannot open file for reading");
+        std::string data;
+        std::getline(in, data);
+        const Person loaded = Person::deserialize(data);
+        std::cout << "Name: " << loaded.name
+                  << ", Age: " << loaded.age
+                  << ", Height: " << loaded.height << '\n';
+    }
+}

@@ -1,0 +1,52 @@
+#include <iostream>
+#include <memory>
+#include <string>
+#include <vector>
+#include <stdexcept>
+
+class BuildArtifact {
+public:
+    explicit BuildArtifact(std::string name) : name_(std::move(name)) {}
+
+    void build() const {
+        if (name_.empty()) {
+            throw std::invalid_argument("Artifact name cannot be empty");
+        }
+        std::cout << "Building artifact: " << name_ << '\n';
+    }
+
+    void deploy() const {
+        std::cout << "Deploying artifact: " << name_ << '\n';
+    }
+
+private:
+    std::string name_;
+};
+
+class CICDPipeline {
+public:
+    void addArtifact(BuildArtifact artifact) {
+        artifacts_.emplace_back(std::move(artifact));
+    }
+
+    void runPipeline() {
+        for (const auto& artifact : artifacts_) {
+            try {
+                artifact.build();
+                artifact.deploy();
+            } catch (const std::exception& e) {
+                std::cerr << "Pipeline failed: " << e.what() << '\n';
+            }
+        }
+    }
+
+private:
+    std::vector<BuildArtifact> artifacts_;
+};
+
+int main() {
+    CICDPipeline pipeline;
+    pipeline.addArtifact(BuildArtifact("app1"));
+    pipeline.addArtifact(BuildArtifact("app2"));
+    pipeline.runPipeline();
+}

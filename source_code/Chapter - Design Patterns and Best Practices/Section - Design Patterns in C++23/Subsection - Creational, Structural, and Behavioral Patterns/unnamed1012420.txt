@@ -1,0 +1,27 @@
+#include <memory>
+#include <vector>
+
+class Component {
+public:
+    virtual ~Component() = default;
+    virtual void operation() = 0;
+};
+
+class Leaf : public Component {
+public:
+    void operation() override {
+        // Leaf-specific behavior
+    }
+};
+
+class Composite : public Component {
+    std::vector<std::unique_ptr<Component>> children;
+public:
+    void operation() override {
+        for (const auto& child : children)
+            child->operation();
+    }
+    void add(std::unique_ptr<Component> c) {
+        children.emplace_back(std::move(c));
+    }
+};

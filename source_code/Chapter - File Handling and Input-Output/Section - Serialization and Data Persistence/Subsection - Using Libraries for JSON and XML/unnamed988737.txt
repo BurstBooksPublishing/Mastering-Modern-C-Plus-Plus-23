@@ -1,0 +1,19 @@
+#include <iostream>
+#include <vector>
+#include <nlohmann/json.hpp>
+
+struct Person {
+    std::string name;
+    int age{};
+};
+
+inline void to_json(nlohmann::json& j, const Person& p) {
+    j = {{"name", p.name}, {"age", p.age}};
+}
+
+int main() {
+    const std::vector<Person> people{{"Alice", 25}, {"Bob", 30}};
+    const nlohmann::json j = people;
+
+    std::cout << j.dump(4) << '\n';
+}

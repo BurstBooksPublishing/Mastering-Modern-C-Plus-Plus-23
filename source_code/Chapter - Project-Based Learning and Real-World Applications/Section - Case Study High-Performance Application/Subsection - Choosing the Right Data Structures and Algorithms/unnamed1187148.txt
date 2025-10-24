@@ -1,0 +1,13 @@
+#include <unordered_map>
+#include <map>
+#include <string>
+
+const std::unordered_map<std::string, int> hash_map = {
+    {"apple", 1},
+    {"banana", 2}
+};
+
+const std::map<std::string, int> tree_map = {
+    {"apple", 1},
+    {"banana", 2}
+};

@@ -1,0 +1,15 @@
+#include <functional>
+#include <type_traits>
+
+// Example: a reusable, production-ready lambda factory
+template <typename F>
+auto makeLambda(F&& f) {
+    // Perfect-forward the callable into a std::function for type-erasure
+    return std::function<std::invoke_result_t<F>()>(std::forward<F>(f));
+}
+
+// Usage
+auto lambda = makeLambda([]() -> int {
+    // Critical logic: compute and return a value
+    return 42;
+});

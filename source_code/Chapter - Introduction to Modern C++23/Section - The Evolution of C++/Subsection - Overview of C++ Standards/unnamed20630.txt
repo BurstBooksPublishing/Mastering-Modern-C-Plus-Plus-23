@@ -1,0 +1,13 @@
+#include <type_traits>
+
+// Compile-time integer square with overflow protection
+template <typename T>
+constexpr T square(T x) noexcept {
+    static_assert(std::is_integral_v<T>, "Integral type required");
+    return static_cast<T>(x) * static_cast<T>(x);
+}
+
+int main() {
+    static_assert(square(5) == 25, "Unexpected result");
+    return square(5);
+}

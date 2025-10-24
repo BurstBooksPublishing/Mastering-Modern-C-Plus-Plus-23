@@ -1,0 +1,19 @@
+#include <iostream>
+#include <stdexcept>
+
+void riskyFunction(int value) {
+    if (value < 0) {
+        throw std::invalid_argument("Negative value not allowed");
+    }
+    std::cout << "Value is: " << value << '\n';
+}
+
+int main() {
+    try {
+        riskyFunction(-5);
+    } catch (const std::invalid_argument& e) {
+        std::cerr << "Caught exception: " << e.what() << '\n';
+    } catch (...) {
+        std::cerr << "An unknown exception occurred\n";
+    }
+}

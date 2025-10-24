@@ -1,0 +1,14 @@
+#include <algorithm>
+#include <functional>
+#include <iostream>
+#include <vector>
+
+void print_sum(int a, int b) {
+    std::cout << a + b << '\n';
+}
+
+int main() {
+    const std::vector<int> v{1, 2, 3, 4, 5};
+    const auto print_with_5 = std::bind(print_sum, std::placeholders::_1, 5);
+    std::for_each(v.begin(), v.end(), print_with_5);
+}

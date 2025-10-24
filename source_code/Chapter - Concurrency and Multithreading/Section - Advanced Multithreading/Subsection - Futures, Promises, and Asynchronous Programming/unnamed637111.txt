@@ -1,0 +1,17 @@
+#include <iostream>
+#include <future>
+#include <chrono>
+
+int computeHeavyTask() {
+    std::this_thread::sleep_for(std::chrono::seconds(2));
+    return 42;
+}
+
+int main() {
+    std::future<int> resultFuture = std::async(std::launch::async, computeHeavyTask);
+
+    std::cout << "Main thread is doing other work...\n";
+
+    int result = resultFuture.get();
+    std::cout << "Result from the computation: " << result << '\n';
+}

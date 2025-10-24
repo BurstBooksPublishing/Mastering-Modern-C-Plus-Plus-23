@@ -1,0 +1,26 @@
+#include <chrono>
+#include <format>
+#include <iostream>
+#include <mutex>
+#include <source_location>
+
+namespace util {
+
+void log_error(std::string_view message,
+               const std::source_location loc = std::source_location::current())
+{
+    static std::mutex mtx;
+    const std::lock_guard lg{mtx};                 // serialize output
+
+    const auto now = std::chrono::system_clock::now();
+    const auto t   = std::chrono::current_zone()->to_local(now);
+
+    std::cerr << std::format("[{:%F %T}] ERROR {}:{} {}: {}\n",
+                             t,
+                             loc.file_name(),
+                             loc.line(),
+                             loc.function_name(),
+                             message);
+}
+
+} // namespace util

@@ -1,0 +1,49 @@
+#include <iostream>
+#include <memory>
+
+struct Base {
+    virtual ~Base() = default;
+    virtual void id() const = 0;
+};
+
+struct Derived : Base {
+    void id() const override { std::cout << "Derived alive\n"; }
+};
+
+struct Node {
+    int value;
+    std::shared_ptr<Node> next;
+    explicit Node(int v) : value(v) { std::cout << "Node " << value << " created\n"; }
+    ~Node() { std::cout << "Node " << value << " destroyed\n"; }
+};
+
+struct NodeSafe {
+    int value;
+    std::weak_ptr<NodeSafe> prev;
+    std::shared_ptr<NodeSafe> next;
+    explicit NodeSafe(int v) : value(v) { std::cout << "NodeSafe " << value << " created\n"; }
+    ~NodeSafe() { std::cout << "NodeSafe " << value << " destroyed\n"; }
+};
+
+int main() {
+    std::unique_ptr<Base> up = std::make_unique<Derived>();
+    up->id();
+
+    {
+        auto a = std::make_shared<Node>(1);
+        auto b = std::make_shared<Node>(2);
+        a->next = b;
+        b->next = a;
+        std::cout << "a use_count: " << a.use_count() << '\n';
+        std::cout << "b use_count: " << b.use_count() << '\n';
+    }
+
+    {
+        auto x = std::make_shared<NodeSafe>(3);
+        auto y = std::make_shared<NodeSafe>(4);
+        x->next = y;
+        y->prev = x;
+    }
+
+    return 0;
+}

@@ -1,0 +1,76 @@
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <string_view>
+#include <tuple>
+#include <type_traits>
+#include <utility>
+
+// ---------- tuple iteration ----------
+template <typename Tuple, typename F, std::size_t... I>
+constexpr void tuple_for_each_impl(Tuple&& t, F&& f, std::index_sequence<I...>) {
+    (static_cast<void>(f(std::get<I>(std::forward<Tuple>(t)))), ...);
+}
+
+template <typename Tuple, typename F>
+constexpr void tuple_for_each(Tuple&& t, F&& f) {
+    tuple_for_each_impl(std::forward<Tuple>(t), std::forward<F>(f),
+                        std::make_index_sequence<std::tuple_size_v<std::remove_cvref_t<Tuple>>>{});
+}
+
+// ---------- user types ----------
+struct Position { double x{}, y{}, z{}; };
+struct Material { std::string name; int id{}; double roughness{}; };
+
+// ---------- compile-time reflection ----------
+constexpr auto reflect(const Position*) {
+    return std::tuple{
+        std::pair{std::string_view{"x"}, &Position::x},
+        std::pair{std::string_view{"y"}, &Position::y},
+        std::pair{std::string_view{"z"}, &Position::z}
+    };
+}
+
+constexpr auto reflect(const Material*) {
+    return std::tuple{
+        std::pair{std::string_view{"name"}, &Material::name},
+        std::pair{std::string_view{"id"}, &Material::id},
+        std::pair{std::string_view{"roughness"}, &Material::roughness}
+    };
+}
+
+// ---------- JSON value conversion ----------
+template <typename V>
+std::string to_json_value(const V& v) {
+    using U = std::remove_cvref_t<V>;
+    if constexpr (std::is_same_v<U, std::string> || std::is_same_v<U, std::string_view>)
+        return '"' + std::string(v) + '"';
+    else if constexpr (std::is_arithmetic_v<U>)
+        return std::to_string(v);
+    else
+        return "\"\"";
+}
+
+// ---------- generic JSON serializer ----------
+template <typename T>
+std::string to_json(const T& obj) {
+    auto refl = reflect(static_cast<const T*>(nullptr));
+    std::ostringstream os;
+    os << '{';
+    bool first = true;
+    tuple_for_each(refl, [&](const auto& pair) {
+        if (!first) os << ',';
+        first = false;
+        os << '"' << pair.first << "\":" << to_json_value(obj.*pair.second);
+    });
+    os << '}';
+    return os.str();
+}
+
+// ---------- demo ----------
+int main() {
+    Position p{1.0, 2.0, 3.5};
+    Material m{"steel", 42, 0.12};
+    std::cout << to_json(p) << '\n';
+    std::cout << to_json(m) << '\n';
+}
